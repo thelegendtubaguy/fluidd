@@ -72,10 +72,11 @@ export const createState = (): ConfigState => {
       },
       theme: {
         isDark: true,
+        // QIDI Max 4 builds default to the Qidi Tech theme preset.
         logo: {
-          src: 'logo_fluidd.svg'
+          src: 'logo_qidi.svg'
         },
-        color: '#2196F3',
+        color: '#5B7AEA',
         backgroundLogo: true
       },
       warnings: {

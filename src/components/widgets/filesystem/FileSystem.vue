@@ -954,6 +954,15 @@ export default class FileSystem extends Mixins(StateMixin, FilesMixin, ServicesM
       }
     }
 
+    if (this.$typedGetters['qidiBox/getShowPrintDialog'](filename)) {
+      this.$typedCommit('qidiBox/setDialogState', {
+        show: true,
+        filename
+      })
+
+      return
+    }
+
     const spoolmanSupported: boolean = this.$typedGetters['spoolman/getAvailable']
     const autoSpoolSelectionDialog: boolean = this.$typedState.config.uiSettings.spoolman.autoSpoolSelectionDialog
     if (spoolmanSupported && autoSpoolSelectionDialog) {

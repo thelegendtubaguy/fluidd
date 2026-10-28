@@ -75,6 +75,7 @@
         <bed-screws-adjust-dialog />
         <screws-tilt-adjust-dialog />
         <mmu-edit-ttg-map-dialog />
+        <qidi-box-print-dialog />
         <afc-print-start-dialog />
       </template>
     </v-main>
@@ -106,6 +107,7 @@ import ActionCommandPromptDialog from '@/components/common/ActionCommandPromptDi
 import KeyboardShortcutsDialog from '@/components/common/KeyboardShortcutsDialog.vue'
 import { eventTargetIsContentEditable, keyboardEventToKeyboardShortcut } from '@/util/event-helpers'
 import MmuEditTtgMapDialog from './components/widgets/mmu/MmuEditTtgMapDialog.vue'
+import QidiBoxPrintDialog from './components/widgets/qidiBox/QidiBoxPrintDialog.vue'
 import AfcPrintStartDialog from './components/widgets/afc/dialogs/AfcPrintStartDialog.vue'
 
 @Component<App>({
@@ -123,6 +125,7 @@ import AfcPrintStartDialog from './components/widgets/afc/dialogs/AfcPrintStartD
     ActionCommandPromptDialog,
     KeyboardShortcutsDialog,
     MmuEditTtgMapDialog,
+    QidiBoxPrintDialog,
     AfcPrintStartDialog
   }
 })

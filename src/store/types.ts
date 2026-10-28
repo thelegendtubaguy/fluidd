@@ -26,6 +26,7 @@ import type { sensors } from './sensors'
 import type { database } from './database'
 import type { analysis } from './analysis'
 import type { afc } from './afc'
+import type { qidiBox } from './qidiBox'
 import type { storeOptions } from '.'
 
 // Deliberately spelled out rather than derived from `storeOptions.modules`: those
@@ -58,7 +59,8 @@ type RootModulesType = {
   sensors: typeof sensors,
   database: typeof database,
   analysis: typeof analysis,
-  afc: typeof afc
+  afc: typeof afc,
+  qidiBox: typeof qidiBox
 }
 
 type RootStateType<TModules> = {
