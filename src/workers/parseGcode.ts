@@ -2,6 +2,7 @@ import type { BBox, Layer, MoveStore, Part } from '@/store/gcodePreview/types'
 import { MoveFlags } from '@/store/gcodePreview/types'
 import decimalRound from '@/util/decimal-round'
 import { split } from 'shlex'
+import { extract3mfGcode, is3mfUrl } from './gcode-3mf'
 
 type PositioningMode = 'relative' | 'absolute'
 
@@ -211,7 +212,13 @@ const parseGcode = async (
     throw new Error(`Failed to download gcode (${response.status} ${response.statusText})`)
   }
 
-  const progressStep = Math.max(1, Math.floor(fileSize / 100))
+  // A sliced 3MF's G-code is read out of the archive; progress stays relative to the downloaded file's size.
+  const { body, size } = is3mfUrl(url)
+    ? extract3mfGcode(await response.arrayBuffer())
+    : { body: response.body, size: fileSize }
+  const reportProgress = (position: number) => sendProgress(size === fileSize ? position : Math.min(fileSize, Math.round(position * fileSize / size)))
+
+  const progressStep = Math.max(1, Math.floor(size / 100))
   let nextProgressByte = 0
 
   let moveCapacity = INITIAL_MOVE_CAPACITY
@@ -565,14 +572,14 @@ const parseGcode = async (
     }
 
     if (filePosition >= nextProgressByte) {
-      sendProgress(filePosition)
+      reportProgress(filePosition)
       nextProgressByte = filePosition + progressStep
     }
 
     filePosition += utf8ByteLength(line) + 1 // + 1 for the '\n' (1 byte)
   }
 
-  const reader = response.body.getReader()
+  const reader = body.getReader()
   const decoder = new TextDecoder()
   let buffer = ''
   let cursor = 0
@@ -629,7 +636,7 @@ const parseGcode = async (
     reader.releaseLock()
   }
 
-  sendProgress(filePosition)
+  reportProgress(filePosition)
 
   const moves: MoveStore = {
     // sliced to length so the transferred buffers carry no slack
