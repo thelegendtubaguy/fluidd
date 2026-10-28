@@ -1433,12 +1433,17 @@ app:
       delete_backup: Delete Backup
   qidi_box:
     btn:
+      apply: Apply
+      box_settings: Box settings
+      close: Close
       default: Default
       edit: Edit
       edit_filament: Edit filament
       eject: Eject
       load: Load
       read_rfid: Read RFID
+      reset: Reset
+      reset_slot: Reset slot
       unload: Unload
     label:
       box: Box %{box}
@@ -1465,6 +1470,32 @@ app:
       normal: Normal humidity
       high: Slightly high humidity
       over_high: High humidity
+    motion:
+      accel: accel
+      all_slots: All slots. Blank fields use the vendor value.
+      fields:
+        approach_speed: Approach speed
+        fast_length: Fast length
+        fast_speed_1: Fast speed 1
+        fast_speed_2: Fast speed 2
+        load_accel: Load accel
+        unload_accel: Unload accel
+        unload_extruder_length: Extruder retract
+        unload_speed_1: Unload speed 1
+        unload_speed_2: Unload speed 2
+      invalid_saved: Saved value %{value} is invalid; Apply clears it
+      load: Load
+      printing: Editing is unavailable while printing.
+      reset_confirm: >-
+        Reset all Box motion settings and every slot override to vendor values?
+      reset_slot_confirm: Clear every override for slot %{slot}?
+      slot_blank: Blank fields follow the global setting.
+      slot_override: Slot override
+      title: Load/unload motion
+      unavailable: Box motion settings unavailable
+      unload: Unload
+      vendor_keys: 'Vendor motion keys change the baseline: %{keys}'
+      whole_number: Whole number %{range}
     msg:
       auto_reload_off: Automatic reload is off
       box_busy: Box busy
@@ -1490,6 +1521,20 @@ app:
         Choose the slot each tool loads, for tool changes and prints that do not
         set their own mapping. Fluidd's print dialog sets the mapping again for
         the print it starts.
+    settings:
+      auto_init_detect: Detection on startup
+      auto_init_detect_help: >-
+        On every startup, the Box reads the filament information of every slot,
+        which takes about 1 minute.
+      auto_read_rfid: Detection on insertion
+      auto_read_rfid_help: >-
+        When filament is inserted, the Box reads its filament information, which
+        takes about 20 seconds.
+      auto_reload_detect: Automatic reload
+      auto_reload_detect_help: >-
+        When filament runs out, the Box switches to a slot with the same
+        filament, vendor, and color.
+      title: Box settings
     title:
       edit_slot: Edit slot %{slot}
       qidi_box: QIDI Box
