@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import type { MutationTree } from 'vuex'
 import type { PrinterState } from './types'
+import { isPlainObject } from 'lodash-es'
 import { createState } from './state'
 
 export const mutations = {
@@ -65,8 +66,15 @@ export const mutations = {
     }
 
     for (const key in payloadValue) {
-      if (stateObject[key] !== payloadValue[key]) {
-        Vue.set(stateObject, key, Object.freeze(payloadValue[key]))
+      let value = payloadValue[key]
+
+      // QIDI's multi_color_controller sends only the changed keys of its nested objects, so merge them.
+      if (payloadKey === 'multi_color_controller' && isPlainObject(stateObject[key]) && isPlainObject(value)) {
+        value = { ...stateObject[key], ...value }
+      }
+
+      if (stateObject[key] !== value) {
+        Vue.set(stateObject, key, Object.freeze(value))
       }
     }
   }

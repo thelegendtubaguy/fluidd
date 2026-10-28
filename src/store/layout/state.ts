@@ -55,6 +55,7 @@ export const createState = (): LayoutState => {
       dashboard: {
         container1: [
           { id: 'printer-status-card', enabled: true, collapsed: false },
+          { id: 'box-card', enabled: true, collapsed: false },
           { id: 'spoolman-card', enabled: true, collapsed: false },
           { id: 'mmu-card', enabled: true, collapsed: false },
           { id: 'camera-card', enabled: true, collapsed: false },

@@ -1,4 +1,4 @@
-import { matchQidiBoxSlots, parseQidiFilamentList, qidiBoxSlots } from '../qidi-box'
+import { matchQidiBoxSlots, parseQidiFilamentDatabase, parseQidiFilamentList, qidiBoxReloadGroups, qidiBoxSlots } from '../qidi-box'
 
 const filamentList = parseQidiFilamentList([
   '[fila18]',
@@ -95,5 +95,45 @@ describe('matchQidiBoxSlots', () => {
       { tool: 1, type: 'PETG', color: '#FFFFFF' },
       { tool: 2, type: 'ABS', color: '#FFFFFF' }
     ], slots)).toStrictEqual({ 0: 2, 1: null, 2: null })
+  })
+})
+
+describe('qidiBoxReloadGroups', () => {
+  it('groups loaded slots with the same filament, vendor, and color', () => {
+    const slots = qidiBoxSlots({
+      save_variables: { variables: { box_count: 1 } },
+      box_extras: {
+        boxes: [{
+          filament_info: [
+            filamentInfo(0, 'PLA', '#228332'),
+            filamentInfo(1, 'PLA', '#FF362D'),
+            filamentInfo(2, 'PLA', '#228332'),
+            filamentInfo(3, 'PLA', '#228332')
+          ]
+        }]
+      },
+      'box_stepper slot0': { runout_button: 0 },
+      'box_stepper slot1': { runout_button: 0 },
+      'box_stepper slot2': { runout_button: 0 },
+      'box_stepper slot3': { runout_button: 1 }
+    }, null)
+
+    expect(qidiBoxReloadGroups(slots)).toStrictEqual({
+      0: { letter: 'A', color: '#228332', members: [0, 2] },
+      2: { letter: 'A', color: '#228332', members: [0, 2] }
+    })
+  })
+})
+
+describe('parseQidiFilamentDatabase', () => {
+  it('lists firmware filaments with QF IDs', () => {
+    expect(parseQidiFilamentDatabase({
+      'QIDI PLA Basic': { type: 'PLA', filament_id: 'QFA00', filament_vendor: 'QIDI' },
+      'Bambu PETG': { type: 'PETG', filament_id: 'QFL31', filament_vendor: 'Bambu' },
+      Broken: { type: 'PLA', filament_id: 7 }
+    })).toStrictEqual([
+      { id: 'QFA00', name: 'QIDI PLA Basic', type: 'PLA', vendor: 'QIDI' },
+      { id: 'QFL31', name: 'Bambu PETG', type: 'PETG', vendor: 'Bambu' }
+    ])
   })
 })

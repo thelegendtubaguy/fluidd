@@ -5,6 +5,7 @@ export const createState = (): QidiBoxState => {
     dialog: {
       show: false
     },
-    filamentList: null
+    filamentList: null,
+    filamentDatabase: null
   }
 }

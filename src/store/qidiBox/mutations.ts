@@ -1,6 +1,6 @@
 import type { MutationTree } from 'vuex'
 import type { QidiBoxDialogState, QidiBoxState } from './types'
-import type { QidiFilamentList } from '@/util/qidi-box'
+import type { QidiFilament, QidiFilamentList } from '@/util/qidi-box'
 import { createState } from './state'
 
 export const mutations = {
@@ -17,5 +17,9 @@ export const mutations = {
 
   setFilamentList (state, payload: QidiFilamentList) {
     state.filamentList = Object.freeze(payload)
+  },
+
+  setFilamentDatabase (state, payload: QidiFilament[]) {
+    state.filamentDatabase = Object.freeze(payload)
   }
 } satisfies MutationTree<QidiBoxState>
