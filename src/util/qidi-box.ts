@@ -1,0 +1,157 @@
+// QIDI Box slots: Box 1 holds slots 0-3 (1A-1D), Box 2 slots 4-7 (2A-2D), and so on; slot 16 is the external spool.
+
+export const QIDI_BOX_EXTERNAL_SLOT = 16
+
+export interface QidiBoxSlot {
+  index: number;
+  label: string;
+  present: boolean;
+  name: string | null;
+  type: string | null;
+  vendor: string | null;
+  color: string | null;
+  boxMaxTemp: number | null;
+}
+
+// QIDI's officiall_filas_list.cfg: [filaN] filament entries, [colordict] and [vendor_list] ID maps.
+export type QidiFilamentList = Record<string, Record<string, string>>
+
+export interface QidiBoxTool {
+  tool: number;
+  type: string;
+  color: string;
+}
+
+export const qidiBoxSlotLabel = (index: number): string => index === QIDI_BOX_EXTERNAL_SLOT
+  ? 'Ext'
+  : `${Math.floor(index / 4) + 1}${String.fromCharCode(65 + (index % 4))}`
+
+export const parseQidiFilamentList = (text: string): QidiFilamentList => {
+  const list: QidiFilamentList = {}
+  let section: Record<string, string> | undefined
+
+  for (const raw of text.split(/\r?\n/)) {
+    const line = raw.trim()
+
+    if (!line || line.startsWith('#')) continue
+
+    const header = /^\[(.+)\]$/.exec(line)
+
+    if (header) {
+      section = list[header[1].trim()] = {}
+    } else if (section) {
+      const separator = line.indexOf('=')
+
+      if (separator > 0) {
+        section[line.slice(0, separator).trim()] = line.slice(separator + 1).trim().replace(/['"]/g, '')
+      }
+    }
+  }
+
+  return list
+}
+
+const normalizeColor = (value: unknown): string | null => {
+  const color = Array.isArray(value) ? value[0] : value
+  const match = typeof color === 'string' ? /^#?([0-9a-f]{6})$/i.exec(color.trim()) : null
+
+  return match ? `#${match[1].toUpperCase()}` : null
+}
+
+const toNumber = (value: unknown): number | null => {
+  const number = typeof value === 'number' ? value : parseFloat(String(value))
+
+  return Number.isFinite(number) ? number : null
+}
+
+const toText = (value: unknown): string | null => typeof value === 'string' && value.trim() !== '' ? value.trim() : null
+
+// Firmware 01.01.07.01 publishes every slot's resolved filament as box_extras.boxes[].filament_info[];
+// these arrays arrive whole in status updates.
+const resolvedFilament = (printer: Record<string, any>, index: number) => {
+  if (index === QIDI_BOX_EXTERNAL_SLOT) {
+    return printer.multi_color_controller?.extra?.filament_info
+  }
+
+  const infos = printer.box_extras?.boxes?.[Math.floor(index / 4)]?.filament_info
+
+  if (Array.isArray(infos)) {
+    return infos.find(info => info?.index === index % 4) ?? infos[index % 4]
+  }
+}
+
+// Earlier firmware saves numeric IDs that resolve through officiall_filas_list.cfg.
+const legacyFilament = (variables: Record<string, any>, list: QidiFilamentList | null, index: number) => {
+  const filament = list?.[`fila${variables[`filament_slot${index}`]}`]
+  const colorId = variables[`color_slot${index}`]
+
+  return {
+    filament_str: filament?.filament,
+    filament_type: filament?.type,
+    vendor_str: list?.vendor_list?.[variables[`vendor_slot${index}`]],
+    color_rgb_str: typeof colorId === 'number' || /^\d+$/.test(String(colorId))
+      ? list?.colordict?.[colorId]
+      : colorId,
+    box_max_temp: filament?.box_max_temp
+  }
+}
+
+export const qidiBoxSlots = (printer: Record<string, any>, list: QidiFilamentList | null): QidiBoxSlot[] => {
+  const variables: Record<string, any> = printer.save_variables?.variables ?? {}
+  const boxCount = Math.max(0, Math.min(4, toNumber(variables.box_count) ?? 0))
+  const indexes = [...Array.from({ length: boxCount * 4 }, (_, index) => index), QIDI_BOX_EXTERNAL_SLOT]
+
+  return indexes.map(index => {
+    const info = resolvedFilament(printer, index) ?? legacyFilament(variables, list, index)
+
+    return {
+      index,
+      label: qidiBoxSlotLabel(index),
+      // A Box slot's runout_button reads 0 while filament is at its inlet.
+      present: index === QIDI_BOX_EXTERNAL_SLOT || printer[`box_stepper slot${index}`]?.runout_button === 0,
+      name: toText(info?.filament_str),
+      type: toText(info?.filament_type),
+      vendor: toText(info?.vendor_str),
+      color: normalizeColor(info?.color_rgb_str),
+      boxMaxTemp: toNumber(info?.box_max_temp)
+    }
+  })
+}
+
+const sameType = (a: string | null, b: string) => a != null && a.toUpperCase() === b.trim().toUpperCase()
+
+const colorDistance = (a: string | null, b: string | null): number => {
+  const ca = normalizeColor(a)
+  const cb = normalizeColor(b)
+
+  if (ca == null || cb == null) return Number.MAX_SAFE_INTEGER
+
+  return [1, 3, 5].reduce((sum, offset) => {
+    const delta = parseInt(ca.substring(offset, offset + 2), 16) - parseInt(cb.substring(offset, offset + 2), 16)
+
+    return sum + delta * delta
+  }, 0)
+}
+
+// Loaded Box slots a tool can print from: those holding the same filament type.
+export const qidiBoxSlotsForTool = (tool: QidiBoxTool, slots: QidiBoxSlot[]): QidiBoxSlot[] => slots
+  .filter(slot => slot.index !== QIDI_BOX_EXTERNAL_SLOT && slot.present && sameType(slot.type, tool.type))
+
+// Matches each tool, in order, to the nearest-colored unused slot of its type, as QIDI's Fluidd did.
+// A tool left without an unused slot stays unassigned; it can still share a slot when chosen by hand.
+export const matchQidiBoxSlots = (tools: QidiBoxTool[], slots: QidiBoxSlot[]): Record<number, number | null> => {
+  const used = new Set<number>()
+  const result: Record<number, number | null> = {}
+
+  for (const tool of tools) {
+    const slot = qidiBoxSlotsForTool(tool, slots)
+      .filter(slot => !used.has(slot.index))
+      .sort((a, b) => colorDistance(tool.color, a.color) - colorDistance(tool.color, b.color))[0]
+
+    result[tool.tool] = slot?.index ?? null
+
+    if (slot) used.add(slot.index)
+  }
+
+  return result
+}

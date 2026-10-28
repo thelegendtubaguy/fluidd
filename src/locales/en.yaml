@@ -1431,3 +1431,17 @@ app:
     tooltip:
       restore_backup: Restore Backup
       delete_backup: Delete Backup
+  qidi_box:
+    label:
+      use_box: Use QIDI Box
+      external_spool: External spool
+    msg:
+      choose_slots: >-
+        Choose the Box slot for each filament in the file. Only loaded slots of
+        the same filament type are listed; slots are matched by nearest color.
+      missing_slot: >-
+        Choose a Box slot for every filament, or turn off the QIDI Box to print
+        from the external spool.
+      no_external_filament: >-
+        No filament is detected at the toolhead. Load the external spool before
+        printing.

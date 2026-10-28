@@ -101,6 +101,9 @@ declare namespace Moonraker.Files {
     profile_version?: string;
     mmu_print?: number;
     referenced_tools?: number[];
+    // QIDI's Moonraker: tools a file uses and their slicer colors.
+    used_extruders?: number[];
+    preset_colours?: string[];
     first_layer_bed_temp?: number;
     first_layer_extr_temp?: number;
     first_layer_height?: number;
