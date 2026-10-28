@@ -22,6 +22,7 @@ jobs:
   publish-docker:
     name: Publish
     needs: build
+    if: ${{ github.repository == 'fluidd-core/fluidd' }}
     uses: ./.github/workflows/_publish-docker.yml
     permissions:
       id-token: write
@@ -73,6 +74,7 @@ jobs:
           echo "current_version=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
 
       - name: Read ChangeLog
+        if: ${{ github.repository == 'fluidd-core/fluidd' }}
         uses: mindsers/changelog-reader-action@1faaf50aa09d5793d9a100819973df801febfb31 # v2.4.0
         id: changelog
         with:
@@ -85,6 +87,8 @@ jobs:
         with:
           name: ${{ steps.tag_name.outputs.current_version }}
           body: ${{ steps.changelog.outputs.changes }}
+          # QIDI fork releases (vX.Y.Z-qidi.N) list their merged pull requests instead of the upstream changelog.
+          generate_release_notes: ${{ github.repository != 'fluidd-core/fluidd' }}
           files: ./fluidd.zip
           draft: false
           prerelease: ${{ contains(github.ref_name, '-rc') }}
