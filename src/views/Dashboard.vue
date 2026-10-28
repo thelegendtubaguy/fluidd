@@ -55,6 +55,7 @@ import SensorsCard from '@/components/widgets/sensors/SensorsCard.vue'
 import RunoutSensorsCard from '@/components/widgets/runout-sensors/RunoutSensorsCard.vue'
 import BeaconCard from '@/components/widgets/beacon/BeaconCard.vue'
 import AfcCard from '@/components/widgets/afc/AfcCard.vue'
+import QidiBoxCard from '@/components/widgets/qidiBox/QidiBoxCard.vue'
 import type Sortable from 'sortablejs'
 
 @Component({
@@ -77,7 +78,9 @@ import type Sortable from 'sortablejs'
     SensorsCard,
     RunoutSensorsCard,
     BeaconCard,
-    AfcCard
+    AfcCard,
+    // Registered as box-card, the ID QIDI's Fluidd gave its Box card, so saved dashboards keep its place.
+    BoxCard: QidiBoxCard
   }
 })
 export default class Dashboard extends Mixins(StateMixin) {
@@ -148,6 +151,10 @@ export default class Dashboard extends Mixins(StateMixin) {
 
   get supportsMmu (): boolean {
     return this.$typedState.printer.printer.mmu != null
+  }
+
+  get hasQidiBox (): boolean {
+    return this.$typedGetters['qidiBox/getBoxCount'] > 0
   }
 
   get supportsAfc (): boolean {
@@ -237,6 +244,7 @@ export default class Dashboard extends Mixins(StateMixin) {
     if (item.id === 'sensors-card' && !this.hasSensors) return true
     if (item.id === 'temperature-card' && !this.hasHeatersOrTemperatureSensors) return true
     if (item.id === 'afc-card' && !this.supportsAfc) return true
+    if (item.id === 'box-card' && !this.hasQidiBox) return true
 
     // Otherwise return the opposite of whatever the enabled state is.
     return !item.enabled

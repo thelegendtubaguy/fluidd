@@ -205,6 +205,8 @@ import {
   mdiArrowUpBold,
   mdiDockTop,
   mdiDockBottom,
+  mdiNfcVariant,
+  mdiPackageVariantClosed,
 } from '@mdi/js'
 
 import {
@@ -578,6 +580,10 @@ export const Icons = Object.freeze({
   afcEjectFilament: mdiEject,
   afcSelectTool: mdiRadioboxBlank,
   afcUnselectTool: mdiSwapHorizontalVariant,
+  qidiBox: mdiPackageVariantClosed,
+  qidiBoxHumidity: mdiWater,
+  qidiBoxEject: mdiEject,
+  qidiBoxRfid: mdiNfcVariant,
 })
 
 export const Waits = Object.freeze({

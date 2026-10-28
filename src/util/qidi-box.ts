@@ -6,15 +6,27 @@ export interface QidiBoxSlot {
   index: number;
   label: string;
   present: boolean;
+  filamentId: string | null;
   name: string | null;
   type: string | null;
   vendor: string | null;
   color: string | null;
+  minTemp: number | null;
+  maxTemp: number | null;
   boxMaxTemp: number | null;
+  reading: boolean;
 }
 
 // QIDI's officiall_filas_list.cfg: [filaN] filament entries, [colordict] and [vendor_list] ID maps.
 export type QidiFilamentList = Record<string, Record<string, string>>
+
+// An entry of the firmware filament database (01.01.07.01 filament-0.4.json), keyed by its QF filament ID.
+export interface QidiFilament {
+  id: string;
+  name: string;
+  type: string;
+  vendor: string;
+}
 
 export interface QidiBoxTool {
   tool: number;
@@ -25,6 +37,13 @@ export interface QidiBoxTool {
 export const qidiBoxSlotLabel = (index: number): string => index === QIDI_BOX_EXTERNAL_SLOT
   ? 'Ext'
   : `${Math.floor(index / 4) + 1}${String.fromCharCode(65 + (index % 4))}`
+
+// Saved slot references such as value_tN and slot_sync read 'slotN'.
+export const qidiBoxSlotNumber = (value: unknown): number | null => {
+  const match = /^slot(\d+)$/.exec(String(value ?? ''))
+
+  return match ? parseInt(match[1], 10) : null
+}
 
 export const parseQidiFilamentList = (text: string): QidiFilamentList => {
   const list: QidiFilamentList = {}
@@ -51,11 +70,35 @@ export const parseQidiFilamentList = (text: string): QidiFilamentList => {
   return list
 }
 
-const normalizeColor = (value: unknown): string | null => {
+export const parseQidiFilamentDatabase = (data: unknown): QidiFilament[] => {
+  if (data == null || typeof data !== 'object') return []
+
+  return Object.entries(data as Record<string, Record<string, unknown>>)
+    .filter(([, entry]) => typeof entry?.filament_id === 'string' && /^[A-Z]+\d+$/.test(entry.filament_id))
+    .map(([name, entry]) => ({
+      id: String(entry.filament_id),
+      name,
+      type: String(entry.type ?? ''),
+      vendor: String(entry.filament_vendor ?? '')
+    }))
+}
+
+export const normalizeQidiColor = (value: unknown): string | null => {
   const color = Array.isArray(value) ? value[0] : value
   const match = typeof color === 'string' ? /^#?([0-9a-f]{6})$/i.exec(color.trim()) : null
 
   return match ? `#${match[1].toUpperCase()}` : null
+}
+
+// Black or white, whichever reads better on the color.
+export const qidiTextColor = (color: string | null): string => {
+  const hex = normalizeQidiColor(color)
+
+  if (hex == null) return 'inherit'
+
+  const [r, g, b] = [1, 3, 5].map(offset => parseInt(hex.substring(offset, offset + 2), 16))
+
+  return (r * 299 + g * 587 + b * 114) / 1000 > 125 ? '#000000' : '#FFFFFF'
 }
 
 const toNumber = (value: unknown): number | null => {
@@ -82,16 +125,20 @@ const resolvedFilament = (printer: Record<string, any>, index: number) => {
 
 // Earlier firmware saves numeric IDs that resolve through officiall_filas_list.cfg.
 const legacyFilament = (variables: Record<string, any>, list: QidiFilamentList | null, index: number) => {
-  const filament = list?.[`fila${variables[`filament_slot${index}`]}`]
+  const filamentId = variables[`filament_slot${index}`]
+  const filament = list?.[`fila${filamentId}`]
   const colorId = variables[`color_slot${index}`]
 
   return {
+    filament_id: filamentId != null ? String(filamentId) : null,
     filament_str: filament?.filament,
     filament_type: filament?.type,
     vendor_str: list?.vendor_list?.[variables[`vendor_slot${index}`]],
     color_rgb_str: typeof colorId === 'number' || /^\d+$/.test(String(colorId))
       ? list?.colordict?.[colorId]
       : colorId,
+    min_temp: filament?.min_temp,
+    max_temp: filament?.max_temp,
     box_max_temp: filament?.box_max_temp
   }
 }
@@ -103,26 +150,61 @@ export const qidiBoxSlots = (printer: Record<string, any>, list: QidiFilamentLis
 
   return indexes.map(index => {
     const info = resolvedFilament(printer, index) ?? legacyFilament(variables, list, index)
+    const stepper = printer[`box_stepper slot${index}`]
 
     return {
       index,
       label: qidiBoxSlotLabel(index),
       // A Box slot's runout_button reads 0 while filament is at its inlet.
-      present: index === QIDI_BOX_EXTERNAL_SLOT || printer[`box_stepper slot${index}`]?.runout_button === 0,
+      present: index === QIDI_BOX_EXTERNAL_SLOT || stepper?.runout_button === 0,
+      filamentId: info?.filament_id != null ? String(info.filament_id) : null,
       name: toText(info?.filament_str),
       type: toText(info?.filament_type),
       vendor: toText(info?.vendor_str),
-      color: normalizeColor(info?.color_rgb_str),
-      boxMaxTemp: toNumber(info?.box_max_temp)
+      color: normalizeQidiColor(info?.color_rgb_str),
+      minTemp: toNumber(info?.min_temp),
+      maxTemp: toNumber(info?.max_temp),
+      boxMaxTemp: toNumber(info?.box_max_temp),
+      reading: stepper?.rfid_state === 1
     }
   })
+}
+
+// Loaded Box slots with the same color, filament, and vendor reload into each other when one runs out.
+// Groups are lettered in slot order.
+export const qidiBoxReloadGroups = (slots: QidiBoxSlot[]): Record<number, { letter: string, color: string | null, members: number[] }> => {
+  const byKey = new Map<string, number[]>()
+
+  for (const slot of slots) {
+    if (slot.index === QIDI_BOX_EXTERNAL_SLOT || !slot.present) continue
+
+    const key = `${slot.color}-${slot.name}-${slot.vendor}`
+
+    byKey.set(key, [...(byKey.get(key) ?? []), slot.index])
+  }
+
+  const groups: Record<number, { letter: string, color: string | null, members: number[] }> = {}
+
+  Array.from(byKey.values())
+    .filter(members => members.length > 1)
+    .forEach((members, i) => {
+      const group = {
+        letter: String.fromCharCode(65 + i),
+        color: slots.find(slot => slot.index === members[0])?.color ?? null,
+        members
+      }
+
+      members.forEach(member => { groups[member] = group })
+    })
+
+  return groups
 }
 
 const sameType = (a: string | null, b: string) => a != null && a.toUpperCase() === b.trim().toUpperCase()
 
 const colorDistance = (a: string | null, b: string | null): number => {
-  const ca = normalizeColor(a)
-  const cb = normalizeColor(b)
+  const ca = normalizeQidiColor(a)
+  const cb = normalizeQidiColor(b)
 
   if (ca == null || cb == null) return Number.MAX_SAFE_INTEGER
 

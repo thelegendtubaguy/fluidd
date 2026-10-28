@@ -1432,16 +1432,65 @@ app:
       restore_backup: Restore Backup
       delete_backup: Delete Backup
   qidi_box:
+    btn:
+      default: Default
+      edit: Edit
+      edit_filament: Edit filament
+      eject: Eject
+      load: Load
+      read_rfid: Read RFID
+      unload: Unload
     label:
-      use_box: Use QIDI Box
+      box: Box %{box}
+      color: Color
+      custom_color: Custom color
+      empty: Empty
+      external: External
       external_spool: External spool
+      extruder: Extruder
+      filament: Filament
+      hub: Hub
+      loaded: loaded
+      no_tool: no tool
+      not_mapped: Not mapped
+      nozzle: Nozzle
+      slot: Slot %{slot}
+      slot_inlet: Slot inlet
+      toolhead: Toolhead
+      toolhead_sensor: Toolhead sensor
+      unknown_filament: Unknown filament
+      use_box: Use QIDI Box
+      vendor: Vendor
+    humidity:
+      normal: Normal humidity
+      high: Slightly high humidity
+      over_high: High humidity
     msg:
+      auto_reload_off: Automatic reload is off
+      box_busy: Box busy
+      box_busy_step: 'Box busy: %{step}'
+      box_drying: Box heating up to %{temp}°C
       choose_slots: >-
         Choose the Box slot for each filament in the file. Only loaded slots of
         the same filament type are listed; slots are matched by nearest color.
+      loaded: Loaded %{slot}
       missing_slot: >-
         Choose a Box slot for every filament, or turn off the QIDI Box to print
         from the external spool.
       no_external_filament: >-
         No filament is detected at the toolhead. Load the external spool before
         printing.
+      no_filament_loaded: No Box filament loaded
+      no_reload_backup: No auto-reload backup
+      nozzle_range: Nozzle %{min}–%{max}°C
+      reading_rfid: Reading RFID…
+      reload_group: 'Auto-reload group %{group}: %{slots}'
+      reload_with: Auto-reload with %{slots}
+      tool_mapping_help: >-
+        Choose the slot each tool loads, for tool changes and prints that do not
+        set their own mapping. Fluidd's print dialog sets the mapping again for
+        the print it starts.
+    title:
+      edit_slot: Edit slot %{slot}
+      qidi_box: QIDI Box
+      tool_mapping: Tool mapping

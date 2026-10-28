@@ -112,21 +112,21 @@
 <script lang="ts">
 import { Component, Mixins, Watch } from 'vue-property-decorator'
 import StateMixin from '@/mixins/state'
-import FilesMixin from '@/mixins/files'
+import QidiBoxMixin from '@/mixins/qidiBox'
 import { SocketActions } from '@/api/socketActions'
 import type { AppFileWithMeta } from '@/store/files/types'
 import getFilePaths from '@/util/get-file-paths'
 import {
   matchQidiBoxSlots,
-  parseQidiFilamentList,
   qidiBoxSlotsForTool,
+  normalizeQidiColor,
+  qidiTextColor,
   type QidiBoxSlot,
   type QidiBoxTool
 } from '@/util/qidi-box'
-import { consola } from 'consola'
 
 @Component({})
-export default class QidiBoxPrintDialog extends Mixins(StateMixin, FilesMixin) {
+export default class QidiBoxPrintDialog extends Mixins(StateMixin, QidiBoxMixin) {
   selected: Record<number, number | null> = {}
 
   get open (): boolean {
@@ -220,13 +220,11 @@ export default class QidiBoxPrintDialog extends Mixins(StateMixin, FilesMixin) {
   }
 
   swatchStyle (color: string) {
-    const match = /^#?([0-9a-f]{6})/i.exec(color)
-    const hex = match ? match[1] : '000000'
-    const [r, g, b] = [0, 2, 4].map(offset => parseInt(hex.substring(offset, offset + 2), 16))
+    const background = normalizeQidiColor(color) ?? '#000000'
 
     return {
-      backgroundColor: `#${hex}`,
-      color: (r * 299 + g * 587 + b * 114) / 1000 > 125 ? '#000000' : '#FFFFFF'
+      backgroundColor: background,
+      color: qidiTextColor(background)
     }
   }
 
@@ -240,19 +238,7 @@ export default class QidiBoxPrintDialog extends Mixins(StateMixin, FilesMixin) {
       SocketActions.serverFilesMetadata(this.filename)
     }
 
-    // Firmware before 01.01.07.01 resolves slot filaments only through QIDI's filament list.
-    if (this.$typedState.qidiBox.filamentList == null) {
-      try {
-        const response = await this.serverFilesGet<string>('config/officiall_filas_list.cfg', {
-          responseType: 'text',
-          transformResponse: [(value: string) => value]
-        })
-
-        this.$typedCommit('qidiBox/setFilamentList', parseQidiFilamentList(response.data))
-      } catch (error) {
-        consola.debug('[QidiBox] filament list unavailable', error)
-      }
-    }
+    await this.loadQidiBoxFilaments()
 
     this.matchSlots()
   }
