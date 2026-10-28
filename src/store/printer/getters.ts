@@ -595,7 +595,7 @@ export const getters = {
   /**
    * Return available heaters
    */
-  getHeaters: (state, getters, rootState): Heater[] => {
+  getHeaters: (state, getters, rootState, rootGetters): Heater[] => {
     const nonCriticalDisconnectedMcusSet: Set<string> = getters.getNonCriticalDisconnectedMcusSet
     const sensorColors: Record<string, string> = rootState.config.uiSettings.dashboard.sensorColors
 
@@ -618,6 +618,11 @@ export const getters = {
 
         const disconnected = configHasDisconnectedMcu(config, nonCriticalDisconnectedMcusSet)
 
+        const boxMatch = /^heater_generic heater_box(\d+)$/.exec(key)
+        const boxLimit: number | null = boxMatch ? rootGetters['qidiBox/getHeaterLimit'](Number(boxMatch[1])) : null
+        const configTargetMax: number | undefined = config?.target_max_temp
+        const targetMaxTemp = boxLimit != null ? Math.min(boxLimit, configTargetMax ?? boxLimit) : configTargetMax
+
         heaters.push({
           ...heater,
           name,
@@ -627,6 +632,8 @@ export const getters = {
           key,
           minTemp: config?.min_temp ?? 0,
           maxTemp: config?.max_temp ?? 500,
+          targetMinTemp: config?.target_min_temp,
+          targetMaxTemp,
           config,
           disconnected
         })

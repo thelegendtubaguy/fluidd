@@ -29,6 +29,17 @@ export const getters = {
     return (getters.getSlots as QidiBoxSlot[]).find(slot => slot.index === index)
   },
 
+  // Box N's heater may not exceed the lowest Box temperature limit among its loaded filaments, as on the
+  // touchscreen; a limit of 0 forbids heating. Null when no loaded filament has a known limit.
+  getHeaterLimit: (state, getters) => (box: number): number | null => {
+    const limits = (getters.getSlots as QidiBoxSlot[])
+      .filter(slot => slot.index !== QIDI_BOX_EXTERNAL_SLOT && Math.floor(slot.index / 4) === box - 1 && slot.present)
+      .map(slot => slot.boxMaxTemp)
+      .filter((limit): limit is number => limit != null)
+
+    return limits.length ? Math.min(...limits) : null
+  },
+
   // value_tN maps tool N to the slot it loads.
   getToolMap: (state, getters, rootState): Record<number, number> => {
     const variables: Record<string, unknown> = rootState.printer.printer.save_variables?.variables ?? {}
