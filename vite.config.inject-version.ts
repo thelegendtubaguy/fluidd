@@ -5,10 +5,19 @@ import packageJson from './package.json' with { type: 'json' }
 
 import type { Plugin } from 'vite'
 
+// Fork builds are identified by the commit they were built from, matching the footer and release tag: v1.37.7-tltg-<hash>.
+// The hash length is fixed so shallow CI checkouts and full clones agree.
+const gitHash = () => child_process
+  .execSync('git rev-parse --short=7 HEAD')
+  .toString()
+  .trim()
+
+const buildVersion = () => `v${packageJson.version}-${gitHash()}`
+
 const writeVersionFile = async () => {
   const versionFile = await fs.promises.open(path.resolve(import.meta.dirname, 'dist/.version'), 'w')
 
-  await versionFile.writeFile(`v${packageJson.version}`)
+  await versionFile.writeFile(buildVersion())
 
   await versionFile.close()
 }
@@ -18,9 +27,9 @@ const writeReleaseInfoFile = async () => {
 
   await releaseInfoFile.writeFile(JSON.stringify({
     project_name: 'fluidd',
-    // QIDI fork builds update from the fork's releases.
+    // Fork builds update from the fork's releases.
     project_owner: 'thelegendtubaguy',
-    version: `v${packageJson.version}`
+    version: buildVersion()
   }))
 
   await releaseInfoFile.close()
@@ -30,9 +39,7 @@ const vitePluginInjectVersion = (): Plugin => {
   return {
     name: 'version',
     config: () => {
-      const git_hash = child_process
-        .execSync('git rev-parse --short HEAD')
-        .toString()
+      const git_hash = gitHash()
 
       return {
         define: {
