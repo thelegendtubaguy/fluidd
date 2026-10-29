@@ -18,7 +18,8 @@ const writeReleaseInfoFile = async () => {
 
   await releaseInfoFile.writeFile(JSON.stringify({
     project_name: 'fluidd',
-    project_owner: 'fluidd-core',
+    // QIDI fork builds update from the fork's releases.
+    project_owner: 'thelegendtubaguy',
     version: `v${packageJson.version}`
   }))
 
