@@ -76,6 +76,9 @@ export type Heater = (
 ) & {
   minTemp: number;
   maxTemp: number;
+  // QIDI's Klipper target limits, narrowed for a QIDI Box heater by the filaments loaded in that Box.
+  targetMinTemp?: number;
+  targetMaxTemp?: number;
 }
 
 export type Fan = (

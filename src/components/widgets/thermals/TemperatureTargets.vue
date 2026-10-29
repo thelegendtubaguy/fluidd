@@ -89,13 +89,13 @@
           <td @contextmenu.stop>
             <app-text-field
               v-if="klippyReady"
-              :disabled="item.disconnected"
+              :disabled="item.disconnected || (item.targetMaxTemp === 0 && !item.target)"
               :value="item.target"
               :rules="[
                 $rules.required,
                 $rules.numberValid,
-                $rules.numberGreaterThanOrEqualOrZero(item.minTemp),
-                $rules.numberLessThanOrEqualOrZero(item.maxTemp)
+                $rules.numberGreaterThanOrEqualOrZero(Math.max(item.minTemp, item.targetMinTemp ?? item.minTemp)),
+                $rules.numberLessThanOrEqualOrZero(Math.min(item.maxTemp, item.targetMaxTemp ?? item.maxTemp))
               ]"
               type="number"
               outlined

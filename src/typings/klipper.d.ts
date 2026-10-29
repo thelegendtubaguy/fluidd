@@ -1064,6 +1064,9 @@ declare namespace Klipper {
     pid_ki?: number;
     pid_kd?: number;
     pid_version?: number;
+    // QIDI's Klipper: the range a target may be set to.
+    target_min_temp?: number;
+    target_max_temp?: number;
   }
 
   interface StepperSettingsBase {
