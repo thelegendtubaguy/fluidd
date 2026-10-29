@@ -5,6 +5,22 @@
     draggable
     layout-path="dashboard.box-card"
   >
+    <template #menu>
+      <app-btn
+        small
+        class="me-1 my-1"
+        @click="settings = true"
+      >
+        <v-icon
+          small
+          class="me-1"
+        >
+          $cog
+        </v-icon>
+        {{ $t('app.qidi_box.btn.box_settings') }}
+      </app-btn>
+    </template>
+
     <div class="pa-3">
       <div class="d-flex flex-wrap qidi-box-card__units">
         <qidi-box-unit
@@ -189,6 +205,11 @@
       :busy="busy"
     />
 
+    <qidi-box-settings-dialog
+      v-if="settings"
+      v-model="settings"
+    />
+
     <qidi-box-tool-map-dialog
       v-if="mapping"
       v-model="mapping"
@@ -214,6 +235,7 @@ import QidiBoxPath from './QidiBoxPath.vue'
 import QidiBoxToolMap from './QidiBoxToolMap.vue'
 import QidiBoxToolMapDialog from './QidiBoxToolMapDialog.vue'
 import QidiBoxFilamentDialog from './QidiBoxFilamentDialog.vue'
+import QidiBoxSettingsDialog from './QidiBoxSettingsDialog.vue'
 
 const [EJECT, LOAD, UNLOAD] = [0, 1, 2]
 // Firmware 01.01.07.01 replaced E_BOX, E_LOAD, E_UNLOAD, and RFID_READ with multi_color_controller commands.
@@ -226,7 +248,8 @@ const LEGACY_COMMANDS = ['E_BOX', 'E_LOAD', 'E_UNLOAD']
     QidiBoxPath,
     QidiBoxToolMap,
     QidiBoxToolMapDialog,
-    QidiBoxFilamentDialog
+    QidiBoxFilamentDialog,
+    QidiBoxSettingsDialog
   }
 })
 export default class QidiBoxCard extends Mixins(StateMixin, QidiBoxMixin) {
@@ -238,6 +261,7 @@ export default class QidiBoxCard extends Mixins(StateMixin, QidiBoxMixin) {
   selected = 0
   editing = false
   mapping = false
+  settings = false
 
   get boxCount (): number {
     return this.$typedGetters['qidiBox/getBoxCount']
