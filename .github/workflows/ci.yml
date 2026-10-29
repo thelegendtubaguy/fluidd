@@ -55,7 +55,7 @@ jobs:
   bundle-baseline:
     name: Save Bundle Size Baseline
     needs: build
-    if: ${{ github.event_name == 'push' }}
+    if: ${{ github.repository == 'fluidd-core/fluidd' && github.event_name == 'push' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -95,7 +95,7 @@ jobs:
   bundle-size:
     name: Bundle Size Report
     needs: build
-    if: ${{ github.event_name == 'pull_request' }}
+    if: ${{ github.repository == 'fluidd-core/fluidd' && github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
