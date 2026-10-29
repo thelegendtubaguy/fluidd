@@ -279,7 +279,8 @@ export default class FileSystemContextMenu extends Mixins(StateMixin, FilesMixin
       this.root === 'gcodes' &&
       !Array.isArray(this.file) &&
       this.file.type === 'file' &&
-      this.file.extension === '.gcode'
+      // QIDI's Moonraker also prints sliced 3MF files, whose G-code the preview reads out of the archive.
+      (this.file.extension === '.gcode' || /\.gcode\.3mf$/i.test(this.file.filename))
     )
   }
 

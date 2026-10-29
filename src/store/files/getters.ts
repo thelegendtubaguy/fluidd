@@ -132,7 +132,8 @@ export const getters = {
       case 'gcodes':
         return {
           readonly: false,
-          accepts: ['.gcode', '.g', '.gc', '.gco', '.ufp', '.nc'],
+          // QIDI's Moonraker prints sliced 3MF (.gcode.3mf) files.
+          accepts: ['.gcode', '.g', '.gc', '.gco', '.ufp', '.nc', '.3mf'],
           canView,
           canConfigure: true,
           filterTypes: ['print_start_time', 'hidden_files', 'moonraker_temporary_upload_files']

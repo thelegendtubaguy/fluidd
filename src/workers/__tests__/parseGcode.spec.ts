@@ -1,5 +1,6 @@
 import parseGcode from '../parseGcode'
 import { MoveFlags } from '@/store/gcodePreview/types'
+import { deflateRawSync } from 'node:zlib'
 
 // a trailing newline is required; the reader only emits complete lines
 const encode = (lines: readonly string[]) => new TextEncoder().encode(`${lines.join('\n')}\n`)
@@ -23,6 +24,68 @@ const parse = async (lines: readonly string[], onProgress: (filePosition: number
 describe('parseGcode', () => {
   afterEach(() => {
     vi.unstubAllGlobals()
+  })
+
+  it('reads the G-code out of a sliced 3MF archive', async () => {
+    // A minimal zip: a stored model entry, then the deflated plate G-code, then the central directory.
+    const entries = [
+      { name: '3D/3dmodel.model', data: new TextEncoder().encode('<model/>'), method: 0 },
+      { name: 'Metadata/plate_1.gcode', data: encode(['G28', 'G1 Z0.2', 'G1 X5 Y5', 'G1 X10 E1']), method: 8 }
+    ]
+    const locals: Uint8Array[] = []
+    const centrals: Uint8Array[] = []
+    let offset = 0
+
+    for (const entry of entries) {
+      const name = new TextEncoder().encode(entry.name)
+      const stored = entry.method === 8 ? new Uint8Array(deflateRawSync(entry.data)) : entry.data
+      const local = new DataView(new ArrayBuffer(30))
+      const central = new DataView(new ArrayBuffer(46))
+
+      local.setUint32(0, 0x04034b50, true)
+      local.setUint16(8, entry.method, true)
+      local.setUint32(18, stored.length, true)
+      local.setUint32(22, entry.data.length, true)
+      local.setUint16(26, name.length, true)
+      central.setUint32(0, 0x02014b50, true)
+      central.setUint16(10, entry.method, true)
+      central.setUint32(20, stored.length, true)
+      central.setUint32(24, entry.data.length, true)
+      central.setUint16(28, name.length, true)
+      central.setUint32(42, offset, true)
+      locals.push(new Uint8Array(local.buffer), name, stored)
+      centrals.push(new Uint8Array(central.buffer), name)
+      offset += 30 + name.length + stored.length
+    }
+
+    const directorySize = centrals.reduce((sum, part) => sum + part.length, 0)
+    const end = new DataView(new ArrayBuffer(22))
+
+    end.setUint32(0, 0x06054b50, true)
+    end.setUint16(10, entries.length, true)
+    end.setUint32(12, directorySize, true)
+    end.setUint32(16, offset, true)
+
+    const parts = [...locals, ...centrals, new Uint8Array(end.buffer)]
+    const archive = new Uint8Array(parts.reduce((sum, part) => sum + part.length, 0))
+
+    parts.reduce((position, part) => {
+      archive.set(part, position)
+
+      return position + part.length
+    }, 0)
+    const progress: number[] = []
+
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true,
+      body: new ReadableStream<Uint8Array>(),
+      arrayBuffer: async () => archive.buffer
+    }))
+
+    const { moves } = await parseGcode('/server/files/gcodes/test.gcode.3mf?token=x', archive.length, position => progress.push(position))
+
+    expect(moves.length).toBe(4)
+    expect(progress[progress.length - 1]).toBe(archive.length)
   })
 
   it('parses moves into a columnar store', async () => {
