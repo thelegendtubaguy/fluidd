@@ -58,6 +58,11 @@ jobs:
           name: fluidd-${{ github.sha }}
           path: ./dist
 
+      - name: Check fork release version
+        if: ${{ github.repository != 'fluidd-core/fluidd' }}
+        run: |
+          test "$(jq -r .version ./dist/release_info.json)" = "${GITHUB_REF_NAME}"
+
       - name: Create Artifact
         run: |
           cd ./dist
@@ -87,7 +92,7 @@ jobs:
         with:
           name: ${{ steps.tag_name.outputs.current_version }}
           body: ${{ steps.changelog.outputs.changes }}
-          # QIDI fork releases (vX.Y.Z-qidi.N) list their merged pull requests instead of the upstream changelog.
+          # Fork releases (vX.Y.Z-tltg-<hash>) list their merged pull requests instead of the upstream changelog.
           generate_release_notes: ${{ github.repository != 'fluidd-core/fluidd' }}
           files: ./fluidd.zip
           draft: false
