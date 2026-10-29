@@ -1,6 +1,7 @@
-import type { BBox, Layer, MoveStore, Part } from '@/store/gcodePreview/types'
-import { MoveFlags } from '@/store/gcodePreview/types'
+import type { BBox, Layer, MoveStore, Part, ValueRange } from '@/store/gcodePreview/types'
+import { ExtrusionRole, MoveFlags } from '@/store/gcodePreview/types'
 import decimalRound from '@/util/decimal-round'
+import { parseExtrusionRoleComment } from './gcode-extrusion-roles'
 import { split } from 'shlex'
 import { extract3mfGcode, is3mfUrl } from './gcode-3mf'
 
@@ -30,6 +31,24 @@ const MAX_POLYGON_POINTS = 10_000
 // file positions are stored in a Uint32Array
 const MAX_FILE_POSITION = 0xffffffff
 
+const MAX_SPEED = 0xffff
+
+// counts like PrusaSlicer's ColorRange: exact up to 2 distinct values
+const updateRange = (range: ValueRange | null, value: number): ValueRange => {
+  if (!range) {
+    return { min: value, max: value, count: 1 }
+  }
+
+  if (value !== range.min && value !== range.max) {
+    range.count++
+  }
+
+  range.min = Math.min(range.min, value)
+  range.max = Math.max(range.max, value)
+
+  return range
+}
+
 const INITIAL_MOVE_CAPACITY = 1 << 14
 const MOVE_GROWTH_FACTOR = 1.5
 
@@ -43,6 +62,14 @@ const growFloat32Array = (source: Float32Array<ArrayBuffer>, capacity: number) =
 
 const growUint32Array = (source: Uint32Array<ArrayBuffer>, capacity: number) => {
   const result = new Uint32Array(capacity)
+
+  result.set(source)
+
+  return result
+}
+
+const growUint16Array = (source: Uint16Array<ArrayBuffer>, capacity: number) => {
+  const result = new Uint16Array(capacity)
 
   result.set(source)
 
@@ -90,8 +117,16 @@ const getArgsFromMacroCommandArgs = (macroCommandArgs: string) => {
 }
 
 const parseLine = (line: string) => {
-  const clearedLine = line
-    .trim()
+  const trimmedLine = line.trim()
+
+  if (trimmedLine.startsWith(';')) {
+    return {
+      type: 'comment' as const,
+      comment: trimmedLine.substring(1).trim()
+    }
+  }
+
+  const clearedLine = trimmedLine
     .split(';', 1)[0]
 
   if (clearedLine) {
@@ -229,6 +264,9 @@ const parseGcode = async (
   let moveJ = new Float32Array(moveCapacity)
   let moveTool = new Uint8Array(moveCapacity)
   let moveFlags = new Uint8Array(moveCapacity)
+  let moveRole = new Uint8Array(moveCapacity)
+  let moveSpeed = new Uint16Array(moveCapacity)
+  let moveFan = new Uint8Array(moveCapacity)
   let moveFilePosition = new Uint32Array(moveCapacity)
   let moveCount = 0
   let lastArcMoveIndex = -1
@@ -236,6 +274,9 @@ const parseGcode = async (
   const layers: Layer[] = []
   const parts: Part[] = []
   const tools = new Set<number>()
+  const roles = new Set<ExtrusionRole>()
+  let speedRange: ValueRange | null = null
+  let fanRange: ValueRange | null = null
 
   let truncated = false
   let newLayerForNextMove = false
@@ -249,6 +290,9 @@ const parseGcode = async (
     e: 0,
   }
   let tool = 0
+  let role: ExtrusionRole = ExtrusionRole.None
+  let feedrate = 0
+  let fan = 0
   let filePosition = 0
   let bounds = createBounds()
   let lastBounds: BBox | null = null
@@ -262,15 +306,23 @@ const parseGcode = async (
     z: 0
   }
 
+  const updateFeedrate = (f: number | undefined) => {
+    if (f !== undefined && f > 0) {
+      feedrate = Math.min(MAX_SPEED, Math.round(f))
+    }
+  }
+
   const handleLine = (line: string) => {
-    const { type, command, args } = parseLine(line)
+    const { type, command, args, comment } = parseLine(line)
 
     let move: GcodeMove | undefined
     let isArcMove = false
     let isClockwise = false
     let isSynthesizedMove = false
 
-    if (type === 'macro') {
+    if (type === 'comment') {
+      role = parseExtrusionRoleComment(comment) ?? role
+    } else if (type === 'macro') {
       switch (command) {
         case 'SET_PRINT_STATS_INFO':
           if ('current_layer' in args) {
@@ -308,7 +360,9 @@ const parseGcode = async (
       switch (command) {
         case 'G0':
         case 'G1': {
-          const { x, y, z, e } = args
+          const { x, y, z, e, f } = args
+
+          updateFeedrate(f)
 
           if (x !== undefined || y !== undefined || z !== undefined || e !== undefined) {
             move = { x, y, z, e, i: undefined, j: undefined, r: undefined }
@@ -317,7 +371,9 @@ const parseGcode = async (
         }
         case 'G2':
         case 'G3': {
-          const { x, y, z, e, i, j, r } = args
+          const { x, y, z, e, i, j, r, f } = args
+
+          updateFeedrate(f)
 
           if (
             x !== undefined || y !== undefined || z !== undefined || e !== undefined ||
@@ -404,6 +460,18 @@ const parseGcode = async (
             toolhead.y = args.y ?? toolhead.y
             toolhead.z = args.z ?? toolhead.z
           }
+          break
+        case 'M106': {
+          // same as Klipper: a missing S is full speed, P is ignored
+          const s = args.s ?? 255
+
+          if (s >= 0) {
+            fan = Math.min(255, Math.round(s))
+          }
+          break
+        }
+        case 'M107':
+          fan = 0
           break
         case 'M207':
           fwretraction.length = args.s ?? fwretraction.length
@@ -538,6 +606,9 @@ const parseGcode = async (
             moveJ = growFloat32Array(moveJ, moveCapacity)
             moveTool = growUint8Array(moveTool, moveCapacity)
             moveFlags = growUint8Array(moveFlags, moveCapacity)
+            moveRole = growUint8Array(moveRole, moveCapacity)
+            moveSpeed = growUint16Array(moveSpeed, moveCapacity)
+            moveFan = growUint8Array(moveFan, moveCapacity)
             moveFilePosition = growUint32Array(moveFilePosition, moveCapacity)
           }
 
@@ -548,6 +619,9 @@ const parseGcode = async (
           moveJ[moveCount] = arcJ
           moveTool[moveCount] = tool
           moveFilePosition[moveCount] = filePosition
+          moveRole[moveCount] = role
+          moveSpeed[moveCount] = feedrate
+          moveFan[moveCount] = fan
           moveFlags[moveCount] = (
             (extrusion > 0 ? MoveFlags.Extruding : 0) |
             (extrusion < 0 ? MoveFlags.Retracting : 0) |
@@ -557,6 +631,13 @@ const parseGcode = async (
 
           if (isArcMove) {
             lastArcMoveIndex = moveCount
+          }
+
+          if (extrusion > 0) {
+            roles.add(role)
+
+            speedRange = updateRange(speedRange, feedrate)
+            fanRange = updateRange(fanRange, fan)
           }
 
           moveCount++
@@ -647,6 +728,9 @@ const parseGcode = async (
     j: moveJ.slice(0, lastArcMoveIndex + 1),
     tool: moveTool.slice(0, moveCount),
     flags: moveFlags.slice(0, moveCount),
+    role: moveRole.slice(0, moveCount),
+    speed: moveSpeed.slice(0, moveCount),
+    fan: moveFan.slice(0, moveCount),
     filePosition: moveFilePosition.slice(0, moveCount),
     length: moveCount
   }
@@ -660,6 +744,10 @@ const parseGcode = async (
       : null,
     tools: [...tools]
       .sort((a, b) => a - b),
+    roles: [...roles]
+      .sort((a, b) => a - b),
+    speedRange,
+    fanRange,
     truncated
   }
 }
