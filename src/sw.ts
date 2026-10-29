@@ -13,6 +13,18 @@ self.addEventListener('message', (event) => {
   }
 })
 
+// An installed update takes over at once and reloads the Fluidd tabs it now controls, so tabs never keep an old
+// build behind the update prompt or until a hard refresh. The reloads are not held in waitUntil: their requests wait
+// for activation to finish.
+self.addEventListener('install', () => {
+  self.skipWaiting()
+})
+
+self.addEventListener('activate', () => {
+  self.clients.matchAll({ type: 'window' })
+    .then(clients => clients.forEach(client => client.navigate(client.url).catch(() => undefined)))
+})
+
 precacheAndRoute(self.__WB_MANIFEST)
 
 cleanupOutdatedCaches()

@@ -23,6 +23,7 @@ interface ImportMetaEnv {
   readonly VUE_APP_I18N_FALLBACK_LOCALE?: string
   readonly VERSION: string
   readonly HASH: string
+  readonly BUILD_VERSION: string
 }
 
 interface ImportMeta {
