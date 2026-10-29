@@ -6,6 +6,7 @@ export const createState = (): QidiBoxState => {
       show: false
     },
     filamentList: null,
-    filamentDatabase: null
+    filamentDatabase: null,
+    filamentDatabaseInvalid: false
   }
 }

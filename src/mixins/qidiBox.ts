@@ -24,8 +24,10 @@ export default class QidiBoxMixin extends Mixins(FilesMixin) {
     if (this.$typedState.qidiBox.filamentDatabase == null && this.$typedGetters['qidiBox/getHasController']) {
       try {
         const response = await this.serverFilesGet<unknown>('config/qidi_filament_config/filament-0.4.json')
+        const filaments = parseQidiFilamentDatabase(response.data)
 
-        this.$typedCommit('qidiBox/setFilamentDatabase', parseQidiFilamentDatabase(response.data))
+        // Invalid JSON arrives as the raw text and lists nothing.
+        this.$typedCommit('qidiBox/setFilamentDatabase', filaments.length ? filaments : null)
       } catch (error) {
         consola.debug('[QidiBox] filament database unavailable', error)
       }

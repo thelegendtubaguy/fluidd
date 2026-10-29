@@ -11,6 +11,12 @@ export const mutations = {
     Object.assign(state, createState())
   },
 
+  setResetFilaments (state) {
+    const { filamentList, filamentDatabase, filamentDatabaseInvalid } = createState()
+
+    Object.assign(state, { filamentList, filamentDatabase, filamentDatabaseInvalid })
+  },
+
   setDialogState (state, payload: QidiBoxDialogState) {
     state.dialog = payload
   },
@@ -19,7 +25,9 @@ export const mutations = {
     state.filamentList = Object.freeze(payload)
   },
 
-  setFilamentDatabase (state, payload: QidiFilament[]) {
-    state.filamentDatabase = Object.freeze(payload)
+  // Null when the file was read but lists no filaments.
+  setFilamentDatabase (state, payload: QidiFilament[] | null) {
+    state.filamentDatabase = payload && Object.freeze(payload)
+    state.filamentDatabaseInvalid = payload == null
   }
 } satisfies MutationTree<QidiBoxState>

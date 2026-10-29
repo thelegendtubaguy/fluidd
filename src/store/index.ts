@@ -93,6 +93,7 @@ export const storeOptions = {
       await Promise.all([
         dispatch('server/resetKlippy'),
         dispatch('charts/resetChartStore'),
+        dispatch('qidiBox/resetFilaments'),
         dispatch('reset', [
           'printer',
           'wait'

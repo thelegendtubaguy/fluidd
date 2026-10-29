@@ -166,6 +166,7 @@ export const actions = {
         if (prev === 'ready') {
           await Promise.all([
             dispatch('charts/resetChartStore', undefined, { root: true }),
+            dispatch('qidiBox/resetFilaments', undefined, { root: true }),
             dispatch('reset', MODULES_TO_RESET_ON_DROP, { root: true })
           ])
         }
