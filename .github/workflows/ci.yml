@@ -30,7 +30,7 @@ jobs:
   publish-docker:
     name: Publish
     needs: build
-    if: ${{ github.event_name != 'pull_request' }}
+    if: ${{ github.repository == 'fluidd-core/fluidd' && github.event_name != 'pull_request' }}
     uses: ./.github/workflows/_publish-docker.yml
     permissions:
       id-token: write
