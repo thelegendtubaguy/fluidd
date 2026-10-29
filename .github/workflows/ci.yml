@@ -5,10 +5,12 @@ on:
     branches:
       - develop
       - master
+      - qidi
   pull_request:
     branches:
       - develop
       - master
+      - qidi
   merge_group:
   workflow_dispatch:
 
