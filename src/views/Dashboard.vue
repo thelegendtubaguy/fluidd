@@ -55,6 +55,7 @@ import SensorsCard from '@/components/widgets/sensors/SensorsCard.vue'
 import RunoutSensorsCard from '@/components/widgets/runout-sensors/RunoutSensorsCard.vue'
 import BeaconCard from '@/components/widgets/beacon/BeaconCard.vue'
 import AfcCard from '@/components/widgets/afc/AfcCard.vue'
+import QidiScreenCard from '@/components/widgets/qidiScreen/QidiScreenCard.vue'
 import QidiBoxCard from '@/components/widgets/qidiBox/QidiBoxCard.vue'
 import type Sortable from 'sortablejs'
 
@@ -80,7 +81,9 @@ import type Sortable from 'sortablejs'
     BeaconCard,
     AfcCard,
     // Registered as box-card, the ID QIDI's Fluidd gave its Box card, so saved dashboards keep its place.
-    BoxCard: QidiBoxCard
+    BoxCard: QidiBoxCard,
+    // Keeps the layout ID of the card the Qidi-Max-4-Optimized installer added to QIDI's Fluidd.
+    TltgScreenCard: QidiScreenCard
   }
 })
 export default class Dashboard extends Mixins(StateMixin) {

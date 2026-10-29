@@ -1539,3 +1539,21 @@ app:
       edit_slot: Edit slot %{slot}
       qidi_box: QIDI Box
       tool_mapping: Tool mapping
+  qidi_screen:
+    btn:
+      control_on: Control on
+      full_screen: Full screen
+      view_only: View only
+    msg:
+      confirm_control: >-
+        Clicks, taps, and drags on the image will press the printer's
+        touchscreen, including during a print. Turn control on?
+      connecting: Connecting to the printer screen…
+      no_touch: touch input unavailable
+      paused: Paused while this tab is hidden.
+      reconnecting: Printer screen disconnected. Reconnecting…
+      unavailable: 'Printer screen unavailable: %{reason}'
+      view_only: 'View only: %{reason}'
+    title:
+      control: Control the printer screen
+      printer_screen: Printer screen

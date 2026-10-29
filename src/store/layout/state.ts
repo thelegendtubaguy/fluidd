@@ -59,6 +59,7 @@ export const createState = (): LayoutState => {
           { id: 'spoolman-card', enabled: true, collapsed: false },
           { id: 'mmu-card', enabled: true, collapsed: false },
           { id: 'camera-card', enabled: true, collapsed: false },
+          { id: 'tltg-screen-card', enabled: true, collapsed: true },
           { id: 'toolhead-card', enabled: true, collapsed: false },
           { id: 'macros-card', enabled: true, collapsed: false },
           { id: 'outputs-card', enabled: true, collapsed: false },
