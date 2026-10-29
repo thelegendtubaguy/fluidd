@@ -180,6 +180,12 @@
               </v-icon>
               {{ $t('app.qidi_box.btn.edit_filament') }}
             </app-btn>
+            <div
+              v-else-if="filamentDatabaseInvalid"
+              class="text-caption error--text qidi-box-card__wide"
+            >
+              {{ $t('app.qidi_box.msg.filament_database_invalid') }}
+            </div>
           </div>
         </div>
       </div>
@@ -331,6 +337,10 @@ export default class QidiBoxCard extends Mixins(StateMixin, QidiBoxMixin) {
       : this.$typedState.qidiBox.filamentList != null
   }
 
+  get filamentDatabaseInvalid (): boolean {
+    return this.hasController && this.$typedState.qidiBox.filamentDatabaseInvalid
+  }
+
   // The hub and toolhead sensors are shared by every slot. The hub sees the loaded slot's filament, or the
   // last-loaded slot's while it is parked or unloading; the toolhead sees only the loaded slot's.
   get hubSlot (): number | null {
@@ -401,9 +411,10 @@ export default class QidiBoxCard extends Mixins(StateMixin, QidiBoxMixin) {
     if (!this.slots.some(slot => slot.index === this.selected)) this.selected = this.loadedSlot ?? 0
   }
 
+  @Watch('klippyReady')
   @Watch('hasController', { immediate: true })
-  onHasControllerChanged () {
-    this.loadQidiBoxFilaments()
+  onFilamentSourceChanged () {
+    if (this.klippyReady) this.loadQidiBoxFilaments()
   }
 
   created () {

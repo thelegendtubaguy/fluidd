@@ -1504,6 +1504,9 @@ app:
       choose_slots: >-
         Choose the Box slot for each filament in the file. Only loaded slots of
         the same filament type are listed; slots are matched by nearest color.
+      filament_database_invalid: >-
+        The filament list qidi_filament_config/filament-0.4.json lists no
+        filaments. Check it is valid JSON, then restart the printer.
       loaded: Loaded %{slot}
       missing_slot: >-
         Choose a Box slot for every filament, or turn off the QIDI Box to print
