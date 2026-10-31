@@ -687,7 +687,8 @@ export const Waits = Object.freeze({
   onMmuRelease: 'onMmuRelease',
   onMmuServo: 'onMmuServo',
   onMmuLed: 'onMmuLed',
-  onMmuTestConfig: 'onMmuTestConfig'
+  onMmuTestConfig: 'onMmuTestConfig',
+  onQidiBoxFlow: 'onQidiBoxFlow'
 })
 
 export const SupportedLocales = Object.freeze([

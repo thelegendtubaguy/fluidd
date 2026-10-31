@@ -3,6 +3,18 @@ import type { QidiBoxState } from './types'
 import type { RootState } from '../types'
 import type { AppFileWithMeta } from '../files/types'
 import { QIDI_BOX_EXTERNAL_SLOT, qidiBoxSlotNumber, qidiBoxSlots, type QidiBoxSlot } from '@/util/qidi-box'
+import {
+  qidiBoxHubSensor,
+  qidiBoxHubSlot,
+  qidiBoxLastError,
+  qidiBoxStrandedRecovery,
+  qidiBoxTask,
+  qidiBoxTaskText,
+  qidiBoxWarnings,
+  type QidiBoxError,
+  type QidiBoxStepText,
+  type QidiBoxTask
+} from '@/util/qidi-box-task'
 import getFilePaths from '@/util/get-file-paths'
 
 export const getters = {
@@ -75,21 +87,38 @@ export const getters = {
 
   // Hub sensor; 0 while filament is at the hub. Firmware 01.01.07.01 publishes it only on multi_color_controller.
   getHubSensor: (state, getters, rootState): number | null => {
-    const printer = rootState.printer.printer
+    return qidiBoxHubSensor(rootState.printer.printer)
+  },
 
-    return printer.box_extras?.b_endstop_state ?? printer.multi_color_controller?.box?.b_endstop_state ?? null
+  // The Box slot whose filament is at the hub when no Box slot is loaded; only meaningful while the hub sees one.
+  getHubSlot: (state, getters, rootState): number | null => {
+    return qidiBoxHubSlot(rootState.printer.printer, getters.getSlots)
   },
 
   getAutoReload: (state, getters, rootState): boolean => {
     return Number(rootState.printer.printer.save_variables?.variables?.auto_reload_detect ?? 0) === 1
   },
 
-  // A finished flow resets current_queue and current_step but never publishes flow_id going back to null, so
-  // the merged task keeps the old flow_id; judge activity from the fields that do reset.
-  getTask: (state, getters, rootState): { current_step?: string } | null => {
-    const task = rootState.printer.printer.multi_color_controller?.task
+  // The running Box flow, or the one paused on a failed step.
+  getTask: (state, getters, rootState): QidiBoxTask | null => {
+    return qidiBoxTask(rootState.printer.printer)
+  },
 
-    return task?.current_queue?.length || task?.current_step || task?.is_paused ? task : null
+  getTaskText: (state, getters, rootState): QidiBoxStepText | null => {
+    return qidiBoxTaskText(rootState.printer.printer)
+  },
+
+  getFlowPaused: (state, getters): boolean => {
+    return getters.getTask?.paused === true
+  },
+
+  // The error QIDI reported in the console for the failed step.
+  getLastError: (state, getters, rootState): QidiBoxError | null => {
+    return getters.getFlowPaused ? qidiBoxLastError(rootState.console.console.map(entry => entry.message)) : null
+  },
+
+  getWarnings: (state, getters, rootState): string[] => {
+    return qidiBoxWarnings(rootState.printer.printer.multi_color_controller?.box_warning_info)
   },
 
   getBusy: (state, getters, rootState, rootGetters): boolean => {
@@ -97,6 +126,14 @@ export const getters = {
       rootState.printer.printer.print_stats?.state === 'printing' ||
       !!rootState.printer.printer.box_extras?.box_button_state ||
       getters.getTask != null
+  },
+
+  // Filament stranded between the hub and the toolhead can be unloaded or ejected outside a print, even while a
+  // failed flow is paused; a running flow still blocks it. Only firmware 01.01.07.01's commands handle it.
+  getStrandedRecovery: (state, getters, rootState, rootGetters): boolean => {
+    return rootGetters['printer/getKlippyReady'] &&
+      getters.getHasController &&
+      qidiBoxStrandedRecovery(rootState.printer.printer)
   },
 
   // Like TLTG_RESET_TOOL_MAPPINGS, mappings change only while idle, so a paused print keeps its recovery state.
