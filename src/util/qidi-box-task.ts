@@ -17,8 +17,9 @@ export interface QidiBoxStepText {
 // The text for a step the card doesn't know.
 export const QIDI_BOX_STEP_UNKNOWN = 'working'
 
+// code is null for an error without a QIDI code.
 export interface QidiBoxError {
-  code: string;
+  code: string | null;
   message: string;
 }
 
@@ -126,23 +127,40 @@ const parseError = (line: string): QidiBoxError | null => {
   return match ? { code: match[1], message: match[2].trim() } : null
 }
 
+// A step that raises an error instead of failing is paused by Qidi-Max-4-Optimized with QIDI's
+// `Step BOX_LOAD failed. Pausing flow.`, and Klipper then reports the error, such as
+// `!! Error during homing e_endstop: Communication timeout during homing`.
+const parseRaised = (line: string | undefined): QidiBoxError | null => {
+  if (line == null || !line.startsWith('!!')) return null
+
+  const message = line.replace(/^!!\s*/, '').replace(/<br \/>/g, ' ').trim()
+
+  return message && !ERROR.test(message) ? { code: null, message } : null
+}
+
 // QIDI reports a Box error as `!! Code:QDE_004_006; Message:Extruder loading failure.`, then the flow's
 // `Step BOX_LOAD failed. Pausing flow.` The current failure's error is the latest one since the flow before it
-// failed, so an earlier failure's error is not shown for a step that failed without one.
+// failed, so an earlier failure's error is not shown for a step that failed without one. Without a QIDI error,
+// the error Klipper reported right after the failure is used.
 export const qidiBoxLastError = (messages: readonly string[]): QidiBoxError | null => {
   let failures = 0
+  let raised: QidiBoxError | null = null
 
   for (let i = messages.length - 1; i >= 0; i--) {
     const line = messages[i].replace(/^(?:!!|\/\/)\s*/, '')
 
-    if (FAILED_STEP.test(line) && ++failures > 1) return null
+    if (FAILED_STEP.test(line)) {
+      if (++failures > 1) return raised
+
+      raised = parseRaised(messages[i + 1])
+    }
 
     const error = parseError(line)
 
     if (error) return error
   }
 
-  return null
+  return raised
 }
 
 // multi_color_controller.box_warning_info lists QIDI's Box heater and sensor warnings.
@@ -191,14 +209,15 @@ export const qidiBoxStrandedRecovery = (printer: Record<string, any>): boolean =
 }
 
 // The slot whose filament is at the hub, picked like Qidi-Max-4-Optimized's Unload and Eject: the slot it recorded
-// at the hub, then the last-loaded slot, then the only slot with filament at its inlet.
+// at the hub or the last-loaded slot, each only while its inlet has filament, then the only slot with filament at
+// its inlet. Two different named slots can't be told apart.
 export const qidiBoxHubSlot = (printer: Record<string, any>, slots: Pick<QidiBoxSlot, 'index' | 'present'>[]): number | null => {
   const variables = printer.save_variables?.variables ?? {}
-  const recorded = boxSlot(variables.tltg_box_hub_slot) ?? boxSlot(variables.last_load_slot)
+  const present = slots.filter(slot => slot.index !== QIDI_BOX_EXTERNAL_SLOT && slot.present).map(slot => slot.index)
+  const named = [...new Set([boxSlot(variables.tltg_box_hub_slot), boxSlot(variables.last_load_slot)])]
+    .filter((slot): slot is number => slot != null && present.includes(slot))
 
-  if (recorded != null) return recorded
+  if (named.length) return named.length === 1 ? named[0] : null
 
-  const present = slots.filter(slot => slot.index !== QIDI_BOX_EXTERNAL_SLOT && slot.present)
-
-  return present.length === 1 ? present[0].index : null
+  return present.length === 1 ? present[0] : null
 }

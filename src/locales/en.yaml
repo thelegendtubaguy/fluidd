@@ -1549,6 +1549,9 @@ app:
       stranded: >-
         Filament is stopped between the hub and the toolhead. Unload pulls it
         back into the Box; Eject removes it from the Box.
+      stranded_other: >-
+        %{slot}'s filament is stopped between the hub and the toolhead. Unload
+        or eject %{slot} first.
       stranded_slot: >-
         %{slot}'s filament is stopped between the hub and the toolhead. Unload
         pulls it back into the Box; Eject removes it from the Box.

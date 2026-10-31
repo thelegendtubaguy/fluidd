@@ -446,7 +446,9 @@ export default class QidiBoxCard extends Mixins(StateMixin, QidiBoxMixin) {
   // The failed step's console error, then QIDI's Box warnings.
   get problems (): string[] {
     const error = this.lastError
-    const problems = error ? [this.$t('app.qidi_box.msg.box_error', { ...error }).toString()] : []
+    const problems = error
+      ? [error.code ? this.$t('app.qidi_box.msg.box_error', { ...error }).toString() : error.message]
+      : []
 
     return [...new Set([...problems, ...this.$typedGetters['qidiBox/getWarnings']])]
   }
@@ -459,12 +461,21 @@ export default class QidiBoxCard extends Mixins(StateMixin, QidiBoxMixin) {
     return this.$typedGetters['qidiBox/getStrandedRecovery'] && !this.hasWait(Waits.onQidiBoxFlow)
   }
 
-  get strandedHint (): string {
-    const slot = this.$typedGetters['qidiBox/getHubSlot']
+  // The slot whose filament is stranded, when the card can tell; Qidi-Max-4-Optimized unloads or ejects only it.
+  get strandedSlot (): number | null {
+    return this.strandedRecovery ? this.$typedGetters['qidiBox/getHubSlot'] : null
+  }
 
-    return slot != null
-      ? this.$t('app.qidi_box.msg.stranded_slot', { slot: qidiBoxSlotLabel(slot) }).toString()
-      : this.$t('app.qidi_box.msg.stranded').toString()
+  get strandedHint (): string {
+    const slot = this.strandedSlot
+
+    if (slot == null) return this.$t('app.qidi_box.msg.stranded').toString()
+
+    const label = qidiBoxSlotLabel(slot)
+
+    return slot === this.current.index
+      ? this.$t('app.qidi_box.msg.stranded_slot', { slot: label }).toString()
+      : this.$t('app.qidi_box.msg.stranded_other', { slot: label }).toString()
   }
 
   get overline (): string {
@@ -524,6 +535,13 @@ export default class QidiBoxCard extends Mixins(StateMixin, QidiBoxMixin) {
     if (!this.slots.some(slot => slot.index === this.selected)) this.selected = this.loadedSlot ?? 0
   }
 
+  // Show the stranded slot, whose Unload and Eject recover it, when filament strands; another slot can still be
+  // chosen afterwards.
+  @Watch('strandedSlot', { immediate: true })
+  onStrandedSlotChanged (slot: number | null) {
+    if (slot != null) this.selected = slot
+  }
+
   @Watch('klippyReady')
   @Watch('hasController', { immediate: true })
   onFilamentSourceChanged () {
@@ -547,10 +565,12 @@ export default class QidiBoxCard extends Mixins(StateMixin, QidiBoxMixin) {
 
   // Filament at the inlet allows Eject and Load; the slot that last loaded, with filament at the hub, allows
   // Unload instead of Load. Filament stranded between the hub and the toolhead allows Unload and Eject even while a
-  // failed flow is paused; Qidi-Max-4-Optimized picks the slot at the hub and refuses any other. The external spool
-  // has no Box controls.
+  // failed flow is paused, for the slot at the hub when the card can tell, as Qidi-Max-4-Optimized refuses any other.
+  // The external spool has no Box controls.
   actionDisabled (action: number): boolean {
-    if (this.strandedRecovery && action !== LOAD && !this.currentExternal && this.current.present) return false
+    if (this.strandedRecovery && action !== LOAD && !this.currentExternal && this.current.present) {
+      return this.strandedSlot != null && this.strandedSlot !== this.current.index
+    }
     if (this.slotControlsDisabled) return true
 
     const loaded = this.hub === 0 && this.lastLoadSlot === this.current.index
