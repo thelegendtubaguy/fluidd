@@ -1466,6 +1466,8 @@ app:
       read_rfid: Read RFID
       reset: Reset
       reset_slot: Reset slot
+      retry: Retry
+      stop: Stop
       unload: Unload
     label:
       box: Box %{box}
@@ -1523,12 +1525,14 @@ app:
       at_hub: At hub %{slot}
       box_busy: Box busy
       box_drying: Box heating up to %{temp}°C
+      box_error: '%{message} (%{code})'
       choose_slots: >-
         Choose the Box slot for each filament in the file. Only loaded slots of
         the same filament type are listed; slots are matched by nearest color.
       filament_database_invalid: >-
         The filament list qidi_filament_config/filament-0.4.json lists no
         filaments. Check it is valid JSON, then restart the printer.
+      flow_failed_help: Retry runs the step again; Stop ends the Box operation.
       loaded: Loaded %{slot}
       missing_slot: >-
         Choose a Box slot for every filament, or turn off the QIDI Box to print
@@ -1542,6 +1546,12 @@ app:
       reading_rfid: Reading RFID…
       reload_group: 'Auto-reload group %{group}: %{slots}'
       reload_with: Auto-reload with %{slots}
+      stranded: >-
+        Filament is stopped between the hub and the toolhead. Unload pulls it
+        back into the Box; Eject removes it from the Box.
+      stranded_slot: >-
+        %{slot}'s filament is stopped between the hub and the toolhead. Unload
+        pulls it back into the Box; Eject removes it from the Box.
       tool_mapping_help: >-
         Choose the slot each tool loads, for tool changes and prints that do not
         set their own mapping. Fluidd's print dialog sets the mapping again for
@@ -1560,6 +1570,27 @@ app:
         When filament runs out, the Box switches to a slot with the same
         filament, vendor, and color.
       title: Box settings
+    step:
+      bite: Gripping the external spool's filament
+      cut: Cutting filament
+      eject: Ejecting filament
+      eject_slot: Ejecting %{slot}
+      failed: '%{step} failed'
+      failed_unknown: Box step failed
+      heat: Heating nozzle
+      heat_external: Heating nozzle for the external spool
+      heat_slot: Heating nozzle for %{slot}
+      heat_temp: Heating nozzle to %{temp} °C
+      heat_temp_external: Heating nozzle to %{temp} °C for the external spool
+      heat_temp_slot: Heating nozzle to %{temp} °C for %{slot}
+      load: Loading filament
+      load_external: Loading the external spool
+      load_slot: Loading %{slot}
+      unload: Unloading filament
+      unload_external: Unloading the external spool
+      unload_slot: Unloading %{slot}
+      wipe: Wiping nozzle
+      working: Working…
     title:
       edit_slot: Edit slot %{slot}
       qidi_box: QIDI Box

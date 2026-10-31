@@ -47,11 +47,62 @@
         :hub-triggered="hub === 0"
         :tools-by-slot="toolsBySlot"
         :reload-groups="reloadGroups"
-        :busy="busy"
+        :busy="busy && !flowPaused"
         :step="taskStep"
         @select="selected = $event"
         @tool-click="handleToolClick"
       />
+
+      <v-alert
+        v-if="flowPaused"
+        text
+        dense
+        type="error"
+        class="mt-3 mb-0 qidi-box-card__failure"
+      >
+        <div class="font-weight-medium">
+          {{ failedStep }}
+        </div>
+        <div
+          v-for="problem in problems"
+          :key="`problem:${problem}`"
+          class="text-body-2"
+        >
+          {{ problem }}
+        </div>
+        <div class="text-caption mt-1">
+          {{ $t('app.qidi_box.msg.flow_failed_help') }}
+        </div>
+        <div class="mt-2 qidi-box-card__failure-actions">
+          <app-btn
+            small
+            color="primary"
+            :disabled="flowCommandDisabled"
+            @click="sendFlowCommand('FLOW_RETRY')"
+          >
+            <v-icon
+              small
+              left
+            >
+              $refresh
+            </v-icon>
+            {{ $t('app.qidi_box.btn.retry') }}
+          </app-btn>
+          <app-btn
+            small
+            :disabled="flowCommandDisabled"
+            @click="sendFlowCommand('FLOW_STOP')"
+          >
+            <v-icon
+              small
+              left
+            >
+              $stop
+            </v-icon>
+            {{ $t('app.qidi_box.btn.stop') }}
+          </app-btn>
+        </div>
+      </v-alert>
 
       <div class="mt-3 pa-3 rounded-lg qidi-box-card__sheet">
         <div class="text-overline text--secondary qidi-box-card__overline">
@@ -91,6 +142,13 @@
             </v-icon>
             {{ detail.text }}
           </span>
+        </div>
+
+        <div
+          v-if="strandedRecovery"
+          class="text-caption warning--text mt-2"
+        >
+          {{ strandedHint }}
         </div>
 
         <div class="mt-3 qidi-box-card__controls">
@@ -223,6 +281,7 @@
 <script lang="ts">
 import { Component, Mixins, Watch } from 'vue-property-decorator'
 import StateMixin from '@/mixins/state'
+import { Waits } from '@/globals'
 import QidiBoxMixin from '@/mixins/qidiBox'
 import {
   QIDI_BOX_EXTERNAL_SLOT,
@@ -232,6 +291,7 @@ import {
   type QidiBoxReloadGroups,
   type QidiBoxSlot
 } from '@/util/qidi-box'
+import { QIDI_BOX_STEP_UNKNOWN, type QidiBoxError, type QidiBoxStepText } from '@/util/qidi-box-task'
 import QidiBoxFlow from './QidiBoxFlow.vue'
 import QidiBoxToolMapDialog from './QidiBoxToolMapDialog.vue'
 import QidiBoxFilamentDialog from './QidiBoxFilamentDialog.vue'
@@ -341,20 +401,70 @@ export default class QidiBoxCard extends Mixins(StateMixin, QidiBoxMixin) {
     return this.hasController && this.$typedState.qidiBox.filamentDatabaseInvalid
   }
 
-  // The hub and toolhead sensors are shared by every slot. The hub sees the loaded slot's filament, or the
-  // last-loaded slot's while it is parked or unloading; the toolhead sees only the loaded slot's.
+  // The hub and toolhead sensors are shared by every slot. The hub sees the loaded slot's filament, or, while it is
+  // parked, unloading, or stranded by a failed load, the slot recorded at the hub or last loaded; the toolhead sees
+  // only the loaded slot's.
   get hubSlot (): number | null {
     if (this.hub !== 0) return null
 
-    return this.loadedSlot != null && this.loadedSlot !== QIDI_BOX_EXTERNAL_SLOT ? this.loadedSlot : this.lastLoadSlot
+    return this.loadedSlot != null && this.loadedSlot !== QIDI_BOX_EXTERNAL_SLOT
+      ? this.loadedSlot
+      : this.$typedGetters['qidiBox/getHubSlot']
   }
 
   get toolheadSlot (): number | null {
     return this.$typedGetters['qidiBox/getToolheadFilament'] ? this.loadedSlot : null
   }
 
+  get flowPaused (): boolean {
+    return this.$typedGetters['qidiBox/getFlowPaused']
+  }
+
+  get taskText (): QidiBoxStepText | null {
+    return this.$typedGetters['qidiBox/getTaskText']
+  }
+
+  // What the running flow is doing; never the raw step ID.
   get taskStep (): string | null {
-    return this.$typedGetters['qidiBox/getTask']?.current_step || null
+    if (this.flowPaused || this.taskText == null) return null
+
+    return this.stepText(this.taskText)
+  }
+
+  get failedStep (): string {
+    const text = this.taskText
+
+    if (text == null || text.key === QIDI_BOX_STEP_UNKNOWN) return this.$t('app.qidi_box.step.failed_unknown').toString()
+
+    return this.$t('app.qidi_box.step.failed', { step: this.stepText(text) }).toString()
+  }
+
+  get lastError (): QidiBoxError | null {
+    return this.$typedGetters['qidiBox/getLastError']
+  }
+
+  // The failed step's console error, then QIDI's Box warnings.
+  get problems (): string[] {
+    const error = this.lastError
+    const problems = error ? [this.$t('app.qidi_box.msg.box_error', { ...error }).toString()] : []
+
+    return [...new Set([...problems, ...this.$typedGetters['qidiBox/getWarnings']])]
+  }
+
+  get flowCommandDisabled (): boolean {
+    return !this.klippyReady || this.hasWait(Waits.onQidiBoxFlow)
+  }
+
+  get strandedRecovery (): boolean {
+    return this.$typedGetters['qidiBox/getStrandedRecovery'] && !this.hasWait(Waits.onQidiBoxFlow)
+  }
+
+  get strandedHint (): string {
+    const slot = this.$typedGetters['qidiBox/getHubSlot']
+
+    return slot != null
+      ? this.$t('app.qidi_box.msg.stranded_slot', { slot: qidiBoxSlotLabel(slot) }).toString()
+      : this.$t('app.qidi_box.msg.stranded').toString()
   }
 
   get overline (): string {
@@ -436,8 +546,11 @@ export default class QidiBoxCard extends Mixins(StateMixin, QidiBoxMixin) {
   }
 
   // Filament at the inlet allows Eject and Load; the slot that last loaded, with filament at the hub, allows
-  // Unload instead of Load. The external spool has no Box controls.
+  // Unload instead of Load. Filament stranded between the hub and the toolhead allows Unload and Eject even while a
+  // failed flow is paused; Qidi-Max-4-Optimized picks the slot at the hub and refuses any other. The external spool
+  // has no Box controls.
   actionDisabled (action: number): boolean {
+    if (this.strandedRecovery && action !== LOAD && !this.currentExternal && this.current.present) return false
     if (this.slotControlsDisabled) return true
 
     const loaded = this.hub === 0 && this.lastLoadSlot === this.current.index
@@ -462,6 +575,16 @@ export default class QidiBoxCard extends Mixins(StateMixin, QidiBoxMixin) {
     const { index } = this.current
 
     this.sendGcode(this.hasController ? `READ_RFID SLOT=${index}` : `RFID_READ SLOT=slot${index}`)
+  }
+
+  stepText (text: QidiBoxStepText): string {
+    return this.$t(`app.qidi_box.step.${text.key}`, text.params).toString()
+  }
+
+  sendFlowCommand (command: 'FLOW_RETRY' | 'FLOW_STOP') {
+    if (this.flowCommandDisabled) return
+
+    this.sendGcode(command, Waits.onQidiBoxFlow)
   }
 
   jog (distance: number) {
@@ -531,6 +654,12 @@ export default class QidiBoxCard extends Mixins(StateMixin, QidiBoxMixin) {
 .qidi-box-card__controls {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 6px;
+}
+
+.qidi-box-card__failure-actions {
+  display: flex;
+  flex-wrap: wrap;
   gap: 6px;
 }
 
