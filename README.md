@@ -10,21 +10,22 @@ This is Fluidd for the QIDI Max 4: current upstream [Fluidd](https://github.com/
 
 The **QIDI Box** card shows every Box's slots and the external spool at once, and is hidden on printers without a Box.
 
-![QIDI Box card showing two Boxes, the external spool, the filament path of the loaded slot, and the tool mapping](.github/images/qidi/fluidd-qidibox-card.png)
+![QIDI Box card showing two Boxes and the external spool, with the loaded slot's filament running through the hub to the nozzle](.github/images/qidi/fluidd-qidibox-card.png)
 
-- **Slots:** each spool shows its color, with the tools mapped to it above. The slot label below has a green border when filament is at the slot's inlet, and the loaded slot's tool label is highlighted.
-- **Box status:** humidity and temperature under each Box, plus the heater target while it's heating.
-- **Filament path:** how far the selected slot's filament reaches, following the slot inlet, hub, and toolhead sensors. The hub and toolhead only light up for the slot whose filament is actually there.
-- **Automatic reload:** when it's on, slots that can stand in for each other when one runs out share a reload letter (↻ A, ↻ B, …) and are outlined in their filament color. These are Box slots with the same filament, vendor, and color. The selected slot also lists its backups.
-- **Actions:** click a slot, then **Load**, **Unload**, **Eject**, **Read RFID**, or **Edit filament**. These are unavailable while printing or while the Box is busy.
-- **Tool mapping:** the bottom of the card shows which slot each tool loads, one diagram per Box. While the printer is idle, click a tool or **Edit** to change it. **Default** restores T0 → 1A, T1 → 1B, and so on.
+- **Slots:** each Box's spools in their filament color, with the slot label in the middle and the tools mapped to the slot above. An empty slot is a dashed ring, and a spool whose RFID is being read has a spinning amber ring. Filament close to the card's color, such as black on the dark theme, gets an outline. The dot on the Box's edge under each spool is its inlet sensor, filled when filament is at the inlet.
+- **Box status:** humidity and temperature in each Box's header, plus the heater target while it's heating.
+- **Filament path:** the hub, toolhead sensor, extruder, and nozzle sit below the Boxes. A line in the filament's color shows where it actually is: from the slot parked at the hub, and on to the nozzle for the loaded slot, whose center and tools are highlighted. The external spool goes straight to the toolhead. Beside the path, the card names the loaded filament. With three or four Boxes the lower Boxes sit below the path, and on a phone the Boxes wrap underneath it.
+- **Automatic reload:** when it's on, slots that can stand in for each other when one runs out share a reload letter (A, B, …) on their spools. These are Box slots with the same filament, vendor, and color. The selected slot also lists its backups.
+- **Actions:** click a spool, then **Load**, **Unload**, **Eject**, **Read RFID**, or **Edit**. These are unavailable while printing or while the Box is busy.
+- **Moving a slot by hand:** with [Qidi-Max-4-Optimized](https://github.com/thelegendtubaguy/Qidi-Max-4-Optimized/blob/main/docs/qidi-box.md#moving-a-slot-by-hand) installed, **In 10 mm** and **Out 10 mm** move the selected slot's filament toward the toolhead or back toward the spool, whatever the sensors read. They're unavailable while printing, paused, or while the Box is busy.
+- **Tool mapping:** the tools above each spool show which slot each tool loads. While the printer is idle, click a tool or **Tool mapping** at the top of the card to change it; while printing, clicking a tool selects its slot. **Default** restores T0 → 1A, T1 → 1B, and so on.
 - **Box settings:** QIDI's detection on startup, detection on insertion, and automatic reload switches, and the Box's [load and unload motion](https://github.com/thelegendtubaguy/Qidi-Max-4-Optimized/blob/main/docs/qidi-box.md#load-and-unload-speed).
 
 ### Filaments
 
 On firmware `01.01.07.01`, slots show the filament, vendor, and color the printer is actually using, including brands such as Bambu, HATCHBOX, Overture, and Polymaker. The Vendor and Filament pickers match the touchscreen, colors are saved the same way as on the touchscreen, and the buttons send the commands `01.01.07.01` uses. A slot set with an older numeric ID shows QIDI PLA Basic, because that's how `01.01.07.01` treats it; pick the filament again to fix it. Older firmware uses QIDI's earlier filament list and commands.
 
-The pickers read QIDI's filament list, which you can [edit from Fluidd](https://github.com/thelegendtubaguy/Qidi-Max-4-Optimized/blob/main/docs/qidi-box.md#editing-qidis-filament-list). If Fluidd can't read the list, the card says so instead of offering **Edit filament**.
+The pickers read QIDI's filament list, which you can [edit from Fluidd](https://github.com/thelegendtubaguy/Qidi-Max-4-Optimized/blob/main/docs/qidi-box.md#editing-qidis-filament-list). If Fluidd can't read the list, the card says so instead of offering **Edit**.
 
 ### Printing with the Box
 
