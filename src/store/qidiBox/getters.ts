@@ -84,10 +84,12 @@ export const getters = {
     return Number(rootState.printer.printer.save_variables?.variables?.auto_reload_detect ?? 0) === 1
   },
 
+  // A finished flow resets current_queue and current_step but never publishes flow_id going back to null, so
+  // the merged task keeps the old flow_id; judge activity from the fields that do reset.
   getTask: (state, getters, rootState): { current_step?: string } | null => {
     const task = rootState.printer.printer.multi_color_controller?.task
 
-    return task?.flow_id != null ? task : null
+    return task?.current_queue?.length || task?.current_step || task?.is_paused ? task : null
   },
 
   getBusy: (state, getters, rootState, rootGetters): boolean => {
