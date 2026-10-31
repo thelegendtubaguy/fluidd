@@ -1,146 +1,16 @@
 <template>
-  <div class="qidi-box-unit rounded-lg pa-2 pb-1">
-    <div class="d-flex qidi-box-unit__slots">
-      <div
-        v-for="slot in slots"
-        :key="slot.index"
-        class="qidi-box-unit__slot d-flex flex-column align-center rounded py-1"
-        :class="{ 'qidi-box-unit__slot--selected': slot.index === selected }"
-        :title="slotTitle(slot)"
-        @click="$emit('select', slot.index)"
-      >
-        <div
-          class="text-caption font-weight-bold text-truncate px-1 qidi-box-unit__tools"
-          :class="slot.index === loadedSlot ? 'primary white--text rounded-pill' : 'text--secondary'"
-        >
-          {{ (toolsBySlot[slot.index] || []).join(' ') }}
-        </div>
-
-        <svg
-          width="52"
-          height="72"
-          viewBox="0 0 52 72"
-          :class="{ 'qidi-box-unit__spool--loaded': slot.index === loadedSlot }"
-        >
-          <rect
-            x="10"
-            y="8"
-            width="32"
-            height="56"
-            rx="3"
-            :fill="slot.present && slot.color ? slot.color : 'none'"
-            :stroke="slot.present ? 'rgba(0,0,0,0.35)' : 'rgba(128,128,128,0.7)'"
-            :stroke-dasharray="slot.present ? undefined : '3 3'"
-          />
-          <rect
-            v-if="slot.present"
-            x="11"
-            y="9"
-            width="10"
-            height="54"
-            fill="#fff"
-            opacity="0.15"
-          />
-          <rect
-            x="22"
-            y="9"
-            width="8"
-            height="54"
-            fill="rgba(0,0,0,0.18)"
-          />
-          <rect
-            x="4"
-            y="2"
-            width="44"
-            height="7"
-            rx="3"
-            fill="#8d8d93"
-          />
-          <rect
-            x="4"
-            y="63"
-            width="44"
-            height="7"
-            rx="3"
-            fill="#8d8d93"
-          />
-        </svg>
-
-        <!-- Slot tile: green border with filament at the inlet, dashed amber while reading RFID, and an outline
-             in its auto-reload group's filament color, edged so dark and light filaments stay visible. -->
-        <svg
-          width="52"
-          height="26"
-          viewBox="0 0 120 60"
-        >
-          <template v-if="reloadGroups[slot.index]">
-            <rect
-              x="3"
-              y="1"
-              width="114"
-              height="58"
-              rx="15"
-              fill="none"
-              stroke="rgba(128,128,128,0.9)"
-              stroke-width="8"
-            />
-            <rect
-              x="3"
-              y="1"
-              width="114"
-              height="58"
-              rx="15"
-              fill="none"
-              :stroke="reloadGroups[slot.index].color || 'transparent'"
-              stroke-width="5"
-            />
-          </template>
-          <rect
-            x="12"
-            y="8"
-            width="96"
-            height="44"
-            rx="10"
-            stroke-width="5"
-            :fill="slot.present && slot.color ? slot.color : 'rgba(128,128,128,0.15)'"
-            :stroke="slot.reading ? '#ffb300' : slot.present ? '#4caf50' : '#757575'"
-            :stroke-dasharray="slot.reading ? '14 8' : undefined"
-          />
-          <text
-            x="60"
-            y="41"
-            text-anchor="middle"
-            font-weight="700"
-            font-size="26"
-            :fill="slot.present && slot.color ? textColor(slot.color) : 'currentColor'"
-          >{{ slot.label }}</text>
-        </svg>
-
-        <div
-          class="text-caption font-weight-bold d-flex align-center justify-center rounded-pill px-2 mt-1 qidi-box-unit__reload"
-          :style="reloadStyle(slot.index)"
-          :title="reloadTitle(slot.index)"
-        >
-          <template v-if="reloadGroups[slot.index]">
-            <v-icon
-              x-small
-              class="mr-1"
-              :style="{ color: 'inherit' }"
-            >
-              $sync
-            </v-icon>
-            {{ reloadGroups[slot.index].letter }}
-          </template>
-        </div>
-      </div>
-    </div>
-
-    <div class="d-flex align-center text-caption text--secondary mt-1 pt-1 px-1 qidi-box-unit__footer">
-      <span class="font-weight-medium text--primary">{{ title }}</span>
+  <!-- One Box, or the external spool: a header with the Box's climate, then a spool per slot with its tools above
+       and its inlet sensor on the frame edge facing the filament path. Below the path the unit is mirrored. -->
+  <div
+    class="qidi-box-unit"
+    :class="{ 'qidi-box-unit--below': below, 'qidi-box-unit--external': external }"
+  >
+    <div class="qidi-box-unit__head">
+      <span class="qidi-box-unit__title">{{ title }}</span>
       <template v-if="climate">
         <span
           v-if="climate.humidity != null"
-          class="d-inline-flex align-center"
+          class="qidi-box-unit__climate"
           :title="humidityLevel(climate.humidity).label"
         >
           <v-icon
@@ -153,7 +23,7 @@
         </span>
         <span
           v-if="climate.temperature != null"
-          class="d-inline-flex align-center"
+          class="qidi-box-unit__climate"
         >
           <v-icon
             small
@@ -165,7 +35,7 @@
         </span>
         <span
           v-if="climate.target != null"
-          class="d-inline-flex align-center ml-auto"
+          class="qidi-box-unit__climate"
         >
           <v-icon
             small
@@ -177,22 +47,73 @@
         </span>
       </template>
     </div>
+
+    <div class="qidi-box-unit__slots">
+      <div
+        v-for="slot in slots"
+        :key="slot.index"
+        class="qidi-box-unit__slot"
+        :class="{ 'qidi-box-unit__slot--loaded': slot.index === loadedSlot }"
+        :style="{ width: `${columnWidth}px` }"
+        role="button"
+        tabindex="0"
+        :aria-pressed="slot.index === selected ? 'true' : 'false'"
+        :title="slotTitle(slot)"
+        @click="$emit('select', slot.index)"
+        @keydown.enter.space.prevent="$emit('select', slot.index)"
+      >
+        <span class="qidi-box-unit__tools">
+          <button
+            v-for="tool in toolsBySlot[slot.index] || []"
+            :key="tool"
+            type="button"
+            class="qidi-box-unit__tool"
+            :class="{ 'qidi-box-unit__tool--loaded': slot.index === loadedSlot }"
+            :title="`${tool} → ${slot.label}`"
+            @click.stop="$emit('tool-click', { tool: Number(tool.slice(1)), slot: slot.index })"
+          >
+            {{ tool }}
+          </button>
+        </span>
+        <span
+          v-if="!labelInHole"
+          class="qidi-box-unit__label"
+        >
+          {{ slot.label }}
+        </span>
+        <qidi-box-spool
+          :box-slot="slot"
+          :size="spoolSize"
+          :label="labelInHole ? slot.label : ''"
+          :loaded="slot.index === loadedSlot"
+          :selected="slot.index === selected"
+          :reload-group="reloadGroups[slot.index] || null"
+        />
+        <span
+          class="qidi-box-unit__inlet"
+          :class="{
+            'qidi-box-unit__inlet--present': slot.present,
+            'qidi-box-unit__inlet--hidden': external
+          }"
+          :data-port="external ? 'ext' : `inlet:${slot.index}`"
+          :title="external ? undefined : $t('app.qidi_box.label.slot_inlet').toString()"
+        />
+      </div>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator'
-import { qidiBoxSlotLabel, qidiTextColor, type QidiBoxSlot } from '@/util/qidi-box'
+import type { QidiBoxClimate, QidiBoxReloadGroups, QidiBoxSlot } from '@/util/qidi-box'
+import { qidiBoxFlowColumnWidth } from '@/util/qidi-box-flow'
+import QidiBoxSpool from './QidiBoxSpool.vue'
 
-export type QidiBoxReloadGroups = Record<number, { letter: string, color: string | null, members: number[] }>
-
-export interface QidiBoxClimate {
-  humidity: number | null;
-  temperature: number | null;
-  target: number | null;
-}
-
-@Component({})
+@Component({
+  components: {
+    QidiBoxSpool
+  }
+})
 export default class QidiBoxUnit extends Vue {
   @Prop({ type: String, required: true })
   readonly title!: string
@@ -215,30 +136,29 @@ export default class QidiBoxUnit extends Vue {
   @Prop({ type: Object, default: null })
   readonly climate!: QidiBoxClimate | null
 
-  textColor (color: string | null) {
-    return qidiTextColor(color)
+  @Prop({ type: Number, default: 44 })
+  readonly spoolSize!: number
+
+  // Below the filament path: header at the bottom, inlets on the top edge.
+  @Prop({ type: Boolean })
+  readonly below!: boolean
+
+  @Prop({ type: Boolean })
+  readonly external!: boolean
+
+  get columnWidth (): number {
+    return qidiBoxFlowColumnWidth(this.spoolSize)
+  }
+
+  // Small spools put the label above instead.
+  get labelInHole (): boolean {
+    return this.spoolSize >= 40
   }
 
   slotTitle (slot: QidiBoxSlot): string {
     return slot.present
       ? [slot.label, slot.vendor, slot.name].filter(Boolean).join(' · ')
       : `${slot.label} · ${this.$t('app.qidi_box.label.empty')}`
-  }
-
-  reloadStyle (index: number): Record<string, string> {
-    const group = this.reloadGroups[index]
-
-    return group
-      ? { visibility: 'visible', background: group.color ?? 'transparent', color: qidiTextColor(group.color), border: '1px solid rgba(128,128,128,0.9)' }
-      : { visibility: 'hidden' }
-  }
-
-  reloadTitle (index: number): string | undefined {
-    const group = this.reloadGroups[index]
-
-    return group
-      ? this.$t('app.qidi_box.msg.reload_group', { group: group.letter, slots: group.members.map(qidiBoxSlotLabel).join(', ') }).toString()
-      : undefined
   }
 
   // QIDI's Box humidity guide: below 40 %RH is normal, below 60 %RH slightly high, and above that high.
@@ -253,39 +173,132 @@ export default class QidiBoxUnit extends Vue {
 
 <style lang="scss" scoped>
 .qidi-box-unit {
-  background: rgba(128, 128, 128, 0.08);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+  border-radius: 12px;
+  box-shadow: inset 0 0 0 1px var(--qidi-box-line);
+}
+
+.qidi-box-unit--below {
+  flex-direction: column-reverse;
+}
+
+.qidi-box-unit--external {
+  min-width: 80px;
+}
+
+.qidi-box-unit__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 8px;
+  padding: 0 4px 6px;
+  font-size: 12px;
+}
+
+.qidi-box-unit--below .qidi-box-unit__head {
+  padding: 6px 4px 0;
+}
+
+.qidi-box-unit__title {
+  margin-right: auto;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.qidi-box-unit__climate {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  white-space: nowrap;
+  opacity: 0.8;
 }
 
 .qidi-box-unit__slots {
+  display: flex;
+  justify-content: space-around;
   gap: 4px;
 }
 
 .qidi-box-unit__slot {
-  width: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding-top: 4px;
+  border-radius: 8px;
   cursor: pointer;
+  outline: none;
 }
 
-.qidi-box-unit__slot--selected {
-  background: rgba(33, 150, 243, 0.15);
-  outline: 1px solid rgba(33, 150, 243, 0.55);
+.qidi-box-unit--below .qidi-box-unit__slot {
+  flex-direction: column-reverse;
+  padding: 0 0 4px;
+}
+
+.qidi-box-unit__slot:hover,
+.qidi-box-unit__slot:focus-visible {
+  background: var(--qidi-box-tint);
 }
 
 .qidi-box-unit__tools {
-  min-height: 18px;
-  max-width: 58px;
-}
-
-.qidi-box-unit__spool--loaded {
-  transform: translateY(-3px);
-  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.35));
-}
-
-.qidi-box-unit__reload {
+  display: flex;
+  justify-content: center;
+  gap: 2px;
   height: 16px;
+  white-space: nowrap;
 }
 
-.qidi-box-unit__footer {
-  gap: 8px;
-  border-top: 1px solid rgba(128, 128, 128, 0.3);
+.qidi-box-unit__tool {
+  height: 16px;
+  padding: 0 3px;
+  border-radius: 4px;
+  background: var(--qidi-box-tint);
+  color: inherit;
+  font-size: 9.5px;
+  font-weight: 600;
+  line-height: 16px;
+  opacity: 0.8;
+}
+
+.qidi-box-unit__tool--loaded {
+  background: var(--v-primary-base);
+  color: #fff;
+  opacity: 1;
+}
+
+.qidi-box-unit__label {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.qidi-box-unit__slot--loaded .qidi-box-unit__label {
+  color: var(--v-primary-base);
+}
+
+// The inlet sensor sits centred on the frame edge: it overhangs the column by the frame padding plus half its size.
+.qidi-box-unit__inlet {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  margin: 2px 0 -13px;
+  border-radius: 50%;
+  background: var(--qidi-box-surface);
+  box-shadow: inset 0 0 0 1.5px var(--qidi-box-muted);
+}
+
+.qidi-box-unit--below .qidi-box-unit__inlet {
+  margin: -13px 0 2px;
+}
+
+.qidi-box-unit__inlet--present {
+  background: var(--qidi-box-muted);
+  box-shadow: none;
+}
+
+.qidi-box-unit__inlet--hidden {
+  visibility: hidden;
 }
 </style>

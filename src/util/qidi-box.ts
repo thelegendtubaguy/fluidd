@@ -28,6 +28,22 @@ export interface QidiFilament {
   vendor: string;
 }
 
+// Loaded Box slots that reload into each other, lettered in slot order.
+export interface QidiBoxReloadGroup {
+  letter: string;
+  color: string | null;
+  members: number[];
+}
+
+export type QidiBoxReloadGroups = Record<number, QidiBoxReloadGroup>
+
+// A Box's aht20_f humidity and temperature, and its heater_generic target while drying.
+export interface QidiBoxClimate {
+  humidity: number | null;
+  temperature: number | null;
+  target: number | null;
+}
+
 export interface QidiBoxTool {
   tool: number;
   type: string;
@@ -101,6 +117,19 @@ export const qidiTextColor = (color: string | null): string => {
   return (r * 299 + g * 587 + b * 114) / 1000 > 125 ? '#000000' : '#FFFFFF'
 }
 
+// A filament close to the card background, black on the dark theme or white on the light one, needs an outline to
+// stay visible.
+export const qidiColorNearBackground = (color: string | null, dark: boolean): boolean => {
+  const hex = normalizeQidiColor(color)
+
+  if (hex == null) return false
+
+  const [r, g, b] = [1, 3, 5].map(offset => parseInt(hex.substring(offset, offset + 2), 16))
+  const luma = (r * 299 + g * 587 + b * 114) / 255000
+
+  return dark ? luma < 0.25 : luma > 0.85
+}
+
 const toNumber = (value: unknown): number | null => {
   const number = typeof value === 'number' ? value : parseFloat(String(value))
 
@@ -172,7 +201,7 @@ export const qidiBoxSlots = (printer: Record<string, any>, list: QidiFilamentLis
 
 // Loaded Box slots with the same color, filament, and vendor reload into each other when one runs out.
 // Groups are lettered in slot order.
-export const qidiBoxReloadGroups = (slots: QidiBoxSlot[]): Record<number, { letter: string, color: string | null, members: number[] }> => {
+export const qidiBoxReloadGroups = (slots: QidiBoxSlot[]): QidiBoxReloadGroups => {
   const byKey = new Map<string, number[]>()
 
   for (const slot of slots) {
@@ -183,7 +212,7 @@ export const qidiBoxReloadGroups = (slots: QidiBoxSlot[]): Record<number, { lett
     byKey.set(key, [...(byKey.get(key) ?? []), slot.index])
   }
 
-  const groups: Record<number, { letter: string, color: string | null, members: number[] }> = {}
+  const groups: QidiBoxReloadGroups = {}
 
   Array.from(byKey.values())
     .filter(members => members.length > 1)

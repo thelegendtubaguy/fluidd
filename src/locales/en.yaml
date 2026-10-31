@@ -1460,6 +1460,8 @@ app:
       edit: Edit
       edit_filament: Edit filament
       eject: Eject
+      jog_in: In {distance} mm
+      jog_out: Out {distance} mm
       load: Load
       read_rfid: Read RFID
       reset: Reset
@@ -1518,8 +1520,8 @@ app:
       whole_number: Whole number %{range}
     msg:
       auto_reload_off: Automatic reload is off
+      at_hub: At hub %{slot}
       box_busy: Box busy
-      box_busy_step: 'Box busy: %{step}'
       box_drying: Box heating up to %{temp}°C
       choose_slots: >-
         Choose the Box slot for each filament in the file. Only loaded slots of

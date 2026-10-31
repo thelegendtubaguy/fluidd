@@ -9,6 +9,20 @@
       <app-btn
         small
         class="me-1 my-1"
+        :disabled="mappingLocked"
+        @click="mapping = true"
+      >
+        <v-icon
+          small
+          class="me-1"
+        >
+          $pencil
+        </v-icon>
+        {{ $t('app.qidi_box.title.tool_mapping') }}
+      </app-btn>
+      <app-btn
+        small
+        class="me-1 my-1"
         @click="settings = true"
       >
         <v-icon
@@ -21,187 +35,167 @@
       </app-btn>
     </template>
 
-    <div class="pa-3">
-      <div class="d-flex flex-wrap qidi-box-card__units">
-        <qidi-box-unit
-          v-for="box in boxCount"
-          :key="box"
-          :title="$t('app.qidi_box.label.box', { box })"
-          :slots="slots.filter(slot => slot.index !== externalSlot && Math.floor(slot.index / 4) === box - 1)"
-          :selected="selected"
-          :loaded-slot="loadedSlot"
-          :tools-by-slot="toolsBySlot"
-          :reload-groups="reloadGroups"
-          :climate="climate(box)"
-          @select="selected = $event"
-        />
-        <qidi-box-unit
-          :title="$t('app.qidi_box.label.external')"
-          :slots="slots.filter(slot => slot.index === externalSlot)"
-          :selected="selected"
-          :loaded-slot="loadedSlot"
-          :tools-by-slot="toolsBySlot"
-          :reload-groups="reloadGroups"
-          @select="selected = $event"
-        />
-      </div>
-
-      <div class="d-flex flex-wrap mt-3 qidi-box-card__detail">
-        <div class="d-flex flex-column align-center qidi-box-card__path">
-          <div class="text-caption text--secondary mb-1">
-            {{ statusText }}
-          </div>
-          <qidi-box-path
-            :box-slot="current"
-            :at-hub="!currentExternal && hubSlot === current.index"
-            :at-toolhead="toolheadSlot === current.index"
-          />
-        </div>
-
-        <div class="qidi-box-card__summary">
-          <div class="px-2 pb-2">
-            <div class="text-overline text--secondary qidi-box-card__overline">
-              {{ overline }}
-            </div>
-            <div
-              v-if="current.present && current.name"
-              class="text-h6 d-flex align-center qidi-box-card__name"
-            >
-              <span
-                class="qidi-box-card__swatch"
-                :style="{ backgroundColor: current.color || 'transparent' }"
-              />
-              {{ current.name }}
-            </div>
-            <div
-              v-else
-              class="text-h6 text--secondary"
-            >
-              {{ current.present ? $t('app.qidi_box.label.unknown_filament') : $t('app.qidi_box.label.empty') }}
-            </div>
-            <div
-              v-if="current.present"
-              class="text-body-2 text--secondary"
-            >
-              {{ [current.vendor, current.type, current.color].filter(Boolean).join(' · ') }}
-            </div>
-            <div
-              v-if="temperatures"
-              class="text-caption text--disabled"
-            >
-              {{ temperatures }}
-            </div>
-            <div
-              v-if="current.present && !currentExternal"
-              class="text-caption text--secondary d-flex align-center"
-            >
-              <v-icon
-                x-small
-                class="mr-1"
-              >
-                $sync
-              </v-icon>
-              {{ reloadText }}
-            </div>
-          </div>
-
-          <v-divider />
-
-          <div class="pa-2 qidi-box-card__controls">
-            <app-btn
-              small
-              block
-              :disabled="actionDisabled(load)"
-              @click="sendAction(load)"
-            >
-              <v-icon
-                small
-                left
-              >
-                $loadFilament
-              </v-icon>
-              {{ $t('app.qidi_box.btn.load') }}
-            </app-btn>
-            <app-btn
-              small
-              block
-              :disabled="actionDisabled(unload)"
-              @click="sendAction(unload)"
-            >
-              <v-icon
-                small
-                left
-              >
-                $unloadFilament
-              </v-icon>
-              {{ $t('app.qidi_box.btn.unload') }}
-            </app-btn>
-            <app-btn
-              small
-              block
-              :disabled="actionDisabled(eject)"
-              @click="sendAction(eject)"
-            >
-              <v-icon
-                small
-                left
-              >
-                $qidiBoxEject
-              </v-icon>
-              {{ $t('app.qidi_box.btn.eject') }}
-            </app-btn>
-            <app-btn
-              small
-              block
-              :disabled="slotControlsDisabled"
-              @click="readRfid"
-            >
-              <v-icon
-                small
-                left
-              >
-                $qidiBoxRfid
-              </v-icon>
-              {{ $t('app.qidi_box.btn.read_rfid') }}
-            </app-btn>
-            <app-btn
-              v-if="canEditFilament"
-              small
-              block
-              class="qidi-box-card__wide"
-              :disabled="busy || !current.present"
-              @click="editing = true"
-            >
-              <v-icon
-                small
-                left
-              >
-                $pencil
-              </v-icon>
-              {{ $t('app.qidi_box.btn.edit_filament') }}
-            </app-btn>
-            <div
-              v-else-if="filamentDatabaseInvalid"
-              class="text-caption error--text qidi-box-card__wide"
-            >
-              {{ $t('app.qidi_box.msg.filament_database_invalid') }}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <v-divider class="mt-2" />
-
-      <qidi-box-tool-map
+    <div class="pa-3 qidi-box-card">
+      <qidi-box-flow
         :slots="slots"
-        :tool-map="toolMap"
+        :box-count="boxCount"
+        :climates="climates"
         :selected="selected"
         :loaded-slot="loadedSlot"
-        :locked="mappingLocked"
+        :hub-slot="hubSlot"
+        :toolhead-slot="toolheadSlot"
+        :hub-triggered="hub === 0"
+        :tools-by-slot="toolsBySlot"
+        :reload-groups="reloadGroups"
+        :busy="busy"
+        :step="taskStep"
         @select="selected = $event"
         @tool-click="handleToolClick"
-        @edit="mapping = true"
       />
+
+      <div class="mt-3 pa-3 rounded-lg qidi-box-card__sheet">
+        <div class="text-overline text--secondary qidi-box-card__overline">
+          {{ overline }}
+        </div>
+        <div
+          v-if="current.present && current.name"
+          class="text-subtitle-1 font-weight-medium d-flex align-center qidi-box-card__name"
+        >
+          <span
+            class="qidi-box-card__swatch"
+            :style="{ backgroundColor: current.color || 'transparent' }"
+          />
+          {{ current.name }}
+        </div>
+        <div
+          v-else
+          class="text-subtitle-1 font-weight-medium text--secondary"
+        >
+          {{ current.present ? $t('app.qidi_box.label.unknown_filament') : $t('app.qidi_box.label.empty') }}
+        </div>
+
+        <div class="d-flex flex-wrap text-caption text--secondary mt-1 qidi-box-card__details">
+          <span
+            v-for="detail in details"
+            :key="detail.key"
+            class="d-inline-flex align-center"
+            :class="{ 'amber--text': detail.key === 'rfid' }"
+          >
+            <v-icon
+              v-if="detail.icon"
+              x-small
+              class="mr-1"
+              :class="{ 'amber--text': detail.key === 'rfid' }"
+            >
+              {{ detail.icon }}
+            </v-icon>
+            {{ detail.text }}
+          </span>
+        </div>
+
+        <div class="mt-3 qidi-box-card__controls">
+          <app-btn
+            small
+            :disabled="actionDisabled(load)"
+            @click="sendAction(load)"
+          >
+            <v-icon
+              small
+              left
+            >
+              $loadFilament
+            </v-icon>
+            {{ $t('app.qidi_box.btn.load') }}
+          </app-btn>
+          <app-btn
+            small
+            :disabled="actionDisabled(unload)"
+            @click="sendAction(unload)"
+          >
+            <v-icon
+              small
+              left
+            >
+              $unloadFilament
+            </v-icon>
+            {{ $t('app.qidi_box.btn.unload') }}
+          </app-btn>
+          <app-btn
+            small
+            :disabled="actionDisabled(eject)"
+            @click="sendAction(eject)"
+          >
+            <v-icon
+              small
+              left
+            >
+              $qidiBoxEject
+            </v-icon>
+            {{ $t('app.qidi_box.btn.eject') }}
+          </app-btn>
+          <app-btn
+            small
+            :disabled="slotControlsDisabled"
+            @click="readRfid"
+          >
+            <v-icon
+              small
+              left
+            >
+              $qidiBoxRfid
+            </v-icon>
+            {{ $t('app.qidi_box.btn.read_rfid') }}
+          </app-btn>
+          <template v-if="canJog">
+            <app-btn
+              small
+              :disabled="jogDisabled"
+              @click="jog(jogDistance)"
+            >
+              <v-icon
+                small
+                left
+              >
+                $up
+              </v-icon>
+              {{ $t('app.qidi_box.btn.jog_in', { distance: jogDistance }) }}
+            </app-btn>
+            <app-btn
+              small
+              :disabled="jogDisabled"
+              @click="jog(-jogDistance)"
+            >
+              <v-icon
+                small
+                left
+              >
+                $down
+              </v-icon>
+              {{ $t('app.qidi_box.btn.jog_out', { distance: jogDistance }) }}
+            </app-btn>
+          </template>
+          <app-btn
+            v-if="canEditFilament"
+            small
+            :disabled="busy || !current.present"
+            @click="editing = true"
+          >
+            <v-icon
+              small
+              left
+            >
+              $pencil
+            </v-icon>
+            {{ $t('app.qidi_box.btn.edit') }}
+          </app-btn>
+          <div
+            v-else-if="filamentDatabaseInvalid"
+            class="text-caption error--text qidi-box-card__wide"
+          >
+            {{ $t('app.qidi_box.msg.filament_database_invalid') }}
+          </div>
+        </div>
+      </div>
     </div>
 
     <qidi-box-filament-dialog
@@ -234,11 +228,11 @@ import {
   QIDI_BOX_EXTERNAL_SLOT,
   qidiBoxReloadGroups,
   qidiBoxSlotLabel,
+  type QidiBoxClimate,
+  type QidiBoxReloadGroups,
   type QidiBoxSlot
 } from '@/util/qidi-box'
-import QidiBoxUnit, { type QidiBoxClimate, type QidiBoxReloadGroups } from './QidiBoxUnit.vue'
-import QidiBoxPath from './QidiBoxPath.vue'
-import QidiBoxToolMap from './QidiBoxToolMap.vue'
+import QidiBoxFlow from './QidiBoxFlow.vue'
 import QidiBoxToolMapDialog from './QidiBoxToolMapDialog.vue'
 import QidiBoxFilamentDialog from './QidiBoxFilamentDialog.vue'
 import QidiBoxSettingsDialog from './QidiBoxSettingsDialog.vue'
@@ -247,12 +241,13 @@ const [EJECT, LOAD, UNLOAD] = [0, 1, 2]
 // Firmware 01.01.07.01 replaced E_BOX, E_LOAD, E_UNLOAD, and RFID_READ with multi_color_controller commands.
 const COMMANDS = ['EJECT_FILAMENT_CONTROL', 'LOAD_FILAMENT_CONTROL', 'UNLOAD_FILAMENT_CONTROL']
 const LEGACY_COMMANDS = ['E_BOX', 'E_LOAD', 'E_UNLOAD']
+// Qidi-Max-4-Optimized's slot jog moves a slot's motor whatever its sensors read.
+const JOG_COMMAND = 'TLTG_BOX_SLOT_JOG'
+const JOG_DISTANCE = 10
 
 @Component({
   components: {
-    QidiBoxUnit,
-    QidiBoxPath,
-    QidiBoxToolMap,
+    QidiBoxFlow,
     QidiBoxToolMapDialog,
     QidiBoxFilamentDialog,
     QidiBoxSettingsDialog
@@ -263,6 +258,7 @@ export default class QidiBoxCard extends Mixins(StateMixin, QidiBoxMixin) {
   readonly eject = EJECT
   readonly load = LOAD
   readonly unload = UNLOAD
+  readonly jogDistance = JOG_DISTANCE
 
   selected = 0
   editing = false
@@ -319,6 +315,10 @@ export default class QidiBoxCard extends Mixins(StateMixin, QidiBoxMixin) {
     return this.autoReload ? qidiBoxReloadGroups(this.slots) : {}
   }
 
+  get climates (): Record<number, QidiBoxClimate> {
+    return Object.fromEntries(Array.from({ length: this.boxCount }, (_, i) => [i + 1, this.climate(i + 1)]))
+  }
+
   get busy (): boolean {
     return this.$typedGetters['qidiBox/getBusy']
   }
@@ -353,21 +353,8 @@ export default class QidiBoxCard extends Mixins(StateMixin, QidiBoxMixin) {
     return this.$typedGetters['qidiBox/getToolheadFilament'] ? this.loadedSlot : null
   }
 
-  get statusText (): string {
-    const task = this.$typedGetters['qidiBox/getTask']
-
-    if (task) {
-      return task.current_step
-        ? this.$t('app.qidi_box.msg.box_busy_step', { step: task.current_step }).toString()
-        : this.$t('app.qidi_box.msg.box_busy').toString()
-    }
-
-    if (this.loadedSlot == null) return this.$t('app.qidi_box.msg.no_filament_loaded').toString()
-
-    const tools = this.toolsBySlot[this.loadedSlot] ?? []
-    const loaded = this.$t('app.qidi_box.msg.loaded', { slot: qidiBoxSlotLabel(this.loadedSlot) }).toString()
-
-    return tools.length ? `${loaded} (${tools.join(', ')})` : loaded
+  get taskStep (): string | null {
+    return this.$typedGetters['qidiBox/getTask']?.current_step || null
   }
 
   get overline (): string {
@@ -380,14 +367,21 @@ export default class QidiBoxCard extends Mixins(StateMixin, QidiBoxMixin) {
     ].filter(Boolean).join(' · ')
   }
 
-  get temperatures (): string {
-    const { minTemp, maxTemp, boxMaxTemp, reading } = this.current
+  get details (): { key: string, icon: string | null, text: string }[] {
+    const { present, vendor, type, color, minTemp, maxTemp, boxMaxTemp, reading } = this.current
+    const filament = present ? [vendor, type, color].filter(Boolean).join(' · ') : ''
 
     return [
-      minTemp != null && maxTemp != null ? this.$t('app.qidi_box.msg.nozzle_range', { min: minTemp, max: maxTemp }) : null,
-      boxMaxTemp != null && boxMaxTemp > 0 ? this.$t('app.qidi_box.msg.box_drying', { temp: boxMaxTemp }) : null,
-      reading ? this.$t('app.qidi_box.msg.reading_rfid') : null
-    ].filter(Boolean).join(' · ')
+      filament ? { key: 'filament', icon: null, text: filament } : null,
+      minTemp != null && maxTemp != null
+        ? { key: 'nozzle', icon: '$printer3dNozzle', text: this.$t('app.qidi_box.msg.nozzle_range', { min: minTemp, max: maxTemp }).toString() }
+        : null,
+      boxMaxTemp != null && boxMaxTemp > 0
+        ? { key: 'drying', icon: '$fire', text: this.$t('app.qidi_box.msg.box_drying', { temp: boxMaxTemp }).toString() }
+        : null,
+      reading ? { key: 'rfid', icon: '$qidiBoxRfid', text: this.$t('app.qidi_box.msg.reading_rfid').toString() } : null,
+      present && !this.currentExternal ? { key: 'reload', icon: '$sync', text: this.reloadText } : null
+    ].filter((detail): detail is { key: string, icon: string | null, text: string } => detail != null)
   }
 
   get reloadText (): string {
@@ -404,6 +398,15 @@ export default class QidiBoxCard extends Mixins(StateMixin, QidiBoxMixin) {
 
   get slotControlsDisabled (): boolean {
     return this.busy || this.currentExternal || !this.current.present
+  }
+
+  get canJog (): boolean {
+    return JOG_COMMAND in this.$typedGetters['printer/getAvailableCommands']
+  }
+
+  // The jog refuses only while printing, paused, or the Box is busy, so an empty slot can still move.
+  get jogDisabled (): boolean {
+    return this.mappingLocked || this.currentExternal
   }
 
   @Watch('boxCount')
@@ -461,6 +464,12 @@ export default class QidiBoxCard extends Mixins(StateMixin, QidiBoxMixin) {
     this.sendGcode(this.hasController ? `READ_RFID SLOT=${index}` : `RFID_READ SLOT=slot${index}`)
   }
 
+  jog (distance: number) {
+    if (this.jogDisabled) return
+
+    this.sendGcode(`${JOG_COMMAND} SLOT=${this.current.index} DISTANCE=${distance}`)
+  }
+
   handleToolClick (entry: { tool: number, slot: number }) {
     if (this.mappingLocked) {
       this.selected = entry.slot
@@ -471,21 +480,33 @@ export default class QidiBoxCard extends Mixins(StateMixin, QidiBoxMixin) {
 }
 </script>
 
-<style scoped>
-.qidi-box-card__units {
-  gap: 12px;
+<style lang="scss" scoped>
+// Shared by the flow, units, spools, and nozzle. The surface matches the card (Vuetify's elevation 1), so labels and
+// spool holes can mask the strands behind them.
+.theme--dark .qidi-box-card {
+  --qidi-box-surface: #{map-get($material-dark-elevation-colors, '1')};
+  --qidi-box-block: #3a3a3d;
+  --qidi-box-edge: rgba(255, 255, 255, 0.35);
+  --qidi-box-contrast: rgba(255, 255, 255, 0.7);
+  --qidi-box-muted: rgba(255, 255, 255, 0.38);
+  --qidi-box-track: rgba(255, 255, 255, 0.14);
+  --qidi-box-line: rgba(255, 255, 255, 0.12);
+  --qidi-box-tint: rgba(255, 255, 255, 0.06);
 }
 
-.qidi-box-card__detail {
-  gap: 8px;
+.theme--light .qidi-box-card {
+  --qidi-box-surface: #ffffff;
+  --qidi-box-block: #dcdcdf;
+  --qidi-box-edge: rgba(0, 0, 0, 0.35);
+  --qidi-box-contrast: rgba(0, 0, 0, 0.6);
+  --qidi-box-muted: rgba(0, 0, 0, 0.38);
+  --qidi-box-track: rgba(0, 0, 0, 0.12);
+  --qidi-box-line: rgba(0, 0, 0, 0.12);
+  --qidi-box-tint: rgba(0, 0, 0, 0.04);
 }
 
-.qidi-box-card__path {
-  flex: 1 1 200px;
-}
-
-.qidi-box-card__summary {
-  flex: 1 1 280px;
+.qidi-box-card__sheet {
+  background: var(--qidi-box-tint);
 }
 
 .qidi-box-card__overline {
@@ -497,19 +518,23 @@ export default class QidiBoxCard extends Mixins(StateMixin, QidiBoxMixin) {
 }
 
 .qidi-box-card__swatch {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   border: 1px solid rgba(128, 128, 128, 0.6);
 }
 
+.qidi-box-card__details {
+  gap: 4px 14px;
+}
+
 .qidi-box-card__controls {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
   gap: 6px;
 }
 
 .qidi-box-card__wide {
-  grid-column: span 2;
+  grid-column: 1 / -1;
 }
 </style>
