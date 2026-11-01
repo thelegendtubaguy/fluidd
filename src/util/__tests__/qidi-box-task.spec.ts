@@ -131,6 +131,29 @@ describe('qidiBoxLastError', () => {
     ])).toEqual({ code: 'QDE_004_006', message: 'Extruder loading failure.' })
   })
 
+  it('reads an error without a QIDI code reported right after the failure', () => {
+    expect(qidiBoxLastError([
+      '!! Code:QDE_004_001; Message:Old failure.',
+      'Step BOX_LOAD failed. Pausing flow.',
+      '$ LOAD_FILAMENT_CONTROL SLOT=1',
+      '// Step BOX_LOAD failed. Pausing flow.',
+      '!! Error during homing e_endstop: Communication timeout during homing'
+    ])).toEqual({ code: null, message: 'Error during homing e_endstop: Communication timeout during homing' })
+  })
+
+  it('prefers QIDI\'s coded error and ignores unrelated console errors', () => {
+    expect(qidiBoxLastError([
+      '!! Code:QDE_004_006; Message:Extruder loading failure.',
+      '// Step BOX_LOAD failed. Pausing flow.',
+      '!! Must home axis first'
+    ])).toEqual({ code: 'QDE_004_006', message: 'Extruder loading failure.' })
+    expect(qidiBoxLastError([
+      '!! Must home axis first',
+      '$ LOAD_FILAMENT_CONTROL SLOT=1',
+      '// Step BOX_LOAD failed. Pausing flow.'
+    ])).toBeNull()
+  })
+
   it('ignores an earlier failure\'s error when the current one reported none', () => {
     expect(qidiBoxLastError([
       '!! Code:QDE_004_001; Message:Old failure.',
@@ -187,9 +210,14 @@ describe('qidiBoxHubSlot', () => {
     return qidiBoxHubSlot(state, qidiBoxSlots(state, null))
   }
 
-  it('prefers the slot recorded at the hub, then the last-loaded slot', () => {
-    expect(hubSlot({ hubSlot: 'slot1', lastLoadSlot: 'slot2', inlets: [1, 2] })).toBe(1)
+  it('takes the slot recorded at the hub or the last-loaded slot while its inlet has filament', () => {
+    expect(hubSlot({ hubSlot: 'slot1', lastLoadSlot: 'slot1', inlets: [1, 2] })).toBe(1)
     expect(hubSlot({ lastLoadSlot: 'slot2', inlets: [1, 2] })).toBe(2)
+    expect(hubSlot({ hubSlot: 'slot1', lastLoadSlot: 'slot2', inlets: [2, 3] })).toBe(2)
+  })
+
+  it('can\'t tell two different named slots apart', () => {
+    expect(hubSlot({ hubSlot: 'slot1', lastLoadSlot: 'slot2', inlets: [1, 2] })).toBeNull()
   })
 
   it('falls back to the only slot with filament at its inlet', () => {
