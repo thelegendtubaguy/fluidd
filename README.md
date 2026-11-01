@@ -28,7 +28,7 @@ The **QIDI Box** card shows every Box's slots and the external spool at once, an
 
 On firmware `01.01.07.01`, slots show the filament, vendor, and color the printer is actually using, including brands such as Bambu, HATCHBOX, Overture, and Polymaker. The Vendor and Filament pickers match the touchscreen, colors are saved the same way as on the touchscreen, and the buttons send the commands `01.01.07.01` uses. A slot set with an older numeric ID shows QIDI PLA Basic, because that's how `01.01.07.01` treats it; pick the filament again to fix it. Older firmware uses QIDI's earlier filament list and commands.
 
-The pickers read QIDI's filament list, which you can [edit from Fluidd](https://github.com/thelegendtubaguy/Qidi-Max-4-Optimized/blob/main/docs/qidi-box.md#editing-qidis-filament-list). If Fluidd can't read the list, the card says so instead of offering **Edit**.
+The pickers read QIDI's filament list, which you can edit on the [Filaments page](#filaments-page). If Fluidd can't read the list, the card says so instead of offering **Edit**.
 
 ### Printing with the Box
 
@@ -39,6 +39,17 @@ The print uses the mapping you chose, and a normal print end restores the defaul
 ## Box heater
 
 Set a Box's heater target from the `Heater Box1`/`Heater Box2` rows in the temperature panel. The highest target allowed is the lowest Box temperature limit among the filaments loaded in that Box; an empty Box allows up to 65 °C, the Box's advertised maximum. If a loaded filament shouldn't be heated in the Box, the field is locked, though a Box that's already heating can still be set to `0`.
+
+## Filaments page
+
+On firmware `01.01.07.01`, the **Filaments** page in the sidebar edits QIDI's filament list: the vendors and filaments the touchscreen and the Box card offer. It appears once [Qidi-Max-4-Optimized](https://github.com/thelegendtubaguy/Qidi-Max-4-Optimized/blob/main/docs/qidi-box.md#editing-qidis-filament-list) has linked the list into Fluidd's configuration files.
+
+- **Add** or **Duplicate** creates a filament with a vendor, name, type, nozzle temperatures, Box heating limit, chamber temperature, and whether it's a support material. It takes its drying and other settings from the filament it duplicates, or else from Generic's filament of the same type, and gets the next free ID.
+- **Edit** changes the same fields of any filament. Its ID stays as it is, because slots refer to filaments by ID.
+- Each change is saved to the printer straight away. Klipper and the touchscreen use it once they restart; **Restart Klipper and touchscreen** restarts both, and is unavailable while printing or paused.
+- Firmware updates replace the list. **Export** downloads it; after updating, **Import** that file and choose what to put back. Filaments missing from the list start selected; ones that differ from it don't, as the difference may be QIDI's update. A filament whose ID another filament now uses can't be imported.
+
+Only the 0.4 mm nozzle list, `filament-0.4.json`, is edited, as it's the one Klipper and the touchscreen read.
 
 ## Printer screen card
 
