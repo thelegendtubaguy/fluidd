@@ -65,6 +65,12 @@ const routes: Array<RouteConfig> = [
     ...defaultRouteConfig
   },
   {
+    path: '/filaments',
+    name: 'qidi_filaments',
+    component: () => import('@/views/QidiFilaments.vue'),
+    ...defaultRouteConfig
+  },
+  {
     path: '/system',
     name: 'system',
     component: () => import('@/views/System.vue'),

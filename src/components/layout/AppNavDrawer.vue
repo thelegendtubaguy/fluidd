@@ -92,6 +92,14 @@
           </app-nav-item>
 
           <app-nav-item
+            v-if="hasQidiFilamentConfig"
+            icon="$filament"
+            to="qidi_filaments"
+          >
+            {{ $t('app.general.title.qidi_filaments') }}
+          </app-nav-item>
+
+          <app-nav-item
             icon="$codeJson"
             to="configure"
           >
@@ -151,6 +159,7 @@ import { Component, Mixins, VModel } from 'vue-property-decorator'
 
 import StateMixin from '@/mixins/state'
 import BrowserMixin from '@/mixins/browser'
+import { QIDI_FILAMENT_CONFIG_FILE } from '@/util/qidi-filament-config'
 
 @Component({})
 export default class AppNavDrawer extends Mixins(StateMixin, BrowserMixin) {
@@ -167,6 +176,12 @@ export default class AppNavDrawer extends Mixins(StateMixin, BrowserMixin) {
 
   get enableDiagnostics (): boolean {
     return this.$typedState.config.uiSettings.general.enableDiagnostics
+  }
+
+  // QIDI firmware 01.01.07.01's filament list, which the installer links into the config root.
+  get hasQidiFilamentConfig (): boolean {
+    return this.$typedGetters['files/getRootFiles']('config')
+      ?.some(file => file.path === QIDI_FILAMENT_CONFIG_FILE) ?? false
   }
 
   get hasSubNavigation () {

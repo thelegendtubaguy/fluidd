@@ -676,6 +676,7 @@ app:
       not_found: 404 Not Found
       other_files: Other Files
       pending_configuration_changes: Pending Configuration Changes
+      qidi_filaments: Filaments
       retract: Firmware Retraction
       rollover_logs: Rollover logs
       runout_sensors: Runout Sensors
@@ -1598,6 +1599,60 @@ app:
       edit_slot: Edit slot %{slot}
       qidi_box: QIDI Box
       tool_mapping: Tool mapping
+  qidi_filaments:
+    btn:
+      add: Add
+      duplicate: Duplicate
+      export: Export
+      import: Import
+      restart: Restart Klipper and touchscreen
+      restart_klipper: Restart Klipper
+    hint:
+      box_max: The Box won't heat above this with the filament loaded; 0 means no heating
+      filament_id_fixed: Slots refer to the filament by its ID
+    label:
+      box_max: Box max
+      chamber: Chamber
+      copy: copy
+      filament: Filament
+      filament_id: ID
+      no_heating: No heating
+      nozzle: Nozzle
+      nozzle_max: Nozzle max
+      nozzle_min: Nozzle min
+      support: Support
+      support_material: Support material
+      type: Type
+      vendor: Vendor
+    msg:
+      confirm_remove: Remove %{name} from the filament list?
+      copied_from: Drying and other settings are copied from %{name}.
+      export_failed: Couldn't export the filament list.
+      firmware_update: >-
+        Firmware updates replace this list and remove your changes. Export it before
+        updating, and import it afterwards.
+      id_invalid: QF, a capital letter, and two digits, such as QFA94
+      id_taken: Already used by %{name}
+      import_changed: Differs from the current list
+      import_choose: Choose the filaments to add or replace.
+      import_conflict: Its ID %{id} is already used by %{name}
+      import_invalid: That file isn't a QIDI filament list.
+      import_new: Not in the current list
+      import_nothing: Every filament in this file is already in the list.
+      invalid: >-
+        The filament list qidi_filament_config/filament-0.4.json has a JSON error. Fix it
+        in the configuration editor.
+      name_taken: '%{name} is already in the list'
+      remove_in_use: 'Slots set to it: %{slots}.'
+      restart_needed: Klipper and the touchscreen use the changes once they restart.
+      save_failed: "Couldn't save the filament list: %{error}"
+      saved_as: Listed as %{name}.
+      unavailable: Fluidd can't read the filament list qidi_filament_config/filament-0.4.json.
+    title:
+      add_filament: Add filament
+      edit_filament: Edit filament
+      filaments: QIDI filaments
+      import: Import filaments
   qidi_screen:
     btn:
       control_on: Control on
