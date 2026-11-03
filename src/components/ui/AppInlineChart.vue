@@ -33,6 +33,7 @@ export type AppInlineChartLabel = {
   text: string
   value: string
   suffix?: string
+  decimals?: number
 }
 
 @Component({})
@@ -61,7 +62,7 @@ export default class AppInlineChart extends Vue {
           label,
           value: (value == null || Number.isNaN(value))
             ? '--'
-            : `${value !== 0 ? value.toFixed(2) : value}${label.suffix ?? ''}`
+            : `${value !== 0 ? value.toFixed(label.decimals ?? 2) : value}${label.suffix ?? ''}`
         }
       })
   }
