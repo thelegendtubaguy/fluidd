@@ -982,7 +982,10 @@ app:
       hardware_desc: Hardware Description
       hostname: Hostname
       klipper_load: Klipper Load
+      klipper_main_thread: Klipper Main Thread
+      klipper_timers: Klipper Timers
       load: load
+      main_thread: main thread
       manufactured: Manufactured
       manufacturer: Manufacturer
       memory_used: memory used
@@ -1003,6 +1006,7 @@ app:
       system_load: System Load
       system_memory: System Memory
       system_utilization: System Utilization
+      timers: timers
       total_memory: Total Memory
       operating_system: Operating System
       version: Version

@@ -66,6 +66,15 @@ The **Printer screen** card shows the printer's touchscreen live, so you can che
 
 Only devices that can already use Fluidd can see the screen. Existing dashboards get the card at the bottom of the first column; drag it wherever you like in layout mode. If the printer's screen service isn't installed, the card says the screen is unavailable.
 
+## Klipper health charts
+
+With [Qidi-Max-4-Optimized](https://github.com/thelegendtubaguy/Qidi-Max-4-Optimized/blob/main/docs/fixes.md#klipper-slowing-down-during-long-box-prints) installed, the **System Utilization** card on the System page adds two figures:
+
+- **Klipper Main Thread**, under Klipper Load: how busy the thread that keeps up with Klipper's endstops, heaters, and motion is. Klipper Load counts all of Klipper's threads. A main thread near 100% leaves Box moves open to `Communication timeout during homing`.
+- **Klipper Timers**: how many timers Klipper is running. It stays around 60; a count that keeps climbing slows Klipper down.
+
+Like the other charts, they show the last 10 minutes from when the page was opened.
+
 ## Other changes from QIDI's Fluidd
 
 - Everything QIDI's **Enable Full Display** setting used to hide, such as the bed mesh card on the Tune page and sensors without a target temperature, is always shown.

@@ -4,6 +4,7 @@ import { chartBufferLastTime, chartBufferLastValue } from '@/util/chart-buffer'
 import { thermalColumn } from './charts/thermal-columns'
 import getMcusFromConfig from '@/util/get-klipper-mcus-from-config'
 import decimalRound from '@/util/decimal-round'
+import klipperHealthChartValues from '@/util/klipper-health-chart-values'
 
 export const handleMcuStatsChange = (payload: Partial<Klipper.PrinterState>, state: RootState, commit: Commit) => {
   for (const key in payload) {
@@ -105,7 +106,8 @@ export const handleSystemStatsChange = (payload: Partial<Klipper.PrinterState>, 
         time,
         values: {
           load: decimalRound(stats.sysload, 2),
-          cputime_change: decimalRound((cputime - last_cputime) * 100, 2)
+          cputime_change: decimalRound((cputime - last_cputime) * 100, 2),
+          ...klipperHealthChartValues(state.printer.printer.tltg_klipper_health, payload.tltg_klipper_health)
         }
       }, { root: true })
     }

@@ -170,6 +170,10 @@ declare namespace Klipper {
       [key: `AFC_led ${string}`]: LedState;
 
       [key: AfcUnitKey]: AfcUnitState;
+
+      // QIDI Max 4 Optimized
+
+      tltg_klipper_health: TltgKlipperHealthState;
     }>
 
   export interface PrinterState extends PrinterStateBaseType {
@@ -594,6 +598,13 @@ declare namespace Klipper {
   export interface KalicoZCalibrationState {
     last_query: boolean;
     last_z_offset: number;
+  }
+
+  export interface TltgKlipperHealthState {
+    timers: number;
+    removed_timers: number;
+    main_thread_load: number | null;
+    timer_delay: number | null;
   }
 
   export interface BeaconState {
