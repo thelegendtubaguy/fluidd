@@ -46,7 +46,8 @@ export default class AppTltgWarningBanner extends Mixins(StateMixin) {
 <style lang="scss" scoped>
   .app-tltg-warning-banner {
     position: sticky;
-    z-index: 4;
+    // Above collapsable card titles (4), level with the app bar it sits under.
+    z-index: 5;
   }
 
   .app-tltg-warning-banner__item {
