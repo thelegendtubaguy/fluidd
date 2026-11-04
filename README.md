@@ -77,7 +77,7 @@ Like the other charts, they show the last 10 minutes from when the page was open
 
 ## Printer warnings
 
-With [Qidi-Max-4-Optimized](https://github.com/thelegendtubaguy/Qidi-Max-4-Optimized) installed, problems it finds with the printer's setup show in a banner under the top bar on every page, such as *No input shaper calibration is saved* or *Input shaping is off*. Each warning gives the problem and what to do about it, in red for errors and orange for warnings.
+With [Qidi-Max-4-Optimized](https://github.com/thelegendtubaguy/Qidi-Max-4-Optimized) installed, problems it finds with the printer's setup show in a banner under the top bar on every page, which stays in view as the page scrolls, such as *No input shaper calibration is saved* or *Input shaping is off*. Each warning gives the problem and what to do about it, in red for errors and orange for warnings.
 
 The banner can't be closed. It goes away by itself once the problem is fixed and the printer stops reporting it, and it's hidden while Klipper isn't ready.
 
