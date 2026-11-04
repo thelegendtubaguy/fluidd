@@ -9,6 +9,7 @@ import { Globals } from '@/globals'
 import isKeyOf from '@/util/is-key-of'
 import getFilePaths from '@/util/get-file-paths'
 import type { AppFileWithMeta } from '../files/types'
+import tltgPrinterWarnings from '@/util/tltg-printer-warnings'
 
 const configHasDisconnectedMcu = (config: Record<string, any> | undefined, disconnectedMcuNames: Set<string>): boolean => (
   (
@@ -1085,6 +1086,14 @@ export const getters = {
     }
 
     return warnings
+  },
+
+  /**
+   * Warnings QIDI Max 4 Optimized reports through tltg_printer_warnings;
+   * empty when the object is absent or reports none.
+   */
+  getTltgPrinterWarnings: (state): Klipper.TltgPrinterWarning[] => {
+    return tltgPrinterWarnings(state.printer.tltg_printer_warnings)
   },
 
   getKlipperWarnings: (state) => {

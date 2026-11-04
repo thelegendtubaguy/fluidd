@@ -43,6 +43,8 @@
     </v-btn>
 
     <v-main :style="customBackgroundImageStyle">
+      <app-tltg-warning-banner />
+
       <v-container
         v-if="socketReady"
         fluid

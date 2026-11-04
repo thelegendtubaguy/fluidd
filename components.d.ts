@@ -54,6 +54,7 @@ declare module 'vue' {
     AppTextField: typeof import('./src/components/ui/AppTextField.vue')['default']
     AppTextFieldWithCopy: typeof import('./src/components/ui/AppTextFieldWithCopy.vue')['default']
     AppThumbnailSize: typeof import('./src/components/ui/AppThumbnailSize.vue')['default']
+    AppTltgWarningBanner: typeof import('./src/components/layout/AppTltgWarningBanner.vue')['default']
     AppToolsDrawer: typeof import('./src/components/layout/AppToolsDrawer.vue')['default']
     AppUpDownBtnGroup: typeof import('./src/components/ui/AppUpDownBtnGroup.vue')['default']
     AppUploadAndPrintBtn: typeof import('./src/components/layout/AppUploadAndPrintBtn.vue')['default']
