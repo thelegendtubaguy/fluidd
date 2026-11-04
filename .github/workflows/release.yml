@@ -63,6 +63,14 @@ jobs:
         run: |
           test "$(jq -r .version ./dist/release_info.json)" = "${GITHUB_REF_NAME}"
 
+      # The QIDI Max 4 installer's nginx serves these with gzip_static instead of compressing each request on the
+      # printer. -n leaves out the name and timestamp, so the copies depend only on the build.
+      - name: Precompress assets
+        if: ${{ github.repository != 'fluidd-core/fluidd' }}
+        run: |
+          find ./dist -type f \( -name '*.js' -o -name '*.mjs' -o -name '*.css' -o -name '*.html' -o -name '*.json' \
+            -o -name '*.svg' -o -name '*.webmanifest' -o -name '*.txt' -o -name '*.ico' \) -exec gzip -9 -k -n {} +
+
       - name: Create Artifact
         run: |
           cd ./dist
