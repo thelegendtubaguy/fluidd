@@ -75,6 +75,12 @@ With [Qidi-Max-4-Optimized](https://github.com/thelegendtubaguy/Qidi-Max-4-Optim
 
 Like the other charts, they show the last 10 minutes from when the page was opened.
 
+## Printer warnings
+
+With [Qidi-Max-4-Optimized](https://github.com/thelegendtubaguy/Qidi-Max-4-Optimized) installed, problems it finds with the printer's setup show in a banner under the top bar on every page, such as *No input shaper calibration is saved* or *Input shaping is off*. Each warning gives the problem and what to do about it, in red for errors and orange for warnings.
+
+The banner can't be closed. It goes away by itself once the problem is fixed and the printer stops reporting it, and it's hidden while Klipper isn't ready.
+
 ## Other changes from QIDI's Fluidd
 
 - Everything QIDI's **Enable Full Display** setting used to hide, such as the bed mesh card on the Tune page and sensors without a target temperature, is always shown.

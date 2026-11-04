@@ -174,6 +174,8 @@ declare namespace Klipper {
       // QIDI Max 4 Optimized
 
       tltg_klipper_health: TltgKlipperHealthState;
+
+      tltg_printer_warnings: TltgPrinterWarningsState;
     }>
 
   export interface PrinterState extends PrinterStateBaseType {
@@ -605,6 +607,17 @@ declare namespace Klipper {
     removed_timers: number;
     main_thread_load: number | null;
     timer_delay: number | null;
+  }
+
+  export interface TltgPrinterWarningsState {
+    warnings: TltgPrinterWarning[];
+  }
+
+  export interface TltgPrinterWarning {
+    id: string;
+    level: 'warning' | 'error';
+    title: string;
+    message: string;
   }
 
   export interface BeaconState {
