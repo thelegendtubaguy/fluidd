@@ -49,6 +49,13 @@
         {{ $t('app.qidi_box.msg.choose_slots') }}
       </p>
 
+      <p
+        v-if="useBox && file && !fileTools.named"
+        class="text-body-2"
+      >
+        {{ $t('app.qidi_box.msg.tools_not_named') }}
+      </p>
+
       <v-row
         v-for="tool in tools"
         :key="tool.tool"
@@ -118,12 +125,17 @@ import type { AppFileWithMeta } from '@/store/files/types'
 import getFilePaths from '@/util/get-file-paths'
 import {
   matchQidiBoxSlots,
+  qidiBoxFileTools,
   qidiBoxSlotsForTool,
   normalizeQidiColor,
   qidiTextColor,
+  type QidiBoxFileTools,
   type QidiBoxSlot,
   type QidiBoxTool
 } from '@/util/qidi-box'
+
+// Files already rescanned for the filaments they use, so a file Moonraker still can't read is rescanned once.
+const rescanned = new Set<string>()
 
 @Component({})
 export default class QidiBoxPrintDialog extends Mixins(StateMixin, QidiBoxMixin) {
@@ -166,21 +178,14 @@ export default class QidiBoxPrintDialog extends Mixins(StateMixin, QidiBoxMixin)
     return ''
   }
 
-  // QIDI's Moonraker reports the tools a file uses as used_extruders and their colors as preset_colours.
+  get fileTools (): QidiBoxFileTools {
+    return this.file == null
+      ? { tools: [], named: false }
+      : qidiBoxFileTools(this.file)
+  }
+
   get tools (): QidiBoxTool[] {
-    const file = this.file
-
-    if (file == null) return []
-
-    const tools = file.used_extruders ?? file.referenced_tools ?? []
-    const colors = file.preset_colours ?? file.filament_colors ?? file.extruder_colors ?? []
-    const types = file.filament_type ?? []
-
-    return tools.map(tool => ({
-      tool,
-      type: types[tool] ?? '',
-      color: colors[tool] ?? ''
-    }))
+    return this.fileTools.tools
   }
 
   get slots (): QidiBoxSlot[] {
@@ -199,8 +204,11 @@ export default class QidiBoxPrintDialog extends Mixins(StateMixin, QidiBoxMixin)
     return this.$typedState.printer.printer['filament_switch_sensor filament_switch_sensor']?.filament_detected !== false
   }
 
+  // A file that names its filaments needs a slot for each; one that doesn't, a slot for at least one.
   get missingSlot (): boolean {
-    return this.tools.some(tool => this.selected[tool.tool] == null)
+    return this.fileTools.named
+      ? this.tools.some(tool => this.selected[tool.tool] == null)
+      : this.tools.every(tool => this.selected[tool.tool] == null)
   }
 
   get warning (): string {
@@ -234,8 +242,14 @@ export default class QidiBoxPrintDialog extends Mixins(StateMixin, QidiBoxMixin)
 
     this.selected = {}
 
-    if (this.filename && this.file == null) {
+    const file = this.file
+
+    if (this.filename && (file == null || !('slicer' in file))) {
       SocketActions.serverFilesMetadata(this.filename)
+    } else if (this.filename && !this.fileTools.named && !rescanned.has(this.filename)) {
+      // Moonraker names a file's filaments from when the installer taught it to; rescan files read before then.
+      rescanned.add(this.filename)
+      SocketActions.serverFilesMetascan(this.filename)
     }
 
     await this.loadQidiBoxFilaments()
@@ -257,6 +271,7 @@ export default class QidiBoxPrintDialog extends Mixins(StateMixin, QidiBoxMixin)
 
     if (this.useBox && this.tools.length > 0) {
       const script = this.tools
+        .filter(tool => this.selected[tool.tool] != null)
         .map(tool => `SAVE_VARIABLE VARIABLE=value_t${tool.tool} VALUE="'slot${this.selected[tool.tool]}'"`)
         .join('\n')
 

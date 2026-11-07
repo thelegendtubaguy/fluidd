@@ -1,4 +1,4 @@
-import { matchQidiBoxSlots, parseQidiFilamentDatabase, parseQidiFilamentList, qidiBoxReloadGroups, qidiBoxSlots } from '../qidi-box'
+import { matchQidiBoxSlots, parseQidiFilamentDatabase, parseQidiFilamentList, qidiBoxFileTools, qidiBoxReloadGroups, qidiBoxSlots } from '../qidi-box'
 
 const filamentList = parseQidiFilamentList([
   '[fila18]',
@@ -95,6 +95,41 @@ describe('matchQidiBoxSlots', () => {
       { tool: 1, type: 'PETG', color: '#FFFFFF' },
       { tool: 2, type: 'ABS', color: '#FFFFFF' }
     ], slots)).toStrictEqual({ 0: 2, 1: null, 2: null })
+  })
+})
+
+describe('qidiBoxFileTools', () => {
+  const project = {
+    preset_colours: ['#111111', '#222222', '#333333'],
+    filament_type: ['PLA', 'PETG', 'PLA']
+  }
+
+  it('lists the tools the file names once each, with their filament', () => {
+    expect(qidiBoxFileTools({ ...project, used_extruders: [2, 0, 2] })).toStrictEqual({
+      tools: [
+        { tool: 2, type: 'PLA', color: '#333333' },
+        { tool: 0, type: 'PLA', color: '#111111' }
+      ],
+      named: true
+    })
+  })
+
+  it('lists every project filament when the file names no tools', () => {
+    expect(qidiBoxFileTools({ ...project, used_extruders: [] })).toStrictEqual({
+      tools: [
+        { tool: 0, type: 'PLA', color: '#111111' },
+        { tool: 1, type: 'PETG', color: '#222222' },
+        { tool: 2, type: 'PLA', color: '#333333' }
+      ],
+      named: false
+    })
+  })
+
+  it('lists T0 for a file with no filament information', () => {
+    expect(qidiBoxFileTools({})).toStrictEqual({
+      tools: [{ tool: 0, type: '', color: '' }],
+      named: false
+    })
   })
 })
 
