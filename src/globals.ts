@@ -106,6 +106,7 @@ import {
   mdiThermometerAlert,
   mdiShieldAccount,
   mdiContentCopy,
+  mdiContentCut,
   mdiApps,
   mdiAccountPlus,
   mdiViewDashboardOutline,
@@ -590,6 +591,7 @@ export const Icons = Object.freeze({
   qidiBoxHumidity: mdiWater,
   qidiBoxEject: mdiEject,
   qidiBoxRfid: mdiNfcVariant,
+  qidiBoxCut: mdiContentCut,
 })
 
 export const Waits = Object.freeze({
@@ -688,7 +690,8 @@ export const Waits = Object.freeze({
   onMmuServo: 'onMmuServo',
   onMmuLed: 'onMmuLed',
   onMmuTestConfig: 'onMmuTestConfig',
-  onQidiBoxFlow: 'onQidiBoxFlow'
+  onQidiBoxFlow: 'onQidiBoxFlow',
+  onQidiBoxCut: 'onQidiBoxCut'
 })
 
 export const SupportedLocales = Object.freeze([

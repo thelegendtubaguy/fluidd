@@ -1461,6 +1461,7 @@ app:
       apply: Apply
       box_settings: Box settings
       close: Close
+      cut: Cut
       default: Default
       edit: Edit
       edit_filament: Edit filament
