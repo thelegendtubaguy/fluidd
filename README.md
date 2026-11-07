@@ -33,7 +33,7 @@ The pickers read QIDI's filament list, which you can edit on the [Filaments page
 
 ### Printing with the Box
 
-Starting a print of a file sliced for the Box opens the Box print dialog. Choose a loaded slot for each filament in the file. Slots are matched automatically by type and nearest color, and several filaments can use the same slot. Turn off **Use QIDI Box** to print from the external spool.
+While a Box is connected, starting any print opens the Box print dialog. Choose a loaded slot for each filament in the file. A file whose metadata doesn't say which filaments it uses lists every filament in its slicer project, and needs a slot for at least one. Slots are matched automatically by type and nearest color, and several filaments can use the same slot. Turn off **Use QIDI Box** to print from the external spool.
 
 The print uses the mapping you chose, and a normal print end restores the default.
 

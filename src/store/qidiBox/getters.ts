@@ -1,7 +1,6 @@
 import type { GetterTree } from 'vuex'
 import type { QidiBoxState } from './types'
 import type { RootState } from '../types'
-import type { AppFileWithMeta } from '../files/types'
 import { QIDI_BOX_EXTERNAL_SLOT, qidiBoxSlotNumber, qidiBoxSlots, type QidiBoxSlot } from '@/util/qidi-box'
 import {
   qidiBoxHubSensor,
@@ -16,7 +15,6 @@ import {
   type QidiBoxStepText,
   type QidiBoxTask
 } from '@/util/qidi-box-task'
-import getFilePaths from '@/util/get-file-paths'
 
 export const getters = {
   getBoxCount: (state, getters, rootState): number => {
@@ -136,16 +134,8 @@ export const getters = {
     return getters.getBusy || rootState.printer.printer.print_stats?.state === 'paused'
   },
 
-  // Prints go through the Box slot dialog while a Box is connected. A file without loaded metadata opens it
-  // too, since the dialog loads it; a file whose metadata names no tools prints as it is.
-  getShowPrintDialog: (state, getters, rootState, rootGetters) => (filename: string): boolean => {
-    if (getters.getBoxCount === 0) return false
-
-    const { rootPath, filename: name } = getFilePaths(filename, 'gcodes')
-    const file: AppFileWithMeta | undefined = rootGetters['files/getFile'](rootPath, name)
-
-    if (file == null || !('slicer' in file)) return true
-
-    return (file.used_extruders ?? file.referenced_tools ?? []).length > 0
+  // Every print goes through the Box slot dialog while a Box is connected, so its slots are always chosen.
+  getShowPrintDialog: (state, getters) => (filename: string): boolean => {
+    return filename !== '' && getters.getBoxCount > 0
   }
 } satisfies GetterTree<QidiBoxState, RootState>

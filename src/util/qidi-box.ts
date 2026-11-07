@@ -50,6 +50,40 @@ export interface QidiBoxTool {
   color: string;
 }
 
+export interface QidiBoxFileTools {
+  tools: QidiBoxTool[];
+  named: boolean;
+}
+
+// File metadata naming the tools a print uses, from QIDI's Moonraker (used_extruders, preset_colours) or upstream.
+export interface QidiBoxFileMetadata {
+  used_extruders?: number[];
+  referenced_tools?: number[];
+  preset_colours?: string[];
+  filament_colors?: string[];
+  extruder_colors?: string[];
+  filament_type?: string[];
+}
+
+// The tools a file prints with. A file whose metadata names none can select any filament of its slicer project,
+// so all of them are listed, or T0 when the project lists none.
+export const qidiBoxFileTools = (file: QidiBoxFileMetadata): QidiBoxFileTools => {
+  const colors = file.preset_colours ?? file.filament_colors ?? file.extruder_colors ?? []
+  const types = file.filament_type ?? []
+  const listed = [...new Set(file.used_extruders ?? file.referenced_tools ?? [])]
+  const named = listed.length > 0
+  const tools = named ? listed : [...Array(Math.max(colors.length, types.length, 1)).keys()]
+
+  return {
+    tools: tools.map(tool => ({
+      tool,
+      type: types[tool] ?? '',
+      color: colors[tool] ?? ''
+    })),
+    named
+  }
+}
+
 export const qidiBoxSlotLabel = (index: number): string => index === QIDI_BOX_EXTERNAL_SLOT
   ? 'Ext'
   : `${Math.floor(index / 4) + 1}${String.fromCharCode(65 + (index % 4))}`

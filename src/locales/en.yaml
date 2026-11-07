@@ -1567,6 +1567,10 @@ app:
         Choose the slot each tool loads, for tool changes and prints that do not
         set their own mapping. Fluidd's print dialog sets the mapping again for
         the print it starts.
+      tools_not_named: >-
+        This file doesn't say which filaments it uses, so every filament in
+        its slicer project is listed. Any left without a slot keep the slot
+        they were last mapped to.
     settings:
       auto_init_detect: Detection on startup
       auto_init_detect_help: >-
