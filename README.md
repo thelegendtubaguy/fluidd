@@ -84,6 +84,7 @@ The banner can't be closed. It goes away by itself once the problem is fixed and
 ## Other changes from QIDI's Fluidd
 
 - Everything QIDI's **Enable Full Display** setting used to hide, such as the bed mesh card on the Tune page and sensors without a target temperature, is always shown.
+- The fan QIDI's config names `chamber_circulation_fan` is labelled **Chamber Exhaust Fan**, since it exhausts the chamber.
 - Sliced `.gcode.3mf` files can be uploaded, and the G-code preview opens them.
 - Open tabs switch to a newly installed version by themselves within a few minutes, or as soon as the tab is shown again.
 - Everything upstream Fluidd has added since 1.30.5.

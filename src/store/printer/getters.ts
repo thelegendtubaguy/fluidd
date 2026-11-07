@@ -767,7 +767,9 @@ export const getters = {
       ) {
         const prettyName = name === 'fan'
           ? 'Part Fan' // If we know its the part fan.
-          : Vue.$filters.prettyCase(name)
+          : name === 'chamber_circulation_fan'
+            ? 'Chamber Exhaust Fan' // QIDI's name for the fan that exhausts the chamber.
+            : Vue.$filters.prettyCase(name)
 
         const color = applyColor.includes(type)
           ? resolveSensorColor(sensorColors, key)
