@@ -192,6 +192,20 @@
             {{ $t('app.qidi_box.btn.eject') }}
           </app-btn>
           <app-btn
+            v-if="canCut"
+            small
+            :disabled="cutDisabled"
+            @click="cut"
+          >
+            <v-icon
+              small
+              left
+            >
+              $qidiBoxCut
+            </v-icon>
+            {{ $t('app.qidi_box.btn.cut') }}
+          </app-btn>
+          <app-btn
             small
             :disabled="slotControlsDisabled"
             @click="readRfid"
@@ -303,6 +317,9 @@ const COMMANDS = ['EJECT_FILAMENT_CONTROL', 'LOAD_FILAMENT_CONTROL', 'UNLOAD_FIL
 const LEGACY_COMMANDS = ['E_BOX', 'E_LOAD', 'E_UNLOAD']
 // Qidi-Max-4-Optimized's slot jog moves a slot's motor whatever its sensors read.
 const JOG_COMMAND = 'TLTG_BOX_SLOT_JOG'
+// Qidi-Max-4-Optimized's cut homes X and Y first if needed, and cuts with the nozzle cold. The same release unloads
+// and ejects with COLD=1 without heating the nozzle.
+const CUT_COMMAND = 'TLTG_CUT_FILAMENT'
 const JOG_DISTANCE = 10
 
 @Component({
@@ -530,6 +547,15 @@ export default class QidiBoxCard extends Mixins(StateMixin, QidiBoxMixin) {
     return this.mappingLocked || this.currentExternal
   }
 
+  get canCut (): boolean {
+    return CUT_COMMAND in this.$typedGetters['printer/getAvailableCommands']
+  }
+
+  // The cut refuses while printing, paused, or the Box is busy.
+  get cutDisabled (): boolean {
+    return this.mappingLocked || this.hasWait(Waits.onQidiBoxCut)
+  }
+
   @Watch('boxCount')
   onBoxCountChanged () {
     if (!this.slots.some(slot => slot.index === this.selected)) this.selected = this.loadedSlot ?? 0
@@ -586,7 +612,15 @@ export default class QidiBoxCard extends Mixins(StateMixin, QidiBoxMixin) {
 
     const { index } = this.current
 
-    this.sendGcode(this.hasController ? `${COMMANDS[action]} SLOT=${index}` : `${LEGACY_COMMANDS[action]} slot=${index}`)
+    if (!this.hasController) {
+      this.sendGcode(`${LEGACY_COMMANDS[action]} slot=${index}`)
+      return
+    }
+
+    // COLD=1 is refused during a print, where the nozzle is heated for the print anyway.
+    const cold = action !== LOAD && this.canCut && this.$typedState.printer.printer.print_stats?.state !== 'paused'
+
+    this.sendGcode(`${COMMANDS[action]} SLOT=${index}${cold ? ' COLD=1' : ''}`)
   }
 
   readRfid () {
@@ -611,6 +645,12 @@ export default class QidiBoxCard extends Mixins(StateMixin, QidiBoxMixin) {
     if (this.jogDisabled) return
 
     this.sendGcode(`${JOG_COMMAND} SLOT=${this.current.index} DISTANCE=${distance}`)
+  }
+
+  cut () {
+    if (this.cutDisabled) return
+
+    this.sendGcode(CUT_COMMAND, Waits.onQidiBoxCut)
   }
 
   handleToolClick (entry: { tool: number, slot: number }) {
