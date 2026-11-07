@@ -7,6 +7,7 @@ import {
   qidiBoxHubSensor,
   qidiBoxHubSlot,
   qidiBoxLastError,
+  qidiBoxLoadedSlot,
   qidiBoxStrandedRecovery,
   qidiBoxTask,
   qidiBoxTaskText,
@@ -70,15 +71,9 @@ export const getters = {
     return rootState.printer.printer['filament_switch_sensor filament_switch_sensor']?.filament_detected === true
   },
 
-  // The slot feeding the extruder: slot_sync, or the external spool when no Box slot is synced and the
-  // toolhead sensor sees filament.
+  // The slot feeding the extruder.
   getLoadedSlot: (state, getters, rootState): number | null => {
-    const sync = rootState.printer.printer.save_variables?.variables?.slot_sync
-    const slot = qidiBoxSlotNumber(sync)
-
-    if (slot != null) return slot
-
-    return sync === 'slot-1' && getters.getToolheadFilament ? QIDI_BOX_EXTERNAL_SLOT : null
+    return qidiBoxLoadedSlot(rootState.printer.printer, getters.getSlots)
   },
 
   getLastLoadSlot: (state, getters, rootState): number | null => {

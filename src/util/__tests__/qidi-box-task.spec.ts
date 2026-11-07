@@ -2,6 +2,7 @@ import { qidiBoxSlots } from '../qidi-box'
 import {
   qidiBoxHubSlot,
   qidiBoxLastError,
+  qidiBoxLoadedSlot,
   qidiBoxStranded,
   qidiBoxStrandedRecovery,
   qidiBoxTask,
@@ -15,6 +16,7 @@ const printer = (overrides: {
   activeSlot?: string,
   lastLoadSlot?: string,
   hubSlot?: string,
+  slotSync?: string,
   target?: number,
   hub?: number,
   toolhead?: boolean,
@@ -25,7 +27,8 @@ const printer = (overrides: {
     variables: {
       box_count: 1,
       last_load_slot: overrides.lastLoadSlot ?? 'slot16',
-      tltg_box_hub_slot: overrides.hubSlot ?? ''
+      tltg_box_hub_slot: overrides.hubSlot ?? '',
+      slot_sync: overrides.slotSync ?? 'slot-1'
     }
   },
   multi_color_controller: {
@@ -223,5 +226,31 @@ describe('qidiBoxHubSlot', () => {
   it('falls back to the only slot with filament at its inlet', () => {
     expect(hubSlot({ inlets: [3] })).toBe(3)
     expect(hubSlot({ inlets: [1, 3] })).toBeNull()
+  })
+})
+
+describe('qidiBoxLoadedSlot', () => {
+  const loadedSlot = (overrides: Parameters<typeof printer>[0]) => {
+    const state = printer(overrides)
+
+    return qidiBoxLoadedSlot(state, qidiBoxSlots(state, null))
+  }
+
+  it('takes the Box slot synced to the extruder', () => {
+    expect(loadedSlot({ slotSync: 'slot1', hub: 0, toolhead: true })).toBe(1)
+  })
+
+  it('takes the slot at the hub when no slot is synced and the toolhead sees filament, as while printing', () => {
+    expect(loadedSlot({ hub: 0, toolhead: true, lastLoadSlot: 'slot1' })).toBe(1)
+    expect(loadedSlot({ hub: 0, toolhead: true, inlets: [1, 2] })).toBeNull()
+  })
+
+  it('takes the external spool when the toolhead sees filament that isn\'t at the hub', () => {
+    expect(loadedSlot({ hub: 1, toolhead: true, lastLoadSlot: 'slot1' })).toBe(16)
+  })
+
+  it('has nothing loaded with the toolhead empty', () => {
+    expect(loadedSlot({ hub: 0, lastLoadSlot: 'slot1' })).toBeNull()
+    expect(loadedSlot({ hub: 1 })).toBeNull()
   })
 })

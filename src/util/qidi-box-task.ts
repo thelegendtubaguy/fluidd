@@ -221,3 +221,16 @@ export const qidiBoxHubSlot = (printer: Record<string, any>, slots: Pick<QidiBox
 
   return present.length === 1 ? present[0] : null
 }
+
+// The slot feeding the extruder. QIDI's slot_sync names the Box slot synced to the extruder, but QIDI leaves it at
+// 'slot-1' while a Box slot is printing or unloading. With no slot synced and filament at the toolhead, filament at
+// the hub is the Box slot's, picked as for the hub; otherwise it's the external spool's, which doesn't pass the hub.
+export const qidiBoxLoadedSlot = (printer: Record<string, any>, slots: Pick<QidiBoxSlot, 'index' | 'present'>[]): number | null => {
+  const sync = printer.save_variables?.variables?.slot_sync
+  const slot = qidiBoxSlotNumber(sync)
+
+  if (slot != null) return slot
+  if (sync !== 'slot-1' || printer['filament_switch_sensor filament_switch_sensor']?.filament_detected !== true) return null
+
+  return qidiBoxHubSensor(printer) === 0 ? qidiBoxHubSlot(printer, slots) : QIDI_BOX_EXTERNAL_SLOT
+}
