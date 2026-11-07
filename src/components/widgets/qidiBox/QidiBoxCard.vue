@@ -105,8 +105,50 @@
       </v-alert>
 
       <div class="mt-3 pa-3 rounded-lg qidi-box-card__sheet">
-        <div class="text-overline text--secondary qidi-box-card__overline">
-          {{ overline }}
+        <div class="d-flex align-center">
+          <div class="text-overline text--secondary qidi-box-card__overline">
+            {{ overline }}
+          </div>
+          <v-spacer />
+          <v-tooltip top>
+            <template #activator="{ on, attrs }">
+              <app-btn
+                icon
+                small
+                :disabled="slotControlsDisabled"
+                :aria-label="$t('app.qidi_box.btn.read_rfid')"
+                v-bind="attrs"
+                v-on="on"
+                @click="readRfid"
+              >
+                <v-icon small>
+                  $qidiBoxRfid
+                </v-icon>
+              </app-btn>
+            </template>
+            <span>{{ $t('app.qidi_box.btn.read_rfid') }}</span>
+          </v-tooltip>
+          <v-tooltip
+            v-if="canEditFilament"
+            top
+          >
+            <template #activator="{ on, attrs }">
+              <app-btn
+                icon
+                small
+                :disabled="busy || !current.present"
+                :aria-label="$t('app.qidi_box.btn.edit_filament')"
+                v-bind="attrs"
+                v-on="on"
+                @click="editing = true"
+              >
+                <v-icon small>
+                  $pencil
+                </v-icon>
+              </app-btn>
+            </template>
+            <span>{{ $t('app.qidi_box.btn.edit_filament') }}</span>
+          </v-tooltip>
         </div>
         <div
           v-if="current.present && current.name"
@@ -205,67 +247,58 @@
             </v-icon>
             {{ $t('app.qidi_box.btn.cut') }}
           </app-btn>
-          <app-btn
-            small
-            :disabled="slotControlsDisabled"
-            @click="readRfid"
+          <app-btn-group
+            v-if="canJog"
+            divided
           >
-            <v-icon
-              small
-              left
-            >
-              $qidiBoxRfid
-            </v-icon>
-            {{ $t('app.qidi_box.btn.read_rfid') }}
-          </app-btn>
-          <template v-if="canJog">
-            <app-btn
-              small
-              :disabled="jogDisabled"
-              @click="jog(jogDistance)"
-            >
-              <v-icon
-                small
-                left
-              >
-                $up
-              </v-icon>
-              {{ $t('app.qidi_box.btn.jog_in', { distance: jogDistance }) }}
-            </app-btn>
-            <app-btn
-              small
-              :disabled="jogDisabled"
-              @click="jog(-jogDistance)"
-            >
-              <v-icon
-                small
-                left
-              >
-                $down
-              </v-icon>
-              {{ $t('app.qidi_box.btn.jog_out', { distance: jogDistance }) }}
-            </app-btn>
-          </template>
-          <app-btn
-            v-if="canEditFilament"
-            small
-            :disabled="busy || !current.present"
-            @click="editing = true"
-          >
-            <v-icon
-              small
-              left
-            >
-              $pencil
-            </v-icon>
-            {{ $t('app.qidi_box.btn.edit') }}
-          </app-btn>
-          <div
-            v-else-if="filamentDatabaseInvalid"
-            class="text-caption error--text qidi-box-card__wide"
-          >
-            {{ $t('app.qidi_box.msg.filament_database_invalid') }}
-          </div>
+            <v-tooltip top>
+              <template #activator="{ on, attrs }">
+                <app-btn
+                  small
+                  :disabled="jogDisabled"
+                  v-bind="attrs"
+                  v-on="on"
+                  @click="jog(jogDistance)"
+                >
+                  <v-icon
+                    small
+                    left
+                  >
+                    $up
+                  </v-icon>
+                  {{ $t('app.qidi_box.btn.jog_in_short') }}
+                </app-btn>
+              </template>
+              <span>{{ $t('app.qidi_box.btn.jog_in', { distance: jogDistance }) }}</span>
+            </v-tooltip>
+            <v-tooltip top>
+              <template #activator="{ on, attrs }">
+                <app-btn
+                  small
+                  :disabled="jogDisabled"
+                  v-bind="attrs"
+                  v-on="on"
+                  @click="jog(-jogDistance)"
+                >
+                  <v-icon
+                    small
+                    left
+                  >
+                    $down
+                  </v-icon>
+                  {{ $t('app.qidi_box.btn.jog_out_short') }}
+                </app-btn>
+              </template>
+              <span>{{ $t('app.qidi_box.btn.jog_out', { distance: jogDistance }) }}</span>
+            </v-tooltip>
+          </app-btn-group>
+        </div>
+
+        <div
+          v-if="!canEditFilament && filamentDatabaseInvalid"
+          class="text-caption error--text mt-2"
+        >
+          {{ $t('app.qidi_box.msg.filament_database_invalid') }}
         </div>
       </div>
     </div>
@@ -712,8 +745,8 @@ export default class QidiBoxCard extends Mixins(StateMixin, QidiBoxMixin) {
 }
 
 .qidi-box-card__controls {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 6px;
 }
 
@@ -721,9 +754,5 @@ export default class QidiBoxCard extends Mixins(StateMixin, QidiBoxMixin) {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-}
-
-.qidi-box-card__wide {
-  grid-column: 1 / -1;
 }
 </style>
