@@ -76,6 +76,22 @@ With [Qidi-Max-4-Optimized](https://github.com/thelegendtubaguy/Qidi-Max-4-Optim
 
 Like the other charts, they show the last 10 minutes from when the page was opened.
 
+## Bed soak card
+
+With [Qidi-Max-4-Optimized](https://github.com/thelegendtubaguy/Qidi-Max-4-Optimized/blob/main/docs/tools.md#bed-soak-test) installed, the Tune page has a **Bed soak** card under Bed mesh. The test measures one mesh with the heaters off, then heats the bed and, optionally, the chamber and keeps measuring meshes. It shows how long the bed and chamber take to reach temperature, and how long the bed keeps moving after that. All times count from when the heaters turned on.
+
+- **Test:** choose the bed and chamber temperatures, or click a temperature preset, the mesh size (5 × 5, 7 × 7, or 9 × 9), whether to stop once the bed stops moving, a time limit of up to 240 minutes, and whether the heaters stay on afterwards. The card warns when the bed or chamber is still warm, as the first mesh won't be cold. The chamber temperature is hidden on printers without a chamber heater.
+- **While it runs:** four milestones (bed at temperature, chamber at temperature, bed stopped moving, ready to print), what the test is doing, and charts of the temperatures, the bed's height and shape change since the cold mesh, and how fast it's still moving against the stopped-moving limit. The charts share their time axis and crosshair. **Stop** turns the test's heaters off straight away; the test ends once the mesh it's measuring finishes.
+- **Change from the cold mesh:** a top view of any mesh's change, with the back of the bed at the top, as shape only or shape and height. **View in 3D on Bed mesh** shows that mesh on the Bed mesh card until you click **Show the loaded mesh** or leave the page.
+- **Results:** the times come first, then a warning when a probe point needed retries or moved out of line with the rest of the bed in more than one mesh, or when probe readings jumped. Problem points have an amber ring on the map and are listed under it with the meshes they were flagged in. A mesh a jump happened in isn't used.
+- **Past runs:** every saved run with its temperatures, times, and problems. Open a run to see it in full, tick up to three to compare their bed height and chamber temperature, or download or delete one. A run Klipper stopped part way through shows as incomplete.
+
+Runs are saved in the `tltg_bed_soak` folder of the configuration files.
+
+### Problem points on the Bed mesh card
+
+When the loaded mesh is the most recent one measured, including print start's, the **Bed mesh** card marks the probe points that needed a retry with an amber pin and lists them with their tries and how far apart their samples were. **Bed mesh controls** shows how many there were and when the mesh was measured.
+
 ## Printer warnings
 
 With [Qidi-Max-4-Optimized](https://github.com/thelegendtubaguy/Qidi-Max-4-Optimized) installed, problems it finds with the printer's setup show in a banner under the top bar on every page, which stays in view as the page scrolls, such as *No input shaper calibration is saved* or *Input shaping is off*. Each warning gives the problem and what to do about it, in red for errors and orange for warnings.
