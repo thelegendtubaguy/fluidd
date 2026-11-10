@@ -28,6 +28,7 @@ import {
   mdiArrowRight,
   mdiArrowCollapseDown,
   mdiViewGridOutline,
+  mdiHeatWave,
   mdiArrowExpandHorizontal,
   mdiArrowExpandVertical,
   mdiRefresh,
@@ -458,6 +459,7 @@ export const Icons = Object.freeze({
   printer3dNozzle: mdiPrinter3dNozzleOutline,
   printer3dNozzleAlert: mdiPrinter3dNozzleAlertOutline,
   bedMesh: mdiViewGridOutline,
+  bedSoak: mdiHeatWave,
   host: mdiDesktopTower,
   history: mdiHistory,
   filter: mdiFilterOutline,
@@ -691,7 +693,9 @@ export const Waits = Object.freeze({
   onMmuLed: 'onMmuLed',
   onMmuTestConfig: 'onMmuTestConfig',
   onQidiBoxFlow: 'onQidiBoxFlow',
-  onQidiBoxCut: 'onQidiBoxCut'
+  onQidiBoxCut: 'onQidiBoxCut',
+  onBedSoakStart: 'onBedSoakStart',
+  onBedSoakStop: 'onBedSoakStop'
 })
 
 export const SupportedLocales = Object.freeze([

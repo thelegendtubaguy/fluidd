@@ -9,6 +9,11 @@
       md="8"
     >
       <bed-mesh-card fullscreen />
+
+      <bed-soak-card
+        v-if="supportsBedSoak"
+        class="mt-2 mt-md-4"
+      />
     </v-col>
     <v-col
       cols="12"
@@ -48,6 +53,7 @@ import BedMeshControls from '@/components/widgets/bedmesh/BedMeshControls.vue'
 import EndStopsCard from '@/components/widgets/endstops/EndStopsCard.vue'
 import RunoutSensorsCard from '@/components/widgets/runout-sensors/RunoutSensorsCard.vue'
 import BeaconCard from '@/components/widgets/beacon/BeaconCard.vue'
+import BedSoakCard from '@/components/widgets/bedSoak/BedSoakCard.vue'
 
 @Component({
   components: {
@@ -55,7 +61,8 @@ import BeaconCard from '@/components/widgets/beacon/BeaconCard.vue'
     BedMeshControls,
     EndStopsCard,
     RunoutSensorsCard,
-    BeaconCard
+    BeaconCard,
+    BedSoakCard
   }
 })
 export default class Tune extends Mixins(StateMixin) {
@@ -72,6 +79,11 @@ export default class Tune extends Mixins(StateMixin) {
 
   get supportsRunoutSensors () {
     return this.$typedGetters['printer/getRunoutSensors'].length > 0
+  }
+
+  // QIDI Max 4 Optimized's bed soak test
+  get supportsBedSoak (): boolean {
+    return this.$typedState.printer.printer.tltg_bed_soak != null
   }
 
   get supportsBeacon (): boolean {

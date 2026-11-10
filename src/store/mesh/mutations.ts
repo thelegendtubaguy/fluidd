@@ -1,6 +1,6 @@
 import type { MutationTree } from 'vuex'
 import { createState } from './state'
-import type { MatrixType, MeshState } from './types'
+import type { MatrixType, MeshPreview, MeshState } from './types'
 
 export const mutations = {
   /**
@@ -28,5 +28,9 @@ export const mutations = {
 
   setFlatSurface (state, payload: boolean) {
     state.flatSurface = payload
+  },
+
+  setPreview (state, payload: MeshPreview | null) {
+    state.preview = payload && Object.freeze(payload)
   }
 } satisfies MutationTree<MeshState>

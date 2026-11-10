@@ -7,6 +7,7 @@ export const createState = (): MeshState => {
     scale: 0.2,
     boxScale: 2.0,
     flatSurface: false,
-    matrix: 'mesh_matrix'
+    matrix: 'mesh_matrix',
+    preview: null
   }
 }
