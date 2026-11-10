@@ -1,14 +1,14 @@
 <template>
   <div class="bed-soak-chart">
     <div class="bed-soak-chart__head">
-      <span class="bed-soak-chart__title">{{ title }}</span>
+      <span class="body-2 font-weight-medium">{{ title }}</span>
       <span
         v-if="note"
-        class="bed-soak-chart__note"
+        class="caption secondary--text"
       >{{ note }}</span>
       <span
         v-if="series.length > 1"
-        class="bed-soak-chart__legend"
+        class="bed-soak-chart__legend caption"
       >
         <span
           v-for="item in series"
@@ -19,14 +19,14 @@
         </span>
       </span>
       <v-spacer />
-      <span class="bed-soak-chart__unit">{{ unit }}</span>
+      <span class="caption secondary--text">{{ unit }}</span>
     </div>
     <div
+      ref="plot"
       class="bed-soak-chart__chart"
-      :style="{ height: $filters.getPixelsString(height) }"
+      :style="{ height: $filters.getPixelsString(chartHeight) }"
     >
       <e-chart
-        ref="chart"
         :option="options"
         :group="group"
         :update-options="updateOptions"
@@ -38,7 +38,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Mixins } from 'vue-property-decorator'
+import { Component, Prop, Mixins, Ref } from 'vue-property-decorator'
 import type { EChartsInitOpts, EChartsOption, SetOptionOpts, LineSeriesOption } from 'echarts'
 import BrowserMixin from '@/mixins/browser'
 
@@ -115,11 +115,54 @@ export default class BedSoakChart extends Mixins(BrowserMixin) {
   @Prop({ type: Function, required: true })
   readonly timeLabel!: (minutes: number) => string
 
+  @Ref('plot')
+  readonly plot!: HTMLElement
+
+  // For placing event labels so they don't overlap
+  width = 600
+  resizeObserver: ResizeObserver | null = null
+
+  mounted () {
+    this.width = this.plot.clientWidth || 600
+
+    if (typeof ResizeObserver !== 'undefined') {
+      this.resizeObserver = new ResizeObserver(() => {
+        this.width = this.plot.clientWidth || this.width
+      })
+      this.resizeObserver.observe(this.plot)
+    }
+  }
+
+  beforeDestroy () {
+    this.resizeObserver?.disconnect()
+  }
+
   readonly updateOptions: SetOptionOpts = Object.freeze({ notMerge: true })
   readonly initOptions: EChartsInitOpts = Object.freeze({ renderer: 'canvas' })
 
   get isDark (): boolean {
     return this.$typedState.config.uiSettings.theme.isDark
+  }
+
+  // Event labels sit above the plot, centred on their line, in as many rows as it
+  // takes for them not to overlap
+  get eventRows (): number[] {
+    const plotWidth = Math.max(100, this.width - 44 - 78)
+    const minutesPerPixel = (this.xMax - this.xMin) / plotWidth
+    const rowEnds: number[] = []
+
+    return this.events.map(event => {
+      const half = (event.label.length * 6.2 + 12) / 2 * minutesPerPixel
+      let row = 0
+      while (rowEnds[row] != null && event.x - half < rowEnds[row]) row++
+      rowEnds[row] = event.x + half
+      return row
+    })
+  }
+
+  // Each row of event labels adds to the chart rather than squashing the plot
+  get chartHeight (): number {
+    return this.height + (this.eventRows.length > 0 ? 14 * Math.max(...this.eventRows) : 0)
   }
 
   get options (): EChartsOption {
@@ -129,16 +172,9 @@ export default class BedSoakChart extends Mixins(BrowserMixin) {
     const gridColor = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)'
     const axisColor = isDark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.2)'
     const eventColor = isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
-    const fontSize = 11
+    const fontSize = 12
 
-    // Event labels sit above the plot, staggered so labels close in time don't overlap
-    const rows: number[] = []
-    const eventRows = this.events.map(event => {
-      let row = 0
-      while (rows[row] != null && event.x - rows[row] < (this.xMax - this.xMin) * 0.3) row++
-      rows[row] = event.x
-      return row
-    })
+    const eventRows = this.eventRows
     const top = 10 + (this.events.length > 0 ? 14 * (Math.max(...eventRows) + 1) : 0)
 
     const markLineData = [
@@ -324,27 +360,13 @@ export default class BedSoakChart extends Mixins(BrowserMixin) {
     display: flex;
     align-items: baseline;
     flex-wrap: wrap;
-    column-gap: 14px;
-    font-size: 0.8125rem;
-    margin-top: 4px;
-  }
-
-  .bed-soak-chart__title {
-    font-weight: 500;
-  }
-
-  .bed-soak-chart__note,
-  .bed-soak-chart__unit {
-    font-size: 0.75rem;
-    opacity: 0.6;
+    column-gap: 12px;
   }
 
   .bed-soak-chart__legend {
     display: inline-flex;
     flex-wrap: wrap;
-    column-gap: 14px;
-    font-size: 0.75rem;
-    opacity: 0.85;
+    column-gap: 12px;
   }
 
   .bed-soak-chart__legend-item {
@@ -353,9 +375,9 @@ export default class BedSoakChart extends Mixins(BrowserMixin) {
 
   .bed-soak-chart__legend-item i {
     display: inline-block;
-    width: 14px;
+    width: 12px;
     height: 2px;
-    margin-right: 6px;
+    margin-right: 5px;
     vertical-align: middle;
     border-radius: 1px;
   }
@@ -363,4 +385,5 @@ export default class BedSoakChart extends Mixins(BrowserMixin) {
   .bed-soak-chart__chart {
     width: 100%;
   }
+
 </style>

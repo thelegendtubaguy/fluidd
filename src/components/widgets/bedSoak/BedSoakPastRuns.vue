@@ -1,11 +1,8 @@
 <template>
   <div class="bed-soak-past-runs">
-    <div
-      v-if="entries.length === 0"
-      class="bed-soak-past-runs__empty"
-    >
+    <v-card-text v-if="entries.length === 0">
       {{ $t('app.bed_soak.msg.no_runs') }}
-    </div>
+    </v-card-text>
 
     <template v-else>
       <v-simple-table
@@ -22,12 +19,13 @@
             <th class="text-right">
               {{ $t('app.bed_soak.label.chamber') }}
             </th>
+            <th>{{ $t('app.bed_soak.label.mesh') }}</th>
             <th class="text-right">
               {{ $t('app.bed_soak.label.bed_at_temp') }}
             </th>
             <th>{{ $t('app.bed_soak.label.stopped_moving_short') }}</th>
             <th class="text-right">
-              {{ $t('app.bed_soak.label.ready') }}
+              {{ $t('app.bed_soak.label.ready_short') }}
             </th>
             <th>{{ $t('app.bed_soak.label.problems') }}</th>
             <th />
@@ -53,9 +51,10 @@
                 :style="{ background: row.color || 'transparent' }"
               />
               {{ row.date }}
-              <div class="bed-soak-past-runs__note">
-                {{ [row.mesh, row.note].filter(Boolean).join(' · ') }}
-              </div>
+              <span
+                v-if="row.note"
+                class="secondary--text ms-1"
+              >{{ row.note }}</span>
             </td>
             <td class="text-right text-no-wrap">
               {{ row.bed }} °C
@@ -66,6 +65,9 @@
                 v-else
                 class="bed-soak-past-runs__muted"
               >{{ $t('app.bed_soak.label.off') }}</span>
+            </td>
+            <td class="text-no-wrap">
+              {{ row.mesh }}
             </td>
             <td class="text-right text-no-wrap">
               {{ row.bedAt }}
@@ -89,20 +91,29 @@
             <td class="text-right text-no-wrap">
               {{ row.ready }}
             </td>
-            <td>
-              <span
+            <td class="text-no-wrap">
+              <v-tooltip
                 v-if="row.problems"
-                class="d-inline-flex align-center bed-soak-past-runs__problems"
+                bottom
               >
-                <v-icon
-                  small
-                  :color="warningColor"
-                  class="me-1"
-                >
-                  $warning
-                </v-icon>
-                {{ row.problems }}
-              </span>
+                <template #activator="{ on, attrs }">
+                  <span
+                    class="d-inline-flex align-center"
+                    v-bind="attrs"
+                    v-on="on"
+                  >
+                    <v-icon
+                      small
+                      :color="warningColor"
+                      class="me-1"
+                    >
+                      $warning
+                    </v-icon>
+                    {{ row.problemCount }}
+                  </span>
+                </template>
+                <span>{{ row.problems }}</span>
+              </v-tooltip>
               <span
                 v-else-if="row.run"
                 class="bed-soak-past-runs__muted"
@@ -147,7 +158,9 @@
         </tbody>
       </v-simple-table>
 
-      <div
+      <v-divider />
+
+      <v-card-text
         v-if="compareRuns.length > 0"
         class="bed-soak-past-runs__compare"
         :class="{ 'bed-soak-past-runs__compare--stacked': !$vuetify.breakpoint.lgAndUp }"
@@ -172,13 +185,13 @@
           :time-label="timeLabel"
           :height="180"
         />
-      </div>
-      <div
+      </v-card-text>
+      <v-card-text
         v-else
-        class="bed-soak-past-runs__hint"
+        class="secondary--text"
       >
         {{ $t('app.bed_soak.msg.compare_hint') }}
-      </div>
+      </v-card-text>
     </template>
   </div>
 </template>
@@ -299,11 +312,12 @@ export default class BedSoakPastRuns extends Mixins(StateMixin, FilesMixin) {
         bed: run?.settings.bed ?? entry.bed,
         chamber: run ? run.settings.chamber : entry.chamber,
         mesh: probeCount
-          ? this.$t('app.bed_soak.label.mesh_size', { rows: probeCount, cols: run?.meshes[0]?.matrix[0].length ?? probeCount }).toString()
-          : '',
+          ? `${run?.meshes[0]?.matrix[0].length ?? probeCount} × ${probeCount}`
+          : '—',
         bedAt: run ? duration(milestones?.bed) : '…',
         settled,
         ready: run ? duration(milestones?.ready) : '',
+        problemCount: problems + jumps,
         problems: [
           problems > 0 ? this.$tc('app.bed_soak.label.points_count', problems, { count: problems }).toString() : '',
           jumps > 0 ? this.$tc('app.bed_soak.label.jumps_count', jumps, { count: jumps }).toString() : ''
@@ -396,15 +410,9 @@ export default class BedSoakPastRuns extends Mixins(StateMixin, FilesMixin) {
     padding: 0 8px !important;
   }
 
-  .bed-soak-past-runs__problems {
-    min-width: 90px;
-  }
-
-  .bed-soak-past-runs__empty,
-  .bed-soak-past-runs__hint {
-    padding: 16px 0;
-    font-size: 0.8125rem;
-    opacity: 0.7;
+  .bed-soak-past-runs__table :deep(th:first-child),
+  .bed-soak-past-runs__table :deep(td:first-child) {
+    padding-left: 16px !important;
   }
 
   .bed-soak-past-runs__selected td {
@@ -413,17 +421,11 @@ export default class BedSoakPastRuns extends Mixins(StateMixin, FilesMixin) {
 
   .bed-soak-past-runs__swatch {
     display: inline-block;
-    width: 14px;
+    width: 12px;
     height: 2px;
-    margin-right: 8px;
+    margin-right: 6px;
     vertical-align: middle;
     border-radius: 1px;
-  }
-
-  .bed-soak-past-runs__note {
-    font-size: 0.6875rem;
-    opacity: 0.65;
-    margin-left: 22px;
   }
 
   .bed-soak-past-runs__muted {
@@ -433,8 +435,7 @@ export default class BedSoakPastRuns extends Mixins(StateMixin, FilesMixin) {
   .bed-soak-past-runs__compare {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: 18px;
-    margin-top: 18px;
+    gap: 24px;
 
     &--stacked {
       grid-template-columns: minmax(0, 1fr);

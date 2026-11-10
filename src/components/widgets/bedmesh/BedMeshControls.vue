@@ -44,6 +44,29 @@
               >
                 {{ $t('app.bedmesh.label.active') }}
               </v-chip>
+              <v-tooltip
+                v-if="item.active && problemPoints.length > 0"
+                bottom
+              >
+                <template #activator="{ on, attrs }">
+                  <v-chip
+                    small
+                    class="ms-1"
+                    v-bind="attrs"
+                    v-on="on"
+                  >
+                    <v-icon
+                      small
+                      left
+                      :color="warningColor"
+                    >
+                      $warning
+                    </v-icon>
+                    {{ problemPoints.length }}
+                  </v-chip>
+                </template>
+                <span>{{ problemTooltip }}</span>
+              </v-tooltip>
             </td>
             <td class="focus--text">
               <span>
@@ -99,19 +122,6 @@
     </template>
 
     <v-card-text>
-      <div
-        v-if="problemPoints.length > 0"
-        class="d-flex flex-wrap align-center mb-4"
-      >
-        <span
-          v-if="problemMeshMeasured"
-          class="me-2"
-        >
-          {{ $t('app.bed_soak.msg.active_mesh_measured', { time: problemMeshMeasured }) }}
-        </span>
-        <bed-mesh-problem-chip :count="problemPoints.length" />
-      </div>
-
       <div
         v-if="bedMeshProfiles.length === 0"
         class="mb-4"
@@ -282,7 +292,7 @@
 <script lang="ts">
 import { Component, Mixins } from 'vue-property-decorator'
 import SaveMeshDialog from './SaveMeshDialog.vue'
-import BedMeshProblemChip from './BedMeshProblemChip.vue'
+import { BedSoakColors } from '@/util/tltg-bed-soak'
 import StateMixin from '@/mixins/state'
 import ToolheadMixin from '@/mixins/toolhead'
 import type {
@@ -294,8 +304,7 @@ import { encodeGcodeParamValue } from '@/util/gcode-helpers'
 
 @Component({
   components: {
-    SaveMeshDialog,
-    BedMeshProblemChip
+    SaveMeshDialog
   }
 })
 export default class BedMesh extends Mixins(StateMixin, ToolheadMixin) {
@@ -372,10 +381,15 @@ export default class BedMesh extends Mixins(StateMixin, ToolheadMixin) {
     return this.$typedGetters['printer/getTltgProbeReportPoints']
   }
 
-  get problemMeshMeasured (): string | null {
-    const measured = this.$typedState.printer.printer.tltg_probe_report?.measured
+  readonly warningColor = BedSoakColors.warning
 
-    return measured ? this.$filters.formatDateTime(measured * 1000) : null
+  get problemTooltip (): string {
+    const measured = this.$typedState.printer.printer.tltg_probe_report?.measured
+    const count = this.$tc('app.bed_soak.label.problem_points_count', this.problemPoints.length, { count: this.problemPoints.length }).toString()
+
+    return measured
+      ? this.$t('app.bed_soak.msg.problem_points_measured', { count, time: this.$filters.formatDateTime(measured * 1000) }).toString()
+      : count
   }
 
   // If the printer supports QGL
