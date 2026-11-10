@@ -100,6 +100,19 @@
 
     <v-card-text>
       <div
+        v-if="problemPoints.length > 0"
+        class="d-flex flex-wrap align-center mb-4"
+      >
+        <span
+          v-if="problemMeshMeasured"
+          class="me-2"
+        >
+          {{ $t('app.bed_soak.msg.active_mesh_measured', { time: problemMeshMeasured }) }}
+        </span>
+        <bed-mesh-problem-chip :count="problemPoints.length" />
+      </div>
+
+      <div
         v-if="bedMeshProfiles.length === 0"
         class="mb-4"
       >
@@ -269,6 +282,7 @@
 <script lang="ts">
 import { Component, Mixins } from 'vue-property-decorator'
 import SaveMeshDialog from './SaveMeshDialog.vue'
+import BedMeshProblemChip from './BedMeshProblemChip.vue'
 import StateMixin from '@/mixins/state'
 import ToolheadMixin from '@/mixins/toolhead'
 import type {
@@ -280,7 +294,8 @@ import { encodeGcodeParamValue } from '@/util/gcode-helpers'
 
 @Component({
   components: {
-    SaveMeshDialog
+    SaveMeshDialog,
+    BedMeshProblemChip
   }
 })
 export default class BedMesh extends Mixins(StateMixin, ToolheadMixin) {
@@ -350,6 +365,17 @@ export default class BedMesh extends Mixins(StateMixin, ToolheadMixin) {
   // If we have a mesh loaded.
   get meshLoaded (): boolean {
     return !!this.currentMesh?.profile_name
+  }
+
+  // Retried probe points of the loaded mesh, from QIDI Max 4 Optimized's tltg_probe_report
+  get problemPoints (): Klipper.TltgProbeReportPoint[] {
+    return this.$typedGetters['printer/getTltgProbeReportPoints']
+  }
+
+  get problemMeshMeasured (): string | null {
+    const measured = this.$typedState.printer.printer.tltg_probe_report?.measured
+
+    return measured ? this.$filters.formatDateTime(measured * 1000) : null
   }
 
   // If the printer supports QGL

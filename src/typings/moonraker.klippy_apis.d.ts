@@ -55,6 +55,11 @@ declare namespace Moonraker {
       params: undefined,
       result: KlippyApis.QueryEndstopsStatusResponse
     },
+    // QIDI Max 4 Optimized's tltg_bed_soak endpoint, which Moonraker exposes as printer.tltg_bed_soak.stop
+    'printer.tltg_bed_soak.stop': {
+      params: undefined,
+      result: unknown
+    },
     'printer.objects.list': {
       params: undefined,
       result: KlippyApis.ObjectsListResponse

@@ -1682,3 +1682,196 @@ app:
     title:
       control: Control the printer screen
       printer_screen: Printer screen
+  bed_soak:
+    btn:
+      back: Back to runs
+      delete: Delete
+      download: Download
+      new_test: New test
+      open: Open
+      show_loaded_mesh: Show the loaded mesh
+      start: Start soak test
+      stop: Stop
+      view_in_3d: View in 3D on Bed mesh
+    hint:
+      bed: Held for the whole test
+      chamber: 0 leaves the chamber heater off
+      cool: Near room temperature
+      mesh: 5 × 5 measures more often. 9 × 9 shows more detail.
+      printer_busy: Wait for the print or command to finish
+      printer_idle: No print running or paused
+      stop_when: Under {limit} µm per minute for {count} meshes in a row
+      time_limit: Stops here even if the bed is still moving
+      warm: Still warm, so the cold mesh won't be cold and the times will be shorter.
+    label:
+      after_heaters_on: '{time} after heaters on'
+      after_heaters_on_short: after heaters on
+      after_test: After the test
+      at_end: at the end of the test
+      bed: Bed
+      bed_at: Bed at {temp} °C
+      bed_at_temp: Bed at temp
+      bed_now: Bed {temp} °C
+      bed_reached: Bed reached {temp} °C in
+      bed_temperature: Bed temperature
+      before_heaters_on: '{time} before heaters on'
+      before_start: Before it starts
+      chamber: Chamber
+      chamber_at: Chamber at {temp} °C
+      chamber_below: below its {temp} °C target
+      chamber_now: Chamber {temp} °C
+      chamber_reached: Chamber reached {temp} °C in
+      chamber_stopped_warming: Chamber stopped warming at
+      chamber_temperature: Chamber temperature
+      change_from_cold: Change from the cold mesh
+      checked_at_temp: Checked once the bed is at temperature
+      cold: Cold
+      cold_mesh: Cold mesh
+      compare_chamber: Chamber temperature since heaters on
+      compare_height: Bed height since heaters on
+      date: Date
+      duration: '{min} min {s} s'
+      event_bed: bed at temp
+      event_chamber: chamber at temp
+      event_heaters_on: heaters on
+      event_jump: probe jump, mesh {mesh} not used
+      event_settled: stopped moving
+      from: from {temp} °C
+      heating: Heating
+      heaters_off: Heaters off
+      heats_after_cold: Heats after the cold mesh
+      height: Height
+      higher: higher
+      highest: Highest {temp} °C
+      in_count_of_meshes: in {count} of {total} meshes
+      in_meshes: in mesh {list} | in meshes {list}
+      jumps_count: '{count} jump | {count} jumps'
+      keep_heating: Keep heating
+      limit: stopped-moving limit
+      lower: lower
+      mesh: Mesh
+      mesh_n: Mesh {n}
+      mesh_size: '{cols} × {rows} mesh'
+      meshes_under: '{count} of {total} meshes under {limit} µm/min'
+      min: min
+      movement: Bed movement since the cold mesh
+      none: None
+      not_heated: Not heated
+      not_measured: Not measured
+      not_reached: Not reached
+      not_used: not used
+      now: '{temp} °C now'
+      nozzle: Nozzle
+      off: 'off'
+      past_runs: Past runs ({count})
+      point: X{x} Y{y}
+      point_tries: '{point} took {tries} tries'
+      points_count: '{count} point | {count} points'
+      presets: Presets
+      preview_title: '{mesh} of the bed soak, change from the cold mesh ({mode})'
+      printer_busy: Printer busy
+      printer_idle: Printer idle
+      problem_points_count: '{count} problem point | {count} problem points'
+      problem_points_in_mesh: Problem points in this mesh
+      problem_points_n: Problem points ({count})
+      problems: Problems
+      ready: Ready to print
+      ready_after: Ready to print after
+      ready_when: When the bed has stopped moving and the chamber is at temperature
+      settled_rule: under {limit} µm per minute for {count} meshes in a row
+      settling: Settling
+      shape: Shape
+      shape_and_height: Shape + height
+      since_heaters_on: Since heaters on
+      speed: Change
+      still_moving: Still moving
+      still_moving_at: Still moving at {min} min
+      still_moving_note: change between meshes
+      still_moving_value: Still moving
+      stop_when: Stop when
+      stopped_moving: Bed stopped moving
+      stopped_moving_after: Bed stopped moving after
+      stopped_moving_short: Stopped moving
+      stopped_warming: Stopped warming
+      stops_moving: the bed stops moving
+      targets: '{bed} °C bed, {chamber} °C chamber'
+      targets_no_chamber: '{bed} °C bed, chamber off'
+      targets_short: '{bed} °C · {chamber} °C'
+      targets_short_no_chamber: '{bed} °C · chamber off'
+      temperature: Temperature
+      test: Test
+      time_limit: Time limit
+      title_bed: '{bed} °C bed'
+      title_targets: '{bed} °C bed · {chamber} °C chamber'
+      top_view: Top view, back of the bed at the top
+      um_per_min: µm per min
+      waiting: Waiting
+    msg:
+      active_mesh_measured: Active mesh measured {time}.
+      cell_out_of_line: Out of line with the rest of the bed by {change}.
+      cell_retried: Took {tries} tries, samples up to {spread} µm apart.
+      charts_after_cold: The charts start once the cold mesh is measured.
+      closest_run: >-
+        Latest run at these temperatures, {date}, {targets}. Bed at temperature
+        in {bed}, stopped moving after {settled}.
+      compare_hint: Tick up to three runs to compare them.
+      confirm_delete: Delete the bed soak run {name}?
+      confirm_stop: >-
+        Stop the bed soak test? The heaters it turned on turn off now, and the
+        results so far are kept.
+      ended_failed: The test failed. {reason}
+      ended_stopped: The test was stopped early. {reason}
+      heaters_off: Heaters turned off at the end.
+      heatmap_after_cold: Shows after the cold mesh
+      incomplete: This run has no result, as Klipper stopped before the test ended.
+      kept_heating: The heaters kept heating at the end.
+      lead: >-
+        Measures the bed from cold while it heats, and shows how long the bed
+        and chamber take to reach temperature and how long the bed keeps moving
+        after that.
+      meshes_over: '{count} mesh over {duration}. | {count} meshes over {duration}.'
+      moved: >-
+        Since the cold mesh the bed moved {height} in height and its shape
+        changed by {shape}.
+      no_runs: No saved runs yet.
+      problem_check_plate: Check the plate here.
+      problem_jump: >-
+        not used. Probe readings jumped {size} µm partway through and stayed
+        there. Later heights are corrected by that amount.
+      problem_out_of_line: out of line {meshes}, by up to {change}
+      problem_retried: retried {meshes}, up to {tries} tries, samples up to {spread} µm apart
+      retried_point: >-
+        took {tries} tries. Its samples were up to {spread} µm apart. Something
+        on the plate or the nozzle can cause this. Check the plate here.
+      showing_in_bed_mesh: Showing {title}.
+      start_note: >-
+        Homes, holds the nozzle at its probing temperature, and measures one
+        mesh before heating.
+      times_from_heaters_on: All times count from when the heaters turned on.
+      warning_check_plate: Check the plate, then run the test again for a clean result.
+      warning_check_points: Check the plate at {points}, then run the test again for a clean result.
+      warning_jump: Probe readings jumped {size} µm during mesh {n}.
+      warning_jump_detail: >-
+        {meshes} isn't used, and heights after it are corrected by the jump. |
+        {meshes} aren't used, and heights after them are corrected by the jumps.
+      warning_points: >-
+        {points} had a probe problem in more than one mesh. | {points} had probe
+        problems in more than one mesh.
+    state:
+      failed: Failed
+      finished: Finished
+      incomplete: Incomplete
+      running: Running
+      stopped: Stopped
+    step:
+      cold_mesh: Measuring the cold mesh
+      finishing: Finishing
+      home: Homing
+      home_z: Homing Z
+      mesh: Measuring mesh {n}
+      nozzle: Heating the nozzle to {temp} °C
+      stopping: Stopping after this mesh
+      wipe: Wiping the nozzle
+      z_tilt: Running Z tilt adjust
+    title:
+      bed_soak: Bed soak

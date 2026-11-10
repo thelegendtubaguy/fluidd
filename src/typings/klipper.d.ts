@@ -176,6 +176,10 @@ declare namespace Klipper {
       tltg_klipper_health: TltgKlipperHealthState;
 
       tltg_printer_warnings: TltgPrinterWarningsState;
+
+      tltg_bed_soak: TltgBedSoakState;
+
+      tltg_probe_report: TltgProbeReportState;
     }>
 
   export interface PrinterState extends PrinterStateBaseType {
@@ -618,6 +622,88 @@ declare namespace Klipper {
     level: 'warning' | 'error';
     title: string;
     message: string;
+  }
+
+  export type TltgBedSoakRunState = 'idle' | 'running' | 'finished' | 'stopped' | 'failed'
+
+  export type TltgBedSoakStep = '' | 'nozzle' | 'home' | 'wipe' | 'z_tilt' | 'home_z' | 'cold_mesh' | 'mesh' | 'finishing'
+
+  export interface TltgBedSoakSettings {
+    bed: number;
+    chamber: number | null;
+    nozzle: number;
+    probe_count: number;
+    time_limit: number;
+    stop_when_settled: boolean;
+    keep_heating: boolean;
+  }
+
+  // Lengths in mm, speed in mm/min
+  export interface TltgBedSoakLimits {
+    speed: number;
+    out_of_line: number;
+    jump: number;
+    bed_wait: number;
+    chamber_wait: number;
+  }
+
+  // Seconds after the heaters turned on, and °C for chamber_max
+  export interface TltgBedSoakMilestones {
+    bed: number | null;
+    chamber: number | null;
+    chamber_max: number | null;
+    settled: number | null;
+    ready: number | null;
+  }
+
+  export interface TltgBedSoakLatest {
+    index: number;
+    time: number;
+    height: number;
+    shape: number;
+    speed: number | null;
+    used: boolean;
+  }
+
+  // QIDI Max 4 Optimized's bed soak test. Grids are in the run file, not here.
+  export interface TltgBedSoakState {
+    state: TltgBedSoakRunState;
+    step: TltgBedSoakStep;
+    stop_requested: boolean;
+    chamber_available: boolean;
+    settings: TltgBedSoakSettings | null;
+    limits: TltgBedSoakLimits;
+    started: number | null;
+    heaters_on: number | null;
+    elapsed: number | null;
+    milestones: TltgBedSoakMilestones;
+    meshes: number;
+    latest: TltgBedSoakLatest | null;
+    mesh_progress: number | null;
+    problems: {
+      points: number;
+      jumps: number;
+    };
+    file: string;
+    reason: string;
+  }
+
+  export interface TltgProbeReportPoint {
+    x: number;
+    y: number;
+    tries: number;
+    spread: number;
+  }
+
+  // Retried probe points of the most recent bed mesh, from QIDI Max 4 Optimized's tltg_probe_report
+  export interface TltgProbeReportState {
+    measured: number | null;
+    loaded: boolean;
+    profile: string | null;
+    mesh_min: [number, number] | null;
+    mesh_max: [number, number] | null;
+    probe_count: [number, number] | null;
+    points: TltgProbeReportPoint[];
   }
 
   export interface BeaconState {

@@ -101,7 +101,15 @@ export const getters = {
    * Returns the current mesh, in a usable format for echarts.
    */
   getCurrentMeshData: (state, getters, rootState): AppMeshes => {
-    const bedMesh = rootState.printer.printer.bed_mesh
+    const bedMesh: Klipper.BedMeshState | undefined = state.preview
+      ? {
+          profile_name: state.preview.title,
+          mesh_min: state.preview.mesh_min,
+          mesh_max: state.preview.mesh_max,
+          probed_matrix: state.preview.matrix,
+          mesh_matrix: state.preview.matrix
+        }
+      : rootState.printer.printer.bed_mesh
 
     if (bedMesh == null) {
       return {}

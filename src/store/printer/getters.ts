@@ -10,6 +10,7 @@ import isKeyOf from '@/util/is-key-of'
 import getFilePaths from '@/util/get-file-paths'
 import type { AppFileWithMeta } from '../files/types'
 import tltgPrinterWarnings from '@/util/tltg-printer-warnings'
+import tltgProbeReportPoints from '@/util/tltg-probe-report'
 
 const configHasDisconnectedMcu = (config: Record<string, any> | undefined, disconnectedMcuNames: Set<string>): boolean => (
   (
@@ -1096,6 +1097,14 @@ export const getters = {
    */
   getTltgPrinterWarnings: (state): Klipper.TltgPrinterWarning[] => {
     return tltgPrinterWarnings(state.printer.tltg_printer_warnings)
+  },
+
+  /**
+   * Retried probe points of the loaded bed mesh, from QIDI Max 4 Optimized's
+   * tltg_probe_report; empty when the loaded mesh isn't the one it describes.
+   */
+  getTltgProbeReportPoints: (state): Klipper.TltgProbeReportPoint[] => {
+    return tltgProbeReportPoints(state.printer.tltg_probe_report)
   },
 
   getKlipperWarnings: (state) => {

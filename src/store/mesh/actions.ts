@@ -1,5 +1,5 @@
 import type { ActionTree } from 'vuex'
-import type { MatrixType, MeshState } from './types'
+import type { MatrixType, MeshPreview, MeshState } from './types'
 import type { RootState } from '../types'
 
 export const actions = {
@@ -28,5 +28,9 @@ export const actions = {
 
   async onFlatSurface ({ commit }, payload: boolean) {
     commit('setFlatSurface', payload)
+  },
+
+  async onPreview ({ commit }, payload: MeshPreview | null) {
+    commit('setPreview', payload)
   }
 } satisfies ActionTree<MeshState, RootState>

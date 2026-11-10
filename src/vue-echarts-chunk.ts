@@ -3,7 +3,7 @@ import ECharts from 'vue-echarts'
 import { use } from 'echarts/core'
 import { LineChart } from 'echarts/charts'
 import { Grid3DComponent } from 'echarts-gl/components'
-import { SurfaceChart } from 'echarts-gl/charts'
+import { SurfaceChart, Scatter3DChart } from 'echarts-gl/charts'
 import {
   DatasetComponent,
   TooltipComponent,
@@ -11,7 +11,9 @@ import {
   DataZoomComponent,
   LegendComponent,
   VisualMapComponent,
-  GraphicComponent
+  GraphicComponent,
+  MarkLineComponent,
+  MarkAreaComponent
 } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
 
@@ -25,7 +27,10 @@ use([
   LineChart,
   VisualMapComponent,
   GraphicComponent,
+  MarkLineComponent,
+  MarkAreaComponent,
   SurfaceChart,
+  Scatter3DChart,
   Grid3DComponent,
   CanvasRenderer
 ])
