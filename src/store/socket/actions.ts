@@ -75,7 +75,7 @@ const isTokenExpired = (rawToken: string): boolean => {
   }
 }
 
-const getAccessToken = async (keys: TokenKeys): Promise<string | null> => {
+export const getAccessToken = async (keys: TokenKeys): Promise<string | null> => {
   const token = localStorage.getItem(keys.userToken)
 
   if (token && !isTokenExpired(token)) {

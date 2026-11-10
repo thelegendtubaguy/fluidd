@@ -1836,3 +1836,62 @@ app:
       stop_when_settled: >-
         Ends the test once the bed moves less than {limit} µm per minute for
         {count} meshes in a row. Otherwise it runs to the time limit.
+  tltg_addons:
+    btn:
+      dashboard: Dashboard
+      hide_log: Hide log
+      install: Install
+      link_account: Link account
+      remove: Remove
+      show_link_code: Show link code
+      show_log: Show log
+      update: Update
+    job:
+      install:
+        failed: Installing {name} failed
+        running: Installing {name}…
+        succeeded: '{name} installed'
+      remove:
+        failed: Removing {name} failed
+        running: Removing {name}…
+        succeeded: '{name} removed'
+      update:
+        failed: Updating {name} failed
+        running: Updating {name}…
+        succeeded: '{name} updated'
+    label:
+      account: Account
+      connected: Connected
+      linked: Linked
+      not_connected: Not connected
+      not_linked: Not linked
+      octoeverywhere: OctoEverywhere
+      service: Service
+      version: Version {version}
+      version_update: Version {installed}, {available} available
+    msg:
+      code_expires: Expires at {time}
+      code_unavailable: OctoEverywhere didn't return a link code.
+      confirm_remove: Remove {name} from the printer?
+      enter_code_at: Enter this code at
+      foreign: >-
+        {name} was installed outside Valve Oil, so it can't be updated or
+        removed here.
+      loading: Loading add-ons…
+      none: No add-ons are offered for this printer.
+      printer_busy: Available when the printer is idle
+      unavailable: Add-ons aren't available on this printer.
+    service:
+      active: Running
+      activating: Starting
+      failed: Failed
+      inactive: Stopped
+      unknown: Unknown
+    state:
+      foreign: Installed outside Valve Oil
+      installed: Installed
+      not_installed: Not installed
+      update_available: Update available
+    title:
+      addons: Add-ons
+      remove: Remove {name}
