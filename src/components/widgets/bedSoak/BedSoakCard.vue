@@ -1,61 +1,77 @@
 <template>
   <collapsable-card
     class="bed-soak-card"
-    :title="title"
+    :title="$t('app.bed_soak.title.bed_soak')"
     icon="$bedSoak"
     :lazy="false"
   >
-    <template #menu>
+    <template #title>
       <div class="d-flex align-center">
         <v-tabs
           v-model="tab"
           background-color="transparent"
           mobile-breakpoint="0"
-          height="36"
-          class="bed-soak-card__tabs me-2"
+          height="41"
+          hide-slider
+          class="flex-grow-0 bed-soak-card__tabs"
         >
-          <v-tab>{{ $t('app.bed_soak.label.test') }}</v-tab>
-          <v-tab>{{ $t('app.bed_soak.label.past_runs', { count: entries.length }) }}</v-tab>
+          <v-tab :title="$t('app.bed_soak.title.bed_soak')">
+            <v-icon :left="!isMobileViewport">
+              $bedSoak
+            </v-icon>
+            <span v-if="!isMobileViewport">{{ $t('app.bed_soak.title.bed_soak') }}</span>
+          </v-tab>
+          <v-tab>
+            {{ $t('app.bed_soak.label.past_runs', { count: entries.length }) }}
+          </v-tab>
         </v-tabs>
-
-        <app-btn
-          v-if="running"
+        <app-inline-help
+          v-if="!isMobileViewport"
+          bottom
           small
-          color="error"
-          class="my-1"
-          :loading="hasWait($waits.onBedSoakStop)"
-          :disabled="status.stop_requested"
-          @click="handleStop"
-        >
-          <v-icon
-            small
-            left
-          >
-            $stop
-          </v-icon>
-          {{ $t('app.bed_soak.btn.stop') }}
-        </app-btn>
-        <app-btn
-          v-else-if="tab === 0 && !showSetup"
-          small
-          class="my-1"
-          @click="dismissedFile = status.file"
-        >
-          {{ $t('app.bed_soak.btn.new_test') }}
-        </app-btn>
-        <app-btn
-          v-else-if="tab === 1 && openedPath"
-          small
-          class="my-1"
-          @click="openedPath = null"
-        >
-          {{ $t('app.bed_soak.btn.back') }}
-        </app-btn>
+          :tooltip="$t('app.bed_soak.tooltip.card')"
+        />
       </div>
     </template>
 
-    <v-card-text>
-      <template v-if="tab === 0">
+    <template #menu>
+      <app-btn
+        v-if="running && tab === 0"
+        small
+        color="error"
+        class="me-1 my-1"
+        :loading="hasWait($waits.onBedSoakStop)"
+        :disabled="status.stop_requested"
+        @click="handleStop"
+      >
+        <v-icon
+          small
+          left
+        >
+          $stop
+        </v-icon>
+        {{ $t('app.bed_soak.btn.stop') }}
+      </app-btn>
+      <app-btn
+        v-else-if="tab === 0 && !showSetup"
+        small
+        class="me-1 my-1"
+        @click="dismissedFile = status.file"
+      >
+        {{ $t('app.bed_soak.btn.new_test') }}
+      </app-btn>
+      <app-btn
+        v-else-if="tab === 1 && openedEntry"
+        small
+        class="me-1 my-1"
+        @click="openedPath = null"
+      >
+        {{ $t('app.bed_soak.btn.back') }}
+      </app-btn>
+    </template>
+
+    <template v-if="tab === 0">
+      <v-card-text>
         <bed-soak-setup
           v-if="showSetup"
           :status="status"
@@ -69,22 +85,23 @@
           :live-temps="liveTemps"
           :file="status.file"
         />
-      </template>
+      </v-card-text>
+    </template>
 
-      <template v-else>
+    <template v-else>
+      <v-card-text v-if="openedEntry">
         <bed-soak-run
-          v-if="openedEntry"
           :run="openedEntry.run"
           :file="openedEntry.path"
         />
-        <bed-soak-past-runs
-          v-else
-          :entries="entries"
-          :live-file="running ? status.file : ''"
-          @open="openedPath = $event"
-        />
-      </template>
-    </v-card-text>
+      </v-card-text>
+      <bed-soak-past-runs
+        v-else
+        :entries="entries"
+        :live-file="running ? status.file : ''"
+        @open="openedPath = $event"
+      />
+    </template>
   </collapsable-card>
 </template>
 
@@ -96,7 +113,6 @@ import StateMixin from '@/mixins/state'
 import FilesMixin from '@/mixins/files'
 import BrowserMixin from '@/mixins/browser'
 import { SocketActions } from '@/api/socketActions'
-import { isMoonrakerNotFoundError } from '@/util/is-socket-error'
 import type { FileBrowserEntry } from '@/store/files/types'
 import BedSoakSetup from './BedSoakSetup.vue'
 import BedSoakRun from './BedSoakRun.vue'
@@ -165,30 +181,6 @@ export default class BedSoakCard extends Mixins(StateMixin, FilesMixin, BrowserM
     return this.status.file ? this.runs[this.status.file]?.run ?? null : null
   }
 
-  get title (): string {
-    const base = this.$t('app.bed_soak.title.bed_soak').toString()
-
-    if (this.isMobileViewport) return base
-
-    const settings = this.tab === 1
-      ? this.openedEntry?.run?.settings
-      : !this.showSetup
-          ? this.status.settings ?? this.liveRun?.settings
-          : null
-
-    if (!settings) return base
-
-    const targets = settings.chamber
-      ? this.$t('app.bed_soak.label.title_targets', { bed: settings.bed, chamber: settings.chamber })
-      : this.$t('app.bed_soak.label.title_bed', { bed: settings.bed })
-
-    return [
-      base,
-      ...(this.tab === 0 && this.running ? [this.$t('app.bed_soak.state.running')] : []),
-      targets
-    ].join(' · ')
-  }
-
   get files (): { filename: string, modified: number }[] {
     const directory: FileBrowserEntry[] | undefined = this.$typedGetters['files/getDirectory'](BED_SOAK_PATH)
 
@@ -240,7 +232,8 @@ export default class BedSoakCard extends Mixins(StateMixin, FilesMixin, BrowserM
   }
 
   requestDirectory () {
-    SocketActions.serverFilesGetDirectory(BED_SOAK_PATH, { suppressError: isMoonrakerNotFoundError })
+    // Moonraker answers 400 while the folder doesn't exist yet
+    SocketActions.serverFilesGetDirectory(BED_SOAK_PATH, { suppressError: true })
       .catch(() => {
         // No runs saved yet
       })
@@ -379,12 +372,5 @@ export default class BedSoakCard extends Mixins(StateMixin, FilesMixin, BrowserM
 <style lang="scss" scoped>
   .bed-soak-card__tabs {
     width: auto;
-
-    :deep(.v-tab) {
-      min-width: 0;
-      text-transform: none;
-      letter-spacing: normal;
-      padding: 0 12px;
-    }
   }
 </style>

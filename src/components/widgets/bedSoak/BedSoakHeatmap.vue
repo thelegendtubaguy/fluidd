@@ -1,36 +1,17 @@
 <template>
   <div class="bed-soak-heatmap">
-    <div class="bed-soak-heatmap__title">
-      {{ $t('app.bed_soak.label.change_from_cold') }}
-    </div>
-    <div class="bed-soak-heatmap__sub">
-      {{ $t('app.bed_soak.label.top_view') }}
-    </div>
-
-    <v-btn-toggle
-      v-model="mode"
-      mandatory
-      dense
-      color="primary"
-      class="bed-soak-heatmap__mode mb-2"
-    >
-      <v-btn
+    <div class="d-flex align-center">
+      <span class="body-2 font-weight-medium">{{ $t('app.bed_soak.label.change_from_cold') }}</span>
+      <app-inline-help
+        bottom
         small
-        value="shape"
-      >
-        {{ $t('app.bed_soak.label.shape') }}
-      </v-btn>
-      <v-btn
-        small
-        value="height"
-      >
-        {{ $t('app.bed_soak.label.shape_and_height') }}
-      </v-btn>
-    </v-btn-toggle>
+        :tooltip="$t('app.bed_soak.tooltip.heatmap')"
+      />
+    </div>
 
     <div
       v-if="grid"
-      class="bed-soak-heatmap__map"
+      class="bed-soak-heatmap__map mt-2"
     >
       <svg
         :viewBox="`0 0 ${size} ${size}`"
@@ -46,7 +27,7 @@
             :y="cell.y"
             :width="cellSize"
             :height="cellSize"
-            rx="3"
+            rx="2"
             :fill="cell.color"
             :stroke="hover === cell.key ? strongColor : 'none'"
             stroke-width="1.5"
@@ -59,11 +40,11 @@
           <template v-if="cell.flag">
             <rect
               :key="`ring:${cell.key}`"
-              :x="cell.x + 2"
-              :y="cell.y + 2"
-              :width="cellSize - 4"
-              :height="cellSize - 4"
-              rx="3"
+              :x="cell.x + 1.5"
+              :y="cell.y + 1.5"
+              :width="cellSize - 3"
+              :height="cellSize - 3"
+              rx="2"
               fill="none"
               :stroke="warningColor"
               stroke-width="2.5"
@@ -73,16 +54,16 @@
               :key="`badge:${cell.key}`"
               :cx="cell.x + cellSize - badge"
               :cy="cell.y + badge"
-              :r="badge - 4"
+              :r="badge - 3"
               :fill="warningColor"
               pointer-events="none"
             />
             <text
               :key="`mark:${cell.key}`"
               :x="cell.x + cellSize - badge"
-              :y="cell.y + badge + 4"
+              :y="cell.y + badge + 3.5"
               text-anchor="middle"
-              font-size="11"
+              font-size="10"
               font-weight="700"
               fill="#0b0b0b"
               pointer-events="none"
@@ -111,63 +92,59 @@
           {{ text }}
         </div>
       </div>
-    </div>
-    <div
-      v-else
-      class="bed-soak-heatmap__empty"
-      :style="{ height: `${size}px` }"
-    >
-      {{ $t('app.bed_soak.msg.heatmap_after_cold') }}
-    </div>
 
-    <div class="bed-soak-heatmap__scale">
-      <span>{{ $t('app.bed_soak.label.lower') }}</span>
-      <div
-        class="bed-soak-heatmap__bar"
-        :style="{ background: scaleGradient }"
-      />
-      <span>{{ $t('app.bed_soak.label.higher') }}</span>
-    </div>
-    <div class="bed-soak-heatmap__scale bed-soak-heatmap__scale--values">
-      <span>−{{ Math.round(maxAbs) }} µm</span>
-      <span>0</span>
-      <span>+{{ Math.round(maxAbs) }} µm</span>
-    </div>
+      <div class="bed-soak-heatmap__scale caption secondary--text">
+        <span>−{{ Math.round(maxAbs) }}</span>
+        <div
+          class="bed-soak-heatmap__bar"
+          :style="{ background: scaleGradient }"
+        />
+        <span>+{{ Math.round(maxAbs) }} µm</span>
+      </div>
 
-    <template v-if="run.meshes.length > 1">
       <v-slider
+        v-if="run.meshes.length > 1"
         :value="index"
         :min="0"
         :max="run.meshes.length - 1"
         step="1"
+        dense
         hide-details
-        class="mt-2"
+        class="mt-1"
         @input="handleSelect"
       />
-      <div class="bed-soak-heatmap__slider-label">
-        <span>{{ $t('app.bed_soak.label.cold') }}</span>
-        <span>{{ meshLabel }}</span>
+      <div class="body-2 secondary--text">
+        {{ meshLabel }}
       </div>
-    </template>
-
-    <div class="d-flex flex-wrap mt-3">
-      <app-btn
-        small
-        class="me-2 mb-2"
-        :disabled="!grid"
-        @click="handleViewIn3d"
-      >
-        {{ $t('app.bed_soak.btn.view_in_3d') }}
-      </app-btn>
-      <slot name="actions" />
+      <div class="d-flex align-center mt-1">
+        <v-switch
+          v-model="withHeight"
+          :label="$t('app.bed_soak.label.with_height')"
+          dense
+          hide-details
+          class="mt-0 pt-0"
+        />
+        <v-spacer />
+        <app-btn
+          small
+          @click="handleViewIn3d"
+        >
+          {{ $t('app.bed_soak.btn.view_in_3d') }}
+        </app-btn>
+      </div>
+    </div>
+    <div
+      v-else
+      class="secondary--text mt-2"
+    >
+      {{ $t('app.bed_soak.msg.heatmap_after_cold') }}
     </div>
 
     <div
-      v-if="problemPoints.length > 0 || run.jumps.length > 0"
-      class="bed-soak-problems"
+      v-if="problems.length > 0"
+      class="mt-3"
     >
-      <v-divider class="mb-2" />
-      <div class="bed-soak-problems__title">
+      <div class="body-2 font-weight-medium d-flex align-center mb-1">
         <v-icon
           small
           :color="warningColor"
@@ -175,42 +152,22 @@
         >
           $warning
         </v-icon>
-        {{ $t('app.bed_soak.label.problem_points_n', { count: problemPoints.length + run.jumps.length }) }}
+        {{ $tc('app.bed_soak.label.problems_count', problems.length, { count: problems.length }) }}
       </div>
       <div
-        v-for="point in problemPoints"
-        :key="`point:${point.row}:${point.col}`"
-        class="bed-soak-problems__item"
+        v-for="problem in shownProblems"
+        :key="problem.key"
+        class="body-2 bed-soak-heatmap__problem"
       >
-        <v-icon
-          small
-          :color="warningColor"
-          class="me-2"
-        >
-          $warning
-        </v-icon>
-        <span>
-          <b>{{ pointName(point) }}</b>
-          {{ problemText(point) }}
-        </span>
+        <b>{{ problem.name }}</b> {{ problem.text }}
       </div>
-      <div
-        v-for="jump in run.jumps"
-        :key="`jump:${jump.mesh}`"
-        class="bed-soak-problems__item"
+      <a
+        v-if="problems.length > shownProblems.length || showAllProblems"
+        class="body-2"
+        @click="showAllProblems = !showAllProblems"
       >
-        <v-icon
-          small
-          :color="warningColor"
-          class="me-2"
-        >
-          $warning
-        </v-icon>
-        <span>
-          <b>{{ meshName(jump.mesh) }}</b>
-          {{ $t('app.bed_soak.msg.problem_jump', { size: Math.round(jump.size * 1000) }) }}
-        </span>
-      </div>
+        {{ showAllProblems ? $t('app.bed_soak.btn.show_fewer') : $t('app.bed_soak.btn.show_all', { count: problems.length }) }}
+      </a>
     </div>
   </div>
 </template>
@@ -247,11 +204,12 @@ export default class BedSoakHeatmap extends Vue {
   @Prop({ type: Object, required: true })
   readonly run!: BedSoakRun
 
-  readonly size = 270
+  readonly size = 260
   readonly pad = 2
   readonly warningColor = BedSoakColors.warning
 
-  mode: 'shape' | 'height' = 'shape'
+  withHeight = false
+  showAllProblems = false
 
   // null follows the latest mesh
   selected: number | null = null
@@ -305,7 +263,7 @@ export default class BedSoakHeatmap extends Vue {
   }
 
   changeGrid (mesh: BedSoakMesh): number[][] | null {
-    const grid = bedSoakChangeGrid(this.run, mesh, this.mode === 'height')
+    const grid = bedSoakChangeGrid(this.run, mesh, this.withHeight)
 
     return grid && grid.map(row => row.map(value => value * 1000))
   }
@@ -387,7 +345,7 @@ export default class BedSoakHeatmap extends Vue {
 
     const parts = [
       this.meshName(mesh.index),
-      this.$t('app.bed_soak.label.after_heaters_on', { time: bedSoakClock(mesh.time) }).toString()
+      bedSoakClock(mesh.time)
     ]
 
     if (!mesh.used) parts.push(this.$t('app.bed_soak.label.not_used').toString())
@@ -397,6 +355,26 @@ export default class BedSoakHeatmap extends Vue {
 
   get problemPoints (): BedSoakProblemPoint[] {
     return bedSoakProblemPoints(this.run)
+  }
+
+  // Flagged points and dropped meshes, most often flagged first
+  get problems (): { key: string, name: string, text: string }[] {
+    return [
+      ...this.problemPoints.map(point => ({
+        key: `point:${point.row}:${point.col}`,
+        name: this.pointName(point),
+        text: this.problemText(point)
+      })),
+      ...this.run.jumps.map(jump => ({
+        key: `jump:${jump.mesh}`,
+        name: this.meshName(jump.mesh),
+        text: this.$t('app.bed_soak.msg.problem_jump', { size: Math.round(jump.size * 1000) }).toString()
+      }))
+    ]
+  }
+
+  get shownProblems () {
+    return this.showAllProblems ? this.problems : this.problems.slice(0, 4)
   }
 
   meshName (index: number) {
@@ -437,7 +415,7 @@ export default class BedSoakHeatmap extends Vue {
       }).toString())
     }
 
-    return `${parts.join('; ')}. ${this.$t('app.bed_soak.msg.problem_check_plate')}`
+    return parts.join('; ')
   }
 
   handleSelect (value: number) {
@@ -464,9 +442,9 @@ export default class BedSoakHeatmap extends Vue {
     this.$typedDispatch('mesh/onPreview', {
       title: this.$t('app.bed_soak.label.preview_title', {
         mesh: this.meshName(mesh.index),
-        mode: this.mode === 'height'
-          ? this.$t('app.bed_soak.label.shape_and_height')
-          : this.$t('app.bed_soak.label.shape')
+        mode: this.withHeight
+          ? this.$t('app.bed_soak.label.shape_and_height').toString().toLowerCase()
+          : this.$t('app.bed_soak.label.shape').toString().toLowerCase()
       }).toString(),
       mesh_min: this.run.settings.mesh_min,
       mesh_max: this.run.settings.mesh_max,
@@ -484,30 +462,13 @@ export default class BedSoakHeatmap extends Vue {
 </script>
 
 <style lang="scss" scoped>
-  .bed-soak-heatmap__title {
-    font-size: 0.8125rem;
-    font-weight: 500;
-    margin-top: 4px;
-  }
-
-  .bed-soak-heatmap__sub {
-    font-size: 0.75rem;
-    opacity: 0.6;
-    margin-bottom: 8px;
-  }
-
-  .bed-soak-heatmap__mode {
-    display: flex;
-    width: 270px;
-
-    .v-btn {
-      flex: 1;
-    }
+  .bed-soak-heatmap {
+    min-width: 0;
   }
 
   .bed-soak-heatmap__map {
     position: relative;
-    width: 270px;
+    width: 260px;
 
     svg {
       display: block;
@@ -518,80 +479,32 @@ export default class BedSoakHeatmap extends Vue {
     }
   }
 
-  .bed-soak-heatmap__empty {
-    width: 270px;
-    display: grid;
-    place-items: center;
-    font-size: 0.75rem;
-    opacity: 0.6;
-    border: 1px dashed rgba(128, 128, 128, 0.4);
-    border-radius: 4px;
-    text-align: center;
-    padding: 16px;
-  }
-
   .bed-soak-heatmap__tip {
     position: absolute;
     z-index: 2;
     pointer-events: none;
     max-width: 230px;
-    padding: 8px 10px;
+    padding: 6px 8px;
     font-size: 0.75rem;
     border-radius: 4px;
     background: rgba(15, 15, 15, 0.92);
     color: rgba(255, 255, 255, 0.9);
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
   }
 
   .bed-soak-heatmap__scale {
     display: flex;
     align-items: center;
     gap: 6px;
-    width: 270px;
-    font-size: 0.6875rem;
-    opacity: 0.7;
     margin-top: 6px;
-
-    &--values {
-      justify-content: space-between;
-      margin-top: 2px;
-    }
   }
 
   .bed-soak-heatmap__bar {
     flex: 1;
-    height: 8px;
+    height: 6px;
     border-radius: 2px;
   }
 
-  .bed-soak-heatmap__slider-label {
-    display: flex;
-    justify-content: space-between;
-    width: 270px;
-    font-size: 0.75rem;
-    opacity: 0.8;
-  }
-
-  .bed-soak-heatmap :deep(.v-slider) {
-    width: 270px;
-  }
-
-  .bed-soak-problems {
-    margin-top: 8px;
-  }
-
-  .bed-soak-problems__title {
-    display: flex;
-    align-items: center;
-    font-size: 0.75rem;
-    font-weight: 500;
-    margin-bottom: 4px;
-  }
-
-  .bed-soak-problems__item {
-    display: flex;
-    align-items: flex-start;
-    font-size: 0.75rem;
-    margin: 6px 0;
+  .bed-soak-heatmap__problem {
+    margin: 2px 0 2px 20px;
   }
 </style>
