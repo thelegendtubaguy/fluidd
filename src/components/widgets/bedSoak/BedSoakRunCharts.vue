@@ -47,8 +47,6 @@ import BedSoakChart, { type BedSoakChartEvent, type BedSoakChartReference, type 
 import { BedSoakColors, type BedSoakRun, type BedSoakTemp } from '@/util/tltg-bed-soak'
 import { bedSoakClock, bedSoakMeshName } from './bed-soak-format'
 
-let nextGroup = 0
-
 @Component({
   components: {
     BedSoakChart
@@ -68,7 +66,8 @@ export default class BedSoakRunCharts extends Vue {
   @Prop({ type: Number })
   readonly elapsed?: number
 
-  readonly group = `bed-soak-run-${nextGroup++}`
+  // Only one run's charts are on the page at a time
+  readonly group = 'bed-soak-run'
 
   get speedLimit (): number {
     return (this.run.settings.limits.speed ?? 0.002) * 1000

@@ -68,10 +68,9 @@ export interface BedSoakChartReference {
   color?: string;
 }
 
-const connectedGroups = new Set<string>()
-
-// One value axis per chart. Charts in the same group share their crosshair, and
-// are given the same time range by their parent, so their time axes line up.
+// One value axis per chart. Charts in the same group share their crosshair (the
+// groups are connected in vue-echarts-chunk.ts), and are given the same time
+// range by their parent, so their time axes line up.
 @Component({})
 export default class BedSoakChart extends Mixins(BrowserMixin) {
   @Prop({ type: String, required: true })
@@ -118,16 +117,6 @@ export default class BedSoakChart extends Mixins(BrowserMixin) {
 
   readonly updateOptions: SetOptionOpts = Object.freeze({ notMerge: true })
   readonly initOptions: EChartsInitOpts = Object.freeze({ renderer: 'canvas' })
-
-  mounted () {
-    const group = this.group
-
-    if (group && !connectedGroups.has(group)) {
-      connectedGroups.add(group)
-
-      import('echarts/core').then(({ connect }) => connect(group))
-    }
-  }
 
   get isDark (): boolean {
     return this.$typedState.config.uiSettings.theme.isDark
