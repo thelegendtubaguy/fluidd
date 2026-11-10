@@ -98,6 +98,18 @@ With [Qidi-Max-4-Optimized](https://github.com/thelegendtubaguy/Qidi-Max-4-Optim
 
 The banner can't be closed. It goes away by itself once the problem is fixed and the printer stops reporting it, and it's hidden while Klipper isn't ready.
 
+## Add-ons
+
+With [Valve Oil](https://github.com/thelegendtubaguy/Valve-Oil) installed, the **Add-ons** section of the Settings page installs, updates, and removes optional extras for the printer with one click. The first is [OctoEverywhere](https://octoeverywhere.com), for remote access, print notifications, and AI failure detection.
+
+- **Each add-on** shows its description, a link to its homepage, its installed or available version, and whether it's installed. **Install**, **Update**, and **Remove** appear as they apply, and **Remove** asks for confirmation first.
+- **While one runs,** the buttons are unavailable, and the add-on shows a progress bar with the latest step. **Show log** shows every step. If it fails, the error and the log stay on screen until the next install, update, or removal.
+- **While printing,** the buttons are unavailable and say they're available when the printer is idle.
+- **An add-on installed some other way** says it was installed outside Valve Oil, and Fluidd doesn't offer to update or remove it.
+- **OctoEverywhere,** once installed, shows whether its service is running, whether it's connected to OctoEverywhere, and whether an account is linked. To link one, choose **Link account**, or **Show link code** and enter the 6-digit code at the address shown before it expires. A linked printer shows **Linked** and a link to the OctoEverywhere dashboard.
+
+The section checks the printer every 10 seconds while the Settings page is open and in view, and every 2 seconds while an add-on is installing, updating, or being removed. It's checked only when Fluidd is connected to the printer it was opened from. On a printer without Valve Oil's add-ons, it says add-ons aren't available.
+
 ## Other changes from QIDI's Fluidd
 
 - Everything QIDI's **Enable Full Display** setting used to hide, such as the bed mesh card on the Tune page and sensors without a target temperature, is always shown.

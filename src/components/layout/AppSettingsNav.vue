@@ -49,7 +49,8 @@ export default class AppSettingsNav extends Vue {
       { name: this.$t('app.general.title.timelapse'), hash: '#timelapse', visible: this.supportsTimelapse },
       { name: this.$t('app.mmu.title.headline'), hash: '#mmu', visible: this.supportsMmu },
       { name: this.$t('app.spoolman.title.spoolman'), hash: '#spoolman', visible: this.supportsSpoolman },
-      { name: this.$t('app.version.title'), hash: '#versions', visible: this.supportsVersions }
+      { name: this.$t('app.version.title'), hash: '#versions', visible: this.supportsVersions },
+      { name: this.$t('app.tltg_addons.title.addons'), hash: '#addons', visible: true }
     ]
   }
 
