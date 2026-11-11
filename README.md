@@ -100,13 +100,15 @@ The banner can't be closed. It goes away by itself once the problem is fixed and
 
 ## Add-ons
 
-With [Valve Oil](https://github.com/thelegendtubaguy/Valve-Oil) installed, the **Add-ons** section of the Settings page installs, updates, and removes optional extras for the printer with one click. The first is [OctoEverywhere](https://octoeverywhere.com), for remote access, print notifications, and AI failure detection.
+With [Valve Oil](https://github.com/thelegendtubaguy/Valve-Oil) installed, the **Add-ons** section of the Settings page installs, updates, and removes optional extras for the printer with one click. [OctoEverywhere](https://octoeverywhere.com) and [Obico](https://www.obico.io) offer remote access, print notifications, and AI failure detection. Only one of them can be installed at a time.
 
 - **Each add-on** shows its description, a link to its homepage, its installed or available version, and whether it's installed. **Install**, **Update**, and **Remove** appear as they apply, and **Remove** asks for confirmation first.
 - **While one runs,** the buttons are unavailable, and the add-on shows a progress bar with the latest step. **Show log** shows every step. If it fails, the error and the log stay on screen until the next install, update, or removal.
 - **While printing,** the buttons are unavailable and say they're available when the printer is idle.
 - **An add-on installed some other way** says it was installed outside Valve Oil, and Fluidd doesn't offer to update or remove it.
+- **An add-on that can't be installed alongside one that is** says which one to remove first, and its **Install** is unavailable.
 - **OctoEverywhere,** once installed, shows whether its service is running, whether it's connected to OctoEverywhere, and whether an account is linked. To link one, choose **Link account**, or **Show link code** and enter the 6-digit code at the address shown before it expires. A linked printer shows **Linked** and a link to the OctoEverywhere dashboard.
+- **Obico,** once installed, shows whether its service is running, which server it uses, and whether an account is linked. While it waits to be linked, it shows the link code, with the steps to enter it in Obico: select **Generic Klipper - Self Installed**, then **Switch to Manual Linking**, and enter the code. **Change** next to the server switches between Obico Cloud and your own Obico server, which unlinks the printer so it can be linked on the new server. A linked printer shows **Linked**, a link to the Obico server, and **Unlink**, which asks first. Obico waits up to 4 hours to be linked. After that, **Restart linking** starts it waiting again. Changing the server, **Unlink**, and **Restart linking** restart Obico and show their progress like an install.
 
 The section checks the printer every 10 seconds while the Settings page is open and in view, and every 2 seconds while an add-on is installing, updating, or being removed. It's checked only when Fluidd is connected to the printer it was opened from. On a printer without Valve Oil's add-ons, it says add-ons aren't available.
 

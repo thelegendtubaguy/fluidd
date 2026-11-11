@@ -1838,19 +1838,28 @@ app:
         {count} meshes in a row. Otherwise it runs to the time limit.
   tltg_addons:
     btn:
+      change: Change
       dashboard: Dashboard
       hide_log: Hide log
       install: Install
       link_account: Link account
+      open_obico: Open Obico
       remove: Remove
+      restart_linking: Restart linking
       show_link_code: Show link code
       show_log: Show log
+      unlink: Unlink
       update: Update
+      use_server: Use this server
     job:
       install:
         failed: Installing {name} failed
         running: Installing {name}…
         succeeded: '{name} installed'
+      relink:
+        failed: Restarting {name} for linking failed
+        running: Restarting {name} for linking…
+        succeeded: '{name} is ready to link'
       remove:
         failed: Removing {name} failed
         running: Removing {name}…
@@ -1865,11 +1874,15 @@ app:
       linked: Linked
       not_connected: Not connected
       not_linked: Not linked
+      obico_cloud: Obico Cloud
+      obico_self_hosted: My own Obico server
       octoeverywhere: OctoEverywhere
+      server: Server
       service: Service
       version: Version {version}
       version_update: Version {installed}, {available} available
     msg:
+      blocked_by: Remove {names} first. Only one remote access add-on can be installed.
       code_expires: Expires at {time}
       code_unavailable: OctoEverywhere didn't return a link code.
       confirm_remove: Remove {name} from the printer?
@@ -1879,6 +1892,21 @@ app:
         removed here.
       loading: Loading add-ons…
       none: No add-ons are offered for this printer.
+      obico_code_waiting: Waiting for Obico's link code…
+      obico_confirm_unlink: >-
+        Unlink this printer from your Obico account? Obico restarts and waits to
+        be linked again.
+      obico_link_intro_cloud: To link this printer, add a printer in the Obico app or at app.obico.io.
+      obico_link_intro_server: To link this printer, add a printer on your Obico server.
+      obico_link_step_code: Enter the code above.
+      obico_link_step_device: 'For the device, select "Generic Klipper - Self Installed".'
+      obico_link_step_manual: Select "Switch to Manual Linking".
+      obico_not_waiting: >-
+        Obico stopped waiting to be linked. Restart linking to link it.
+      obico_server_invalid: Enter an http or https address, such as http://192.168.1.10:3334.
+      obico_server_relinks: >-
+        Changing the server unlinks the printer. Link it again once Obico has
+        restarted.
       printer_busy: Available when the printer is idle
       unavailable: Add-ons aren't available on this printer.
     service:
@@ -1894,4 +1922,6 @@ app:
       update_available: Update available
     title:
       addons: Add-ons
+      obico_server: Obico server
+      obico_unlink: Unlink Obico
       remove: Remove {name}

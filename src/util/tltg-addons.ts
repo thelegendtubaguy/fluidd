@@ -4,7 +4,7 @@
 
 export type TltgAddonState = 'not_installed' | 'installed' | 'update_available' | 'foreign'
 
-export type TltgAddonAction = 'install' | 'update' | 'remove'
+export type TltgAddonAction = 'install' | 'update' | 'remove' | 'relink'
 
 export type TltgAddonJobState = 'running' | 'succeeded' | 'failed'
 
@@ -23,6 +23,8 @@ export interface TltgAddon {
   state: TltgAddonState;
   service: TltgAddonService | null;
   status: Record<string, unknown> | null;
+  /** Installed add-ons that must be removed before this one can be installed. */
+  blocked_by: string[];
 }
 
 export interface TltgAddonJob {
@@ -41,17 +43,25 @@ export interface TltgAddonsList {
   job: TltgAddonJob | null;
 }
 
+/** An add-on change an add-on's panel asks for, such as a relink with a new server. */
+export interface TltgAddonPanelAction {
+  action: TltgAddonAction;
+  body?: Record<string, unknown>;
+}
+
 export interface TltgAddonLinkCode {
   code: string;
   url: string;
   expires_in: number;
 }
 
+export const TLTG_OBICO_CLOUD = 'https://app.obico.io'
+
 export const TLTG_ADDONS_POLL_BUSY_MS = 2000
 export const TLTG_ADDONS_POLL_IDLE_MS = 10000
 
 const ADDON_STATES: readonly string[] = ['not_installed', 'installed', 'update_available', 'foreign']
-const ADDON_ACTIONS: readonly string[] = ['install', 'update', 'remove']
+const ADDON_ACTIONS: readonly string[] = ['install', 'update', 'remove', 'relink']
 const JOB_STATES: readonly string[] = ['running', 'succeeded', 'failed']
 
 const isRecord = (value: unknown): value is Record<string, unknown> => (
@@ -115,7 +125,10 @@ const parseAddon = (value: unknown): TltgAddon | null => {
     installed_version: optionalText(value.installed_version),
     state: value.state as TltgAddonState,
     service: parseService(value.service),
-    status: isRecord(value.status) ? value.status : null
+    status: isRecord(value.status) ? value.status : null,
+    blocked_by: Array.isArray(value.blocked_by)
+      ? value.blocked_by.filter((name): name is string => typeof name === 'string' && name !== '')
+      : []
   }
 }
 
@@ -215,6 +228,16 @@ export const tltgAddonActions = (addon: Pick<TltgAddon, 'state'>): { primary: Tl
   }
 }
 
+/**
+ * Whether a server address looks like one Valve Oil accepts for an add-on such as Obico: http or https, a host,
+ * an optional port and path, and no query. The printer checks it again.
+ */
+export const tltgServerUrlValid = (value: unknown): boolean => (
+  typeof value === 'string' &&
+  value.trim().length <= 200 &&
+  /^https?:\/\/(?:[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*|\[[0-9A-Fa-f:.]+\])(?::\d{1,5})?(?:\/[\w.~%/-]*)?$/.test(value.trim())
+)
+
 export const tltgAddonsPollInterval = (list: TltgAddonsList | null): number => (
   list?.busy
     ? TLTG_ADDONS_POLL_BUSY_MS
@@ -235,6 +258,8 @@ export interface TltgAddonsRequestOptions {
   method?: 'GET' | 'POST';
   token?: string | null;
   signal?: AbortSignal;
+  /** A POST's JSON body, such as the server for a relink. */
+  body?: Record<string, unknown>;
 }
 
 /**
@@ -263,7 +288,7 @@ export const tltgAddonsRequest = async (base: string, path: string, options: Tlt
     response = await fetch(`${base}${path}`, {
       method,
       headers,
-      body: method === 'POST' ? '{}' : undefined,
+      body: method === 'POST' ? JSON.stringify(options.body ?? {}) : undefined,
       cache: 'no-store',
       credentials: 'same-origin',
       signal: options.signal
