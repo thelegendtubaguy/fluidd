@@ -1507,12 +1507,16 @@ app:
       all_slots: All slots. Blank fields use the vendor value.
       fields:
         approach_speed: Approach speed
+        hub_speed: Hub push speed
         fast_length: Fast length
+        fast_speed: Fast speed
         fast_speed_1: Fast speed 1
         fast_speed_2: Fast speed 2
         load_accel: Load accel
+        park_speed: Park speed
         unload_accel: Unload accel
         unload_extruder_length: Extruder retract
+        unload_speed: Unload speed
         unload_speed_1: Unload speed 1
         unload_speed_2: Unload speed 2
       invalid_saved: Saved value %{value} is invalid; Apply clears it

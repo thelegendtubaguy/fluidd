@@ -172,6 +172,7 @@ import { SocketActions } from '@/api/socketActions'
 import { isSocketError } from '@/util/is-socket-error'
 import { qidiBoxSlotLabel, qidiBoxSlotNumber } from '@/util/qidi-box'
 
+// Fallback for module versions that don't publish their fields.
 const FIELDS = [
   'fast_length',
   'fast_speed_1',
@@ -198,6 +199,9 @@ interface MotionLimit {
 interface MotionStatus {
   active?: boolean;
   status?: string;
+  // The settings this printer's Box code offers, in order, and those without per-slot overrides.
+  fields?: string[];
+  global_only?: string[];
   limits: Record<string, MotionLimit>;
   vendor: Record<string, number>;
   settings: MotionValues;
@@ -245,6 +249,7 @@ export default class QidiBoxMotion extends Mixins(StateMixin) {
   get slotKeys (): string[] {
     const slots = this.motion?.slots ?? {}
 
+    // A printer whose settings all apply to every slot, such as the Plus 5, publishes no slots.
     return Object.keys(slots)
       .filter(key => qidiBoxSlotNumber(key) != null && slots[key])
       .sort((a, b) => (qidiBoxSlotNumber(a) ?? 0) - (qidiBoxSlotNumber(b) ?? 0))
@@ -257,7 +262,11 @@ export default class QidiBoxMotion extends Mixins(StateMixin) {
   }
 
   fieldsFor (scope: string): string[] {
-    return FIELDS.filter(field => scope === 'global' || !GLOBAL_ONLY.includes(field))
+    const motion = this.motion
+    const fields = motion?.fields ?? FIELDS
+    const globalOnly = motion?.global_only ?? GLOBAL_ONLY
+
+    return fields.filter(field => motion?.limits[field] && (scope === 'global' || !globalOnly.includes(field)))
   }
 
   slotLabel (key: string): string {
