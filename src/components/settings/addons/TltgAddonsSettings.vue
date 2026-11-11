@@ -78,7 +78,7 @@
                   :color="actions(addon).primary === 'remove' ? 'error' : 'primary'"
                   class="ml-2 my-1"
                   :loading="pendingAction != null && pendingAction.addon === addon.id"
-                  :disabled="actionsDisabled"
+                  :disabled="actionsDisabled || installBlocked(addon)"
                   @click="handleAction(addon, actions(addon).primary)"
                 >
                   {{ $t(`app.tltg_addons.btn.${actions(addon).primary}`) }}
@@ -86,7 +86,14 @@
               </div>
 
               <div
-                v-if="actions(addon).primary && printerBusyHint"
+                v-if="installBlocked(addon)"
+                class="text-caption secondary--text text-right"
+              >
+                {{ $t('app.tltg_addons.msg.blocked_by', { names: addon.blocked_by.join(', ') }) }}
+              </div>
+
+              <div
+                v-else-if="actions(addon).primary && printerBusyHint"
                 class="text-caption secondary--text"
               >
                 {{ $t('app.tltg_addons.msg.printer_busy') }}
@@ -131,6 +138,14 @@
               :addon="addon"
               :request="request"
             />
+
+            <tltg-obico-status
+              v-if="addon.id === 'obico' && hasStatusPanel(addon)"
+              :addon="addon"
+              :request="request"
+              :disabled="actionsDisabled"
+              @action="handlePanelAction(addon, $event)"
+            />
           </div>
         </div>
       </template>
@@ -143,6 +158,7 @@ import { Component, Vue, Watch } from 'vue-property-decorator'
 import { getAccessToken } from '@/store/socket/actions'
 import TltgAddonJob from './TltgAddonJob.vue'
 import TltgOctoEverywhereStatus from './TltgOctoEverywhereStatus.vue'
+import TltgObicoStatus from './TltgObicoStatus.vue'
 import {
   parseTltgAddonsList,
   parseTltgAddonsJob,
@@ -154,6 +170,7 @@ import {
   type TltgAddon,
   type TltgAddonAction,
   type TltgAddonJob as AddonJob,
+  type TltgAddonPanelAction,
   type TltgAddonsList
 } from '@/util/tltg-addons'
 
@@ -178,7 +195,8 @@ const loadDismissedJobs = (): string[] => {
 @Component({
   components: {
     TltgAddonJob,
-    TltgOctoEverywhereStatus
+    TltgOctoEverywhereStatus,
+    TltgObicoStatus
   }
 })
 export default class TltgAddonsSettings extends Vue {
@@ -259,7 +277,7 @@ export default class TltgAddonsSettings extends Vue {
     }
   }
 
-  async request (path: string, method: 'GET' | 'POST' = 'GET', signal?: AbortSignal): Promise<unknown> {
+  async request (path: string, method: 'GET' | 'POST' = 'GET', signal?: AbortSignal, body?: Record<string, unknown>): Promise<unknown> {
     const base = this.apiBase
 
     if (!base) {
@@ -274,7 +292,7 @@ export default class TltgAddonsSettings extends Vue {
       token = null
     }
 
-    return tltgAddonsRequest(base, path, { method, token, signal })
+    return tltgAddonsRequest(base, path, { method, token, signal, body })
   }
 
   async poll () {
@@ -369,6 +387,11 @@ export default class TltgAddonsSettings extends Vue {
     }
   }
 
+  // Only one remote-access add-on can be installed; the service names the installed one in the way.
+  installBlocked (addon: TltgAddon): boolean {
+    return addon.state === 'not_installed' && addon.blocked_by.length > 0
+  }
+
   hasStatusPanel (addon: TltgAddon): boolean {
     return addon.state !== 'not_installed' && (addon.status != null || addon.service != null)
   }
@@ -404,8 +427,12 @@ export default class TltgAddonsSettings extends Vue {
     }
   }
 
-  async handleAction (addon: TltgAddon, action: TltgAddonAction | null) {
-    if (!action || this.actionsDisabled) {
+  handlePanelAction (addon: TltgAddon, request: TltgAddonPanelAction) {
+    this.handleAction(addon, request.action, request.body)
+  }
+
+  async handleAction (addon: TltgAddon, action: TltgAddonAction | null, body?: Record<string, unknown>) {
+    if (!action || this.actionsDisabled || (action === 'install' && this.installBlocked(addon))) {
       return
     }
 
@@ -424,8 +451,8 @@ export default class TltgAddonsSettings extends Vue {
     Vue.delete(this.actionErrors, addon.id)
 
     try {
-      const body = await this.request(`/addons/${encodeURIComponent(addon.id)}/${action}`, 'POST')
-      const job = parseTltgAddonsJob(body)
+      const response = await this.request(`/addons/${encodeURIComponent(addon.id)}/${action}`, 'POST', undefined, body)
+      const job = parseTltgAddonsJob(response)
 
       if (job && this.list) {
         this.list = { ...this.list, busy: job.state === 'running' || this.list.busy, job }

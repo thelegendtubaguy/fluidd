@@ -4,7 +4,8 @@ import {
   tltgAddonsApiBase,
   tltgAddonsPollInterval,
   tltgAddonsRequest,
-  TltgAddonsRequestError
+  TltgAddonsRequestError,
+  tltgServerUrlValid
 } from '../tltg-addons'
 
 const octoEverywhere = {
@@ -75,9 +76,19 @@ describe('parseTltgAddonsList', () => {
     expect(list).toEqual({
       busy: false,
       printer_busy: true,
-      addons: [{ ...octoEverywhere, status: null }],
+      addons: [{ ...octoEverywhere, status: null, blocked_by: [] }],
       job: null
     })
+  })
+
+  it('names the installed add-ons that block an install', () => {
+    const list = parseTltgAddonsList({
+      addons: [{ ...octoEverywhere, id: 'obico', name: 'Obico', blocked_by: ['OctoEverywhere', 3, ''] }],
+      job: { ...runningJob, addon: 'obico', action: 'relink' }
+    })
+
+    expect(list?.addons[0].blocked_by).toEqual(['OctoEverywhere'])
+    expect(list?.job?.action).toBe('relink')
   })
 
   it('treats a running job as busy and polls faster while it runs', () => {
@@ -141,6 +152,14 @@ describe('tltgAddonsRequest', () => {
     })
   })
 
+  it("sends a relink's server in the body", async () => {
+    respond(202, JSON.stringify({ job: { ...runningJob, action: 'relink' } }))
+
+    await tltgAddonsRequest('http://printer/tltg-addons/api', '/addons/obico/relink', { method: 'POST', body: { server: 'http://192.168.1.10:3334' } })
+
+    expect(fetchMock.mock.calls[0][1].body).toBe('{"server":"http://192.168.1.10:3334"}')
+  })
+
   it('sends no token when Fluidd has none', async () => {
     respond(200, JSON.stringify({ addons: [] }))
 
@@ -166,5 +185,26 @@ describe('tltgAddonsRequest', () => {
 
     await expect(request).rejects.toBeInstanceOf(TltgAddonsRequestError)
     await expect(request).rejects.toMatchObject({ status: 0 })
+  })
+})
+
+describe('tltgServerUrlValid', () => {
+  it.each([
+    'https://app.obico.io',
+    'http://192.168.1.10:3334',
+    'http://obico.local/',
+    'http://[fe80::1]:3334/obico'
+  ])('accepts %s', (url) => {
+    expect(tltgServerUrlValid(url)).toBe(true)
+  })
+
+  it.each([
+    'obico.local',
+    'ftp://obico.local',
+    'http://obico.local/?next=x',
+    'http://obico local',
+    'javascript:alert(1)'
+  ])('refuses %s', (url) => {
+    expect(tltgServerUrlValid(url)).toBe(false)
   })
 })
