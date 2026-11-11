@@ -55,6 +55,21 @@ export interface TltgAddonLinkCode {
   expires_in: number;
 }
 
+export type TltgTailscaleState = 'needs_login' | 'needs_approval' | 'stopped' | 'starting' | 'running'
+
+export interface TltgTailscaleStatus {
+  state: TltgTailscaleState;
+  /** Where to sign in to add the printer to a tailnet, once a login has asked Tailscale for it. */
+  loginUrl: string;
+  /** The printer's name on the tailnet, such as qidi-plus5.example.ts.net. */
+  name: string;
+  addresses: string[];
+  tailnet: string;
+  /** When the printer's sign-in runs out, in milliseconds, or null when it doesn't. */
+  keyExpiry: number | null;
+  problems: string[];
+}
+
 export const TLTG_OBICO_CLOUD = 'https://app.obico.io'
 
 export const TLTG_ADDONS_POLL_BUSY_MS = 2000
@@ -208,6 +223,39 @@ export const parseTltgAddonLinkCode = (value: unknown): TltgAddonLinkCode | null
     code: value.code,
     url: /^https?:\/\//.test(text(value.url)) ? text(value.url) : '',
     expires_in: typeof value.expires_in === 'number' && value.expires_in > 0 ? value.expires_in : 0
+  }
+}
+
+const TAILSCALE_STATES: Record<string, TltgTailscaleState> = {
+  NeedsLogin: 'needs_login',
+  NeedsMachineAuth: 'needs_approval',
+  Stopped: 'stopped',
+  Running: 'running'
+}
+
+/**
+ * Reads the Tailscale add-on's status, or null when tailscaled didn't answer. States this doesn't know, as while
+ * tailscaled starts, read as starting.
+ */
+export const parseTltgTailscaleStatus = (value: unknown): TltgTailscaleStatus | null => {
+  if (!isRecord(value) || typeof value.state !== 'string') {
+    return null
+  }
+
+  const state = TAILSCALE_STATES[value.state] ?? 'starting'
+  const strings = (list: unknown): string[] => Array.isArray(list)
+    ? list.filter((item): item is string => typeof item === 'string' && item !== '')
+    : []
+  const expiry = Date.parse(text(value.key_expiry))
+
+  return {
+    state,
+    loginUrl: state === 'needs_login' && /^https?:\/\/\S+$/.test(text(value.login_url)) ? text(value.login_url) : '',
+    name: /^[a-z0-9-]+(?:\.[a-z0-9-]+)*$/i.test(text(value.name)) ? text(value.name) : '',
+    addresses: strings(value.addresses).filter(address => /^[0-9a-f:.]+$/i.test(address)),
+    tailnet: text(value.tailnet),
+    keyExpiry: Number.isFinite(expiry) && expiry > 0 ? expiry : null,
+    problems: strings(value.problems)
   }
 }
 

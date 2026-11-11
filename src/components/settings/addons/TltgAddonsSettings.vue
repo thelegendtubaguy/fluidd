@@ -146,6 +146,12 @@
               :disabled="actionsDisabled"
               @action="handlePanelAction(addon, $event)"
             />
+
+            <tltg-tailscale-status
+              v-if="addon.id === 'tailscale' && hasStatusPanel(addon)"
+              :addon="addon"
+              :request="request"
+            />
           </div>
         </div>
       </template>
@@ -159,6 +165,7 @@ import { getAccessToken } from '@/store/socket/actions'
 import TltgAddonJob from './TltgAddonJob.vue'
 import TltgOctoEverywhereStatus from './TltgOctoEverywhereStatus.vue'
 import TltgObicoStatus from './TltgObicoStatus.vue'
+import TltgTailscaleStatus from './TltgTailscaleStatus.vue'
 import {
   parseTltgAddonsList,
   parseTltgAddonsJob,
@@ -196,7 +203,8 @@ const loadDismissedJobs = (): string[] => {
   components: {
     TltgAddonJob,
     TltgOctoEverywhereStatus,
-    TltgObicoStatus
+    TltgObicoStatus,
+    TltgTailscaleStatus
   }
 })
 export default class TltgAddonsSettings extends Vue {
