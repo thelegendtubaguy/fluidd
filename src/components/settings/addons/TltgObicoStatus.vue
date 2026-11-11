@@ -81,60 +81,27 @@
       </div>
 
       <template v-else-if="discovering">
-        <div class="text-body-2 secondary--text mt-1">
-          {{ $t('app.tltg_addons.msg.obico_discoverable') }}
-        </div>
-
-        <div class="d-flex flex-wrap justify-end mt-1">
-          <app-btn
-            v-if="linkUrl"
-            small
-            color="primary"
-            class="ml-2 my-1"
-            :href="linkUrl"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {{ $t('app.tltg_addons.btn.link_account') }}
-            <v-icon
-              small
-              right
-            >
-              $openInNew
-            </v-icon>
-          </app-btn>
-          <app-btn
-            small
-            outlined
-            color="primary"
-            class="ml-2 my-1"
-            :loading="loadingCode"
-            @click="showLinkCode"
-          >
-            {{ $t('app.tltg_addons.btn.show_link_code') }}
-          </app-btn>
-        </div>
-
-        <v-alert
-          v-if="codeError"
-          dense
-          text
-          type="error"
-          class="mt-2 mb-0"
-        >
-          {{ codeError }}
-        </v-alert>
-
         <div
           v-if="linkCode"
-          class="text-center mt-2"
+          class="mt-2"
         >
-          <div class="text-h4 font-weight-medium tltg-obico__code">
+          <div class="text-center text-h4 font-weight-medium tltg-obico__code">
             {{ linkCode }}
           </div>
-          <div class="text-body-2">
-            {{ $t('app.tltg_addons.msg.obico_enter_code') }}
+          <div class="text-body-2 mt-2">
+            {{ $t(cloud ? 'app.tltg_addons.msg.obico_link_intro_cloud' : 'app.tltg_addons.msg.obico_link_intro_server') }}
           </div>
+          <ol class="text-body-2">
+            <li>{{ $t('app.tltg_addons.msg.obico_link_step_device') }}</li>
+            <li>{{ $t('app.tltg_addons.msg.obico_link_step_manual') }}</li>
+            <li>{{ $t('app.tltg_addons.msg.obico_link_step_code') }}</li>
+          </ol>
+        </div>
+        <div
+          v-else
+          class="text-body-2 secondary--text mt-1"
+        >
+          {{ $t('app.tltg_addons.msg.obico_code_waiting') }}
         </div>
       </template>
 
@@ -204,8 +171,8 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
-import { parseTltgAddonLinkCode, tltgServerUrlValid, TLTG_OBICO_CLOUD, type TltgAddon, type TltgAddonPanelAction } from '@/util/tltg-addons'
+import { Component, Prop, Vue } from 'vue-property-decorator'
+import { tltgServerUrlValid, TLTG_OBICO_CLOUD, type TltgAddon, type TltgAddonPanelAction } from '@/util/tltg-addons'
 
 @Component({})
 export default class TltgObicoStatus extends Vue {
@@ -218,9 +185,6 @@ export default class TltgObicoStatus extends Vue {
   @Prop({ type: Boolean, default: false })
   readonly disabled!: boolean
 
-  linkCode = ''
-  loadingCode = false
-  codeError = ''
   serverDialog = false
   serverChoice: 'cloud' | 'self_hosted' = 'cloud'
   serverInput = ''
@@ -251,10 +215,10 @@ export default class TltgObicoStatus extends Vue {
     return this.status?.discovering === true
   }
 
-  get linkUrl (): string {
-    const url = this.status?.link_url
+  get linkCode (): string {
+    const code = this.status?.link_code
 
-    return typeof url === 'string' && /^https?:\/\//.test(url) ? url : ''
+    return typeof code === 'string' ? code : ''
   }
 
   get serviceState (): string {
@@ -279,33 +243,6 @@ export default class TltgObicoStatus extends Vue {
         return 'info'
       default:
         return 'warning'
-    }
-  }
-
-  @Watch('discovering')
-  onDiscoveringChanged (discovering: boolean) {
-    if (!discovering) {
-      this.linkCode = ''
-    }
-  }
-
-  async showLinkCode () {
-    this.loadingCode = true
-    this.codeError = ''
-
-    try {
-      const linkCode = parseTltgAddonLinkCode(await this.request(`/addons/${encodeURIComponent(this.addon.id)}/link-code`, 'POST'))
-
-      this.linkCode = linkCode?.code ?? ''
-
-      if (!linkCode) {
-        this.codeError = this.$t('app.tltg_addons.msg.obico_code_unavailable').toString()
-      }
-    } catch (e) {
-      this.linkCode = ''
-      this.codeError = e instanceof Error ? e.message : String(e)
-    } finally {
-      this.loadingCode = false
     }
   }
 

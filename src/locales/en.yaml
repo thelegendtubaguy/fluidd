@@ -1892,15 +1892,15 @@ app:
         removed here.
       loading: Loading add-ons…
       none: No add-ons are offered for this printer.
-      obico_code_unavailable: Obico hasn't been given a link code yet.
+      obico_code_waiting: Waiting for Obico's link code…
       obico_confirm_unlink: >-
         Unlink this printer from your Obico account? Obico restarts and waits to
         be linked again.
-      obico_discoverable: >-
-        Open the Obico app on the same network to find this printer, or link it
-        here.
-      obico_enter_code: >-
-        In the Obico app, choose to link a printer manually and enter this code.
+      obico_link_intro_cloud: To link this printer, add a printer in the Obico app or at app.obico.io.
+      obico_link_intro_server: To link this printer, add a printer on your Obico server.
+      obico_link_step_code: Enter the code above.
+      obico_link_step_device: 'For the device, select "Generic Klipper - Self Installed".'
+      obico_link_step_manual: Select "Switch to Manual Linking".
       obico_not_waiting: >-
         Obico stopped waiting to be linked. Restart linking to link it.
       obico_server_invalid: Enter an http or https address, such as http://192.168.1.10:3334.
