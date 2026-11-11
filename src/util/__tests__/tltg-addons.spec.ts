@@ -1,5 +1,6 @@
 import {
   parseTltgAddonsList,
+  parseTltgTailscaleStatus,
   tltgAddonActions,
   tltgAddonsApiBase,
   tltgAddonsPollInterval,
@@ -206,5 +207,55 @@ describe('tltgServerUrlValid', () => {
     'javascript:alert(1)'
   ])('refuses %s', (url) => {
     expect(tltgServerUrlValid(url)).toBe(false)
+  })
+})
+
+describe('parseTltgTailscaleStatus', () => {
+  const running = {
+    state: 'Running',
+    connected: true,
+    name: 'qidi-plus5.example.ts.net',
+    addresses: ['100.64.0.7', 'fd7a:115c:a1e0::7', '<script>', 7],
+    tailnet: 'example.com',
+    key_expiry: '2027-05-10T12:00:00Z',
+    problems: ['Something is off', '']
+  }
+
+  it('reads a connected printer', () => {
+    expect(parseTltgTailscaleStatus({ ...running, login_url: 'https://login.tailscale.com/a/abc' })).toEqual({
+      state: 'running',
+      loginUrl: '',
+      name: 'qidi-plus5.example.ts.net',
+      addresses: ['100.64.0.7', 'fd7a:115c:a1e0::7'],
+      tailnet: 'example.com',
+      keyExpiry: Date.parse('2027-05-10T12:00:00Z'),
+      problems: ['Something is off']
+    })
+  })
+
+  it('offers only http and https sign-in addresses, and only to a printer that needs to log in', () => {
+    const needsLogin = { state: 'NeedsLogin', login_url: 'https://login.tailscale.com/a/abc' }
+
+    expect(parseTltgTailscaleStatus(needsLogin)?.loginUrl).toBe('https://login.tailscale.com/a/abc')
+    expect(parseTltgTailscaleStatus({ ...needsLogin, login_url: 'javascript:alert(1)' })?.loginUrl).toBe('')
+    expect(parseTltgTailscaleStatus({ ...needsLogin, login_url: null })).toMatchObject({ state: 'needs_login', loginUrl: '', keyExpiry: null })
+  })
+
+  it.each([
+    ['NeedsMachineAuth', 'needs_approval'],
+    ['Stopped', 'stopped'],
+    ['Starting', 'starting'],
+    ['NoState', 'starting']
+  ])('reads %s as %s', (state, expected) => {
+    expect(parseTltgTailscaleStatus({ state })?.state).toBe(expected)
+  })
+
+  it('reads nothing while tailscaled is not answering', () => {
+    expect(parseTltgTailscaleStatus({ unavailable: 'Not yet' })).toBeNull()
+    expect(parseTltgTailscaleStatus(null)).toBeNull()
+  })
+
+  it('leaves out a name that is not a host name', () => {
+    expect(parseTltgTailscaleStatus({ ...running, name: 'evil.example/path' })?.name).toBe('')
   })
 })

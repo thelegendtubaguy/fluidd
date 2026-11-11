@@ -1852,6 +1852,11 @@ app:
       restart_linking: Restart linking
       show_link_code: Show link code
       show_log: Show log
+      tailscale_connect: Connect
+      tailscale_log_in: Log in
+      tailscale_log_out: Log out
+      tailscale_new_link: New link
+      tailscale_sign_in: Sign in to Tailscale
       unlink: Unlink
       update: Update
       use_server: Use this server
@@ -1883,6 +1888,11 @@ app:
       octoeverywhere: OctoEverywhere
       server: Server
       service: Service
+      tailnet: Tailnet
+      tailscale: Tailscale
+      tailscale_address: Address
+      tailscale_key_expiry: Sign-in expires
+      tailscale_name: Name
       version: Version {version}
       version_update: Version {installed}, {available} available
     msg:
@@ -1912,6 +1922,19 @@ app:
         Changing the server unlinks the printer. Link it again once Obico has
         restarted.
       printer_busy: Available when the printer is idle
+      tailscale_confirm_log_out: >-
+        Log this printer out of Tailscale? It leaves your tailnet until you log
+        it in again.
+      tailscale_needs_approval: >-
+        This printer is waiting to be approved in your tailnet's admin console
+        at login.tailscale.com.
+      tailscale_needs_login: Log in to add this printer to your tailnet.
+      tailscale_running: >-
+        Devices on your tailnet can open Fluidd at the name or address above,
+        and reach the printer's other services, such as SSH.
+      tailscale_sign_in: >-
+        Open this address on any device and sign in to Tailscale to add this
+        printer to your tailnet.
       unavailable: Add-ons aren't available on this printer.
     service:
       active: Running
@@ -1924,8 +1947,15 @@ app:
       installed: Installed
       not_installed: Not installed
       update_available: Update available
+    tailscale_state:
+      needs_approval: Waiting for approval
+      needs_login: Not logged in
+      running: Connected
+      starting: Starting
+      stopped: Disconnected
     title:
       addons: Add-ons
       obico_server: Obico server
       obico_unlink: Unlink Obico
       remove: Remove {name}
+      tailscale_log_out: Log out of Tailscale
