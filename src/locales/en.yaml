@@ -1959,3 +1959,196 @@ app:
       obico_unlink: Unlink Obico
       remove: Remove {name}
       tailscale_log_out: Log out of Tailscale
+  tltg_valve_oil:
+    board_build:
+      patched: Valve Oil's build
+      qidi: QIDI's build
+      stock: QIDI's build
+      superseded: An earlier Valve Oil build
+    board_msg:
+      after_firmware: >-
+        Valve Oil updates this board in the same update, right after it installs
+        QIDI firmware {version}.
+      after_firmware_unknown: >-
+        Valve Oil updates this board in the same update, right after it installs
+        the QIDI firmware update.
+      held: Valve Oil leaves this board's firmware as it is.
+      held_box: >-
+        This Box was put back on QIDI's firmware. Valve Oil leaves it there
+        until you install the next Valve Oil release.
+      held_closed_loop: >-
+        Valve Oil left the closed-loop motor drivers on their firmware. Update
+        them from the touchscreen's firmware page.
+      unknown: Valve Oil hasn't been able to read this board's firmware yet.
+      unrecognized_bootloader: >-
+        Valve Oil doesn't recognize this board's bootloader yet, so it doesn't
+        update this board or the printer's QIDI firmware. Report it so a later
+        release can support it.
+      unrecognized_bootloader_box: >-
+        Valve Oil doesn't recognize this Box's bootloader yet, so it leaves this
+        Box as it is and keeps updating the rest of the printer. Report it so a
+        later release can support it.
+      unrecognized_firmware: >-
+        This board runs firmware Valve Oil doesn't recognize, so Valve Oil
+        leaves it as it is. A later release that recognizes it will update it.
+    board_state:
+      after_firmware: Waiting for QIDI firmware
+      current: Up to date
+      held: Kept on QIDI's firmware
+      needs_image: Update waiting
+      touchscreen: Update from the touchscreen
+      unknown: Not checked
+      unrecognized_bootloader: Not supported yet
+      unrecognized_firmware: Firmware not recognized
+    btn:
+      continue_update: Continue the update
+      details: Details
+      hide_log: Hide log
+      report_board: Report this board
+      show_log: Show log
+      update_now: Update now
+    label:
+      auto_update: Automatic updates
+      board_firmware: Firmware {version}
+      board_firmware_unknown: Firmware not read
+      printer: Printer
+      qidi_firmware: QIDI firmware
+      unknown: Unknown
+      valve_oil: Valve Oil release
+      waiting: Waiting to install
+      waiting_board: New firmware for {name}
+      waiting_board_unknown: New firmware for a board
+      waiting_current: ' (this printer has {version})'
+      waiting_firmware: QIDI firmware {version}
+      waiting_firmware_unknown: A QIDI firmware update
+      waiting_reinstall: >-
+        Valve Oil needs to be installed again (its files on the printer are
+        missing or changed)
+      waiting_release: Valve Oil {version}
+      waiting_release_unknown: A new Valve Oil release
+    msg:
+      auto_update: >-
+        Install new Valve Oil releases, QIDI firmware, and board firmware by
+        themselves while the printer is idle.
+      auto_update_failed: "Automatic updates couldn't be changed: {error}"
+      check_failed: 'The last check for updates failed: {message}'
+      check_failed_plain: The last check for updates failed.
+      checked_at: Last checked for updates {time}
+      confirm_update_continue: >-
+        Continue the QIDI firmware update that stopped? The printer can't be
+        used until the update finishes, which can take a while, and this page
+        loses contact with the printer for part of that time. Don't turn the
+        printer off until the update finishes.
+      confirm_update_firmware: >-
+        Install everything that's waiting now, including QIDI firmware and board
+        firmware? The printer can't be used until the update finishes, which can
+        take a while, and this page loses contact with the printer for part of
+        that time. Don't turn the printer off until the update finishes.
+      confirm_update_release: >-
+        Install Valve Oil {version} now? Klipper restarts while it installs, so
+        the printer can't be used for a few minutes.
+      confirm_update_reinstall: >-
+        Install Valve Oil {version} again now? Its files on the printer are
+        missing or changed. Klipper restarts while it installs, so the printer
+        can't be used for a few minutes.
+      confirm_update_resume: >-
+        Finish the update that stopped? The printer can't be used until it
+        finishes, which can take a while, and this page loses contact with the
+        printer for part of that time. Don't turn the printer off until the
+        update finishes.
+      confirm_update_release_unknown: >-
+        Install the latest Valve Oil release now? Klipper restarts while it
+        installs, so the printer can't be used for a few minutes.
+      loading: Loading Valve Oil's status…
+      nothing_waiting: Nothing is waiting.
+      reconnecting: >-
+        Waiting for the printer to answer. It restarts its services while it
+        updates, so this is expected. This page reconnects by itself.
+      reconnecting_long: >-
+        The printer hasn't answered for {minutes} minutes. Don't turn it off.
+        Check its screen to see what it's doing.
+      target_firmware: This Valve Oil release updates it to {version}
+      unavailable: Valve Oil's update status isn't available on this printer.
+      update_now_blocked:
+        heaters_on: A heater is on. Available once every heater is off.
+        installer_busy: >-
+          Valve Oil is checking for updates or installing. Available once it
+          finishes.
+        installer_missing: >-
+          Valve Oil's installer is missing from the printer. Install Valve Oil
+          again to use Update now.
+        printer_state_unknown: >-
+          Klipper hasn't said whether the printer is idle. Available once it's
+          ready.
+        printing: A print is running or paused. Available once it finishes.
+        run_in_progress: Available once the running update finishes.
+      update_now_blocked_other: 'Not available now: {message}.'
+      update_now_blocked_unknown: Not available right now.
+      update_now_failed: "The update couldn't be started: {error}"
+      update_now_refused: "Update now couldn't start. {reasons}"
+      waiting_auto_off: >-
+        An update is waiting. Automatic updates are off, so install it with
+        Update now or by running the Valve Oil installer.
+      waiting_auto_off_reinstall: >-
+        Valve Oil needs to be installed again. Automatic updates are off, so
+        install it with Update now or by running the Valve Oil installer.
+      waiting_blocked: >-
+        Automatic updates are on, but the update hasn't been installed yet:
+        {reasons}.
+      waiting_blocked_reinstall: >-
+        Automatic updates are on, but Valve Oil hasn't been installed again yet:
+        {reasons}.
+      waiting_next_check: >-
+        Automatic updates are on, so the update will be installed at the next
+        update check while the printer is idle.
+      waiting_next_check_at: >-
+        Automatic updates are on, so the update will be installed at the next
+        update check, around {time}, while the printer is idle.
+      waiting_next_check_firmware: >-
+        Automatic updates are on, so the update will be installed at the next
+        update check while the printer is idle. The printer can't be used while
+        it installs.
+      waiting_next_check_firmware_at: >-
+        Automatic updates are on, so the update will be installed at the next
+        update check, around {time}, while the printer is idle. The printer
+        can't be used while it installs.
+      waiting_next_check_reinstall: >-
+        Automatic updates are on, so Valve Oil will be installed again at the
+        next update check while the printer is idle.
+      waiting_next_check_reinstall_at: >-
+        Automatic updates are on, so Valve Oil will be installed again at the
+        next update check, around {time}, while the printer is idle.
+    title:
+      continue_update: Continue the update
+      update_now: Update now
+      valve_oil: Valve Oil
+    update:
+      continue_failed: >-
+        Continue it with Update now or by running the Valve Oil installer.
+      dont_power_off: Don't turn the printer off until it finishes.
+      failed:
+        automatic: The automatic update failed
+        install: The Valve Oil installer failed
+        other: The update failed
+        update_now: The update failed
+      failed_firmware: The QIDI firmware update didn't finish
+      finish_interrupted: >-
+        Finish it with Update now or by running the Valve Oil installer.
+      interrupted:
+        automatic: The automatic update stopped before it finished
+        install: The Valve Oil installer stopped before it finished
+        other: The update stopped before it finished
+        update_now: The update stopped before it finished
+      resumed: Picking up where the last attempt stopped.
+      running:
+        automatic: Automatic update running…
+        install: The Valve Oil installer is running…
+        other: Updating…
+        update_now: Updating…
+      starting: Starting the update…
+      stopped_at: 'It stopped at: {step}.'
+      succeeded:
+        automatic: The automatic update finished
+        install: The Valve Oil installer finished
+        other: The update finished
+        update_now: The update finished

@@ -25,6 +25,7 @@
         <mmu-settings v-if="supportsMmu" />
         <spoolman-settings v-if="supportsSpoolman" />
         <version-settings v-if="supportsVersions" />
+        <tltg-valve-oil-settings />
         <tltg-addons-settings />
       </div>
     </v-col>
@@ -51,6 +52,7 @@ import TimelapseSettings from '@/components/settings/timelapse/TimelapseSettings
 import SpoolmanSettings from '@/components/settings/SpoolmanSettings.vue'
 import MmuSettings from '@/components/settings/MmuSettings.vue'
 import WarningsSettings from '@/components/settings/WarningsSettings.vue'
+import TltgValveOilSettings from '@/components/settings/valveOil/TltgValveOilSettings.vue'
 import TltgAddonsSettings from '@/components/settings/addons/TltgAddonsSettings.vue'
 
 @Component({
@@ -71,6 +73,7 @@ import TltgAddonsSettings from '@/components/settings/addons/TltgAddonsSettings.
     FileBrowserSettings,
     FileEditorSettings,
     WarningsSettings,
+    TltgValveOilSettings,
     TltgAddonsSettings
   }
 })

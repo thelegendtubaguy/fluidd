@@ -19,6 +19,25 @@
           v-if="warning.message"
           class="app-tltg-warning-banner__message"
         >{{ warning.message }}</span>
+        <a
+          v-if="warning.url"
+          :href="warning.url"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="app-tltg-warning-banner__link"
+        >{{ $t('app.tltg_valve_oil.btn.report_board') }}</a>
+        <router-link
+          v-if="isValveOil(warning)"
+          v-slot="{ href, navigate }"
+          :to="valveOilSettings"
+          custom
+        >
+          <a
+            :href="href"
+            class="app-tltg-warning-banner__link"
+            @click="navigate"
+          >{{ $t('app.tltg_valve_oil.btn.details') }}</a>
+        </router-link>
       </div>
     </v-alert>
   </div>
@@ -26,13 +45,21 @@
 
 <script lang="ts">
 import { Component, Mixins } from 'vue-property-decorator'
+import type { Location } from 'vue-router'
 import StateMixin from '@/mixins/state'
 
 // Warnings QIDI Max 4 Optimized reports through tltg_printer_warnings, shown under the app bar on
 // every page for as long as the printer reports them, and kept under the bar while the page scrolls. Title and message are plain text from
-// Klipper, so they are not rendered as HTML, and any warning id shows without changes here.
+// Klipper, so they are not rendered as HTML, and any warning id shows without changes here. A Valve Oil update warning
+// links to the Valve Oil settings section, and a board warning's issue link (checked by tltgPrinterWarnings) opens it.
 @Component
 export default class AppTltgWarningBanner extends Mixins(StateMixin) {
+  readonly valveOilSettings: Location = { name: 'settings', hash: '#valveOil' }
+
+  isValveOil (warning: Klipper.TltgPrinterWarning): boolean {
+    return warning.id.startsWith('valve_oil_')
+  }
+
   get warnings (): Klipper.TltgPrinterWarning[] {
     if (!this.socketReady || !this.klippyReady) {
       return []
@@ -59,5 +86,12 @@ export default class AppTltgWarningBanner extends Mixins(StateMixin) {
     flex-wrap: wrap;
     column-gap: 0.5em;
     overflow-wrap: anywhere;
+  }
+
+  .app-tltg-warning-banner__link {
+    color: inherit;
+    font-weight: 500;
+    text-decoration: underline;
+    white-space: nowrap;
   }
 </style>
