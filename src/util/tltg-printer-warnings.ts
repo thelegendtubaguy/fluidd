@@ -1,3 +1,5 @@
+import { tltgIssueUrlValid } from './tltg-status'
+
 const isRecord = (value: unknown): value is Record<string, unknown> => (
   typeof value === 'object' &&
   value != null &&
@@ -18,7 +20,8 @@ const isTltgPrinterWarning = (value: unknown): value is Klipper.TltgPrinterWarni
  * Warnings reported by QIDI Max 4 Optimized's tltg_printer_warnings. The
  * object is absent on printers without the package, so anything that is not
  * the expected shape yields no warnings, and malformed entries, or repeats of
- * an id, are skipped rather than hiding the rest.
+ * an id, are skipped rather than hiding the rest. A board warning's issue link
+ * is kept only when it is Valve Oil's issue form, as in the Valve Oil section.
  */
 const tltgPrinterWarnings = (state: unknown): Klipper.TltgPrinterWarning[] => {
   if (!isRecord(state) || !Array.isArray(state.warnings)) {
@@ -38,7 +41,14 @@ const tltgPrinterWarnings = (state: unknown): Klipper.TltgPrinterWarning[] => {
 
       return true
     })
-    .map(({ id, level, title, message }) => ({ id, level, title, message }))
+    .map(({ id, level, title, message, url }) => ({
+      id,
+      level,
+      title,
+      message,
+      // A board's prefilled support issue, only when it is this project's issue form.
+      ...(tltgIssueUrlValid(url) ? { url } : {})
+    }))
 }
 
 export default tltgPrinterWarnings

@@ -622,6 +622,8 @@ declare namespace Klipper {
     level: 'warning' | 'error';
     title: string;
     message: string;
+    /** A board's prefilled Valve Oil support issue. */
+    url?: string;
   }
 
   export type TltgBedSoakRunState = 'idle' | 'running' | 'finished' | 'stopped' | 'failed'
