@@ -9,6 +9,7 @@ import { EventBus } from '@/eventBus'
 import i18n from '@/plugins/i18n'
 import { gte, valid } from 'semver'
 import type { ObjectWithRequest } from '@/plugins/socketClient'
+import { serverInfoRetryDelay } from '@/util/server-info-retry'
 
 let retryTimeout: ReturnType<typeof setTimeout>
 
@@ -96,10 +97,12 @@ export const actions = {
 
     dispatch('checkMoonrakerMinVersion')
 
-    if (payload.klippy_state !== 'ready') {
+    const retryDelay = serverInfoRetryDelay(payload)
+
+    if (retryDelay !== undefined) {
       retryTimeout = setTimeout(() => {
         SocketActions.serverInfo()
-      }, Globals.KLIPPY_RETRY_DELAY)
+      }, retryDelay)
     }
   },
 

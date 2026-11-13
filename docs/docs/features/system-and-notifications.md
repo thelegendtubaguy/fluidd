@@ -84,6 +84,9 @@ Fluidd has a built-in notification system that warns you of potential issues:
 - **Moonraker announcements** — important messages from the Fluidd developers
   and maintainers, delivered via the `[announcements]` Moonraker component.
 - **Failed components** — if a Moonraker component fails to load, Fluidd
-  displays a warning with the component name and error details.
+  displays a warning with the component name and error details. While
+  Moonraker reports failed components or warnings, Fluidd checks again every
+  10 seconds, so a warning goes away once Moonraker clears it, such as when a
+  connection that failed succeeds.
 
 ![Notifications panel showing Moonraker announcements and component warnings](/assets/images/notifications.png)
