@@ -20,16 +20,21 @@
           :title="$t('app.tltg_valve_oil.label.valve_oil')"
           :r-cols="5"
         >
-          <div class="text-right">
-            {{ view.release || $t('app.tltg_valve_oil.label.unknown') }}
+          <div class="d-flex flex-column align-end text-right">
+            <div>{{ view.release || $t('app.tltg_valve_oil.label.unknown') }}</div>
+            <div
+              v-if="view.devBuild != null"
+              class="text-caption secondary--text"
+            >
+              {{ view.devBuild ? $t('app.tltg_valve_oil.label.dev_build_commit', { commit: view.devBuild }) : $t('app.tltg_valve_oil.label.dev_build') }}
+            </div>
           </div>
         </app-setting>
 
         <v-divider />
 
         <app-setting
-          :title="view.printerName || $t('app.tltg_valve_oil.label.printer')"
-          :sub-title="$t('app.tltg_valve_oil.label.qidi_firmware')"
+          :title="$t('app.tltg_valve_oil.label.qidi_firmware')"
           :r-cols="5"
         >
           <div class="d-flex flex-column align-end text-right">
@@ -230,6 +235,49 @@
           </div>
         </template>
 
+        <template v-if="view.supportIssueUrl">
+          <v-divider />
+
+          <app-setting
+            :title="$t('app.tltg_valve_oil.label.report_problem')"
+            :sub-title="$t('app.tltg_valve_oil.msg.report_problem')"
+            :r-cols="5"
+          >
+            <app-btn
+              small
+              outlined
+              color="primary"
+              class="float-right"
+              :loading="supportPending"
+              @click="handleReportProblem"
+            >
+              {{ $t('app.tltg_valve_oil.btn.report_problem') }}
+              <v-icon
+                small
+                right
+              >
+                $openInNew
+              </v-icon>
+            </app-btn>
+          </app-setting>
+
+          <div
+            v-if="supportError"
+            class="px-4 pb-3"
+          >
+            <v-alert
+              dense
+              text
+              type="error"
+              dismissible
+              class="mb-0"
+              @input="supportError = ''"
+            >
+              {{ $t('app.tltg_valve_oil.msg.support_bundle_failed', { error: supportError }) }}
+            </v-alert>
+          </div>
+        </template>
+
         <template v-if="view.checkedAt">
           <v-divider />
           <div class="text-caption secondary--text px-4 py-2">
@@ -244,6 +292,7 @@
 <script lang="ts">
 import { Component, Vue, Watch } from 'vue-property-decorator'
 import { getAccessToken } from '@/store/socket/actions'
+import downloadUrl from '@/util/download-url'
 import TltgValveOilUpdate from './TltgValveOilUpdate.vue'
 import {
   parseTltgStatus,
@@ -254,6 +303,8 @@ import {
   tltgStatusRequest,
   TltgStatusRequestError,
   tltgStatusView,
+  tltgShownUpdate,
+  tltgSupportBundle,
   TLTG_STATUS_RECONNECT_PATIENCE_MS,
   TLTG_UPDATE_NOW_BLOCKERS,
   tltgSentence,
@@ -266,7 +317,7 @@ import {
 } from '@/util/tltg-status'
 
 // A finished update's result stays on the printer until the next one; here it clears when dismissed, and stays
-// cleared across reloads.
+// cleared across reloads. A success also clears by itself a day after it finished (tltgShownUpdate).
 const DISMISSED_UPDATES_KEY = 'tltg-status.dismissed-updates'
 const DISMISSED_UPDATES_KEPT = 20
 // Set while an update runs, so a page reloaded or re-shown while the printer restarts its services reads failed
@@ -325,6 +376,8 @@ export default class TltgValveOilSettings extends Vue {
   updateNowError = ''
   updateNowBlockedBy: TltgStatusBlocker[] = []
   dismissedUpdates: string[] = loadDismissedUpdates()
+  supportPending = false
+  supportError = ''
 
   timer: ReturnType<typeof setTimeout> | undefined = undefined
   abortController: AbortController | null = null
@@ -393,11 +446,7 @@ export default class TltgValveOilSettings extends Vue {
   }
 
   get shownUpdate (): TltgUpdateView | null {
-    const update = this.view?.update
-
-    return update && (update.state === 'running' || !this.dismissedUpdates.includes(update.id))
-      ? update
-      : null
+    return tltgShownUpdate(this.view?.update ?? null, this.dismissedUpdates)
   }
 
   get hasNotices (): boolean {
@@ -517,15 +566,46 @@ export default class TltgValveOilSettings extends Vue {
       throw new TltgStatusRequestError(0, 'Not connected to this printer')
     }
 
-    let token: string | null = null
+    return tltgStatusRequest(base, path, { method, token: await this.token(), signal, body })
+  }
 
+  async token (): Promise<string | null> {
     try {
-      token = await getAccessToken(this.$typedGetters['config/getTokenKeys'])
+      return await getAccessToken(this.$typedGetters['config/getTokenKeys'])
     } catch {
-      token = null
+      return null
+    }
+  }
+
+  /**
+   * Opens the prefilled issue, then downloads the support bundle to attach to it. The issue opens first, while the
+   * click still lets this page open a tab.
+   */
+  async handleReportProblem () {
+    const url = this.view?.supportIssueUrl
+    const base = this.apiBase
+
+    if (!url || !base || this.supportPending) {
+      return
     }
 
-    return tltgStatusRequest(base, path, { method, token, signal, body })
+    window.open(url, '_blank', 'noopener,noreferrer')
+    this.supportPending = true
+    this.supportError = ''
+
+    try {
+      const { blob, name } = await tltgSupportBundle(base, { token: await this.token() })
+      const objectUrl = URL.createObjectURL(blob)
+
+      downloadUrl(name, objectUrl)
+
+      // Deferred, as revoking right after the click can cancel the download
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 1000)
+    } catch (e) {
+      this.supportError = e instanceof Error ? e.message : String(e)
+    } finally {
+      this.supportPending = false
+    }
   }
 
   applyStatus (status: TltgStatus) {
