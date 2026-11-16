@@ -21,8 +21,9 @@
               v-bind="attrs"
               min-width="10"
               :color="macro.active ? 'primary' : undefined"
-              :disabled="!klippyReady || printerPrinting"
+              :disabled="!klippyReady || printerPrinting || qidiBoxBusy"
               class="px-0 flex-grow-1"
+              :class="{ 'tool-active': macro.active }"
               v-on="on"
               @click="sendGcode(macro.name)"
             >
@@ -61,6 +62,7 @@ import type { TranslateResult } from 'vue-i18n'
 import type { Spool } from '@/store/spoolman/types'
 import { chunk } from 'lodash-es'
 import type { Macro } from '@/store/macros/types'
+import type { QidiBoxToolButton } from '@/util/qidi-box'
 
 type ToolChangeCommand = {
   name: string,
@@ -76,7 +78,34 @@ export default class ToolChangeCommands extends Mixins(StateMixin) {
     return this.$typedGetters['printer/getAvailableCommands']
   }
 
+  get qidiBoxManagesTools (): boolean {
+    return this.$typedGetters['qidiBox/getManagesTools']
+  }
+
+  get qidiBoxBusy (): boolean {
+    return this.qidiBoxManagesTools && this.$typedGetters['qidiBox/getBusy']
+  }
+
+  // A tool's Box slot color, with its slot and filament in the tooltip.
+  get qidiBoxToolChangeCommands (): ToolChangeCommand[] {
+    const buttons: QidiBoxToolButton[] = this.$typedGetters['qidiBox/getToolButtons']
+    const commands = new Set(Object.keys(this.availableCommands).map(command => command.toUpperCase()))
+
+    return buttons
+      .filter(button => commands.has(`T${button.tool}`))
+      .map(({ tool, slot, active }) => ({
+        name: `T${tool}`,
+        description: `${slot.label} · ${slot.present
+          ? slot.name || this.$t('app.qidi_box.label.unknown_filament')
+          : this.$t('app.qidi_box.label.empty')}`,
+        color: slot.present ? slot.color ?? undefined : undefined,
+        active
+      }))
+  }
+
   get toolChangeCommands (): ToolChangeCommand[] {
+    if (this.qidiBoxManagesTools) return this.qidiBoxToolChangeCommands
+
     const availableCommands = this.availableCommands
 
     return Object.keys(availableCommands)
@@ -137,5 +166,16 @@ export default class ToolChangeCommands extends Mixins(StateMixin) {
     &.active {
       border-color: map-deep-get($material-dark, 'text', 'primary');
     }
+  }
+
+  // Disabled buttons drop their color while printing, so the active tool also gets a bar that stays.
+  .app-toolchanger-control .tool-active::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 3px;
+    background-color: var(--v-primary-base);
   }
 </style>
