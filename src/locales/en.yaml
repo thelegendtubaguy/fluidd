@@ -1921,7 +1921,7 @@ app:
       obico_server_relinks: >-
         Changing the server unlinks the printer. Link it again once Obico has
         restarted.
-      printer_busy: Available when the printer is idle
+      printer_busy: Available when the printer isn't printing or calibrating
       tailscale_confirm_log_out: >-
         Log this printer out of Tailscale? It leaves your tailnet until you log
         it in again.
@@ -2005,14 +2005,17 @@ app:
       details: Details
       hide_log: Hide log
       report_board: Report this board
+      report_problem: Open an issue
       show_log: Show log
       update_now: Update now
     label:
       auto_update: Automatic updates
       board_firmware: Firmware {version}
       board_firmware_unknown: Firmware not read
-      printer: Printer
+      dev_build: Dev build
+      dev_build_commit: Dev build {commit}
       qidi_firmware: QIDI firmware
+      report_problem: Report a problem
       unknown: Unknown
       valve_oil: Valve Oil release
       waiting: Waiting to install
@@ -2067,6 +2070,11 @@ app:
       reconnecting_long: >-
         The printer hasn't answered for {minutes} minutes. Don't turn it off.
         Check its screen to see what it's doing.
+      report_problem: >-
+        Opens a bug report on GitHub and downloads a support bundle with
+        Klipper's, Moonraker's, and Valve Oil's logs. Attach the bundle to the
+        issue.
+      support_bundle_failed: "The support bundle couldn't be downloaded: {error}"
       target_firmware: This Valve Oil release updates it to {version}
       unavailable: Valve Oil's update status isn't available on this printer.
       update_now_blocked:
