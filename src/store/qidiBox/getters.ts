@@ -1,7 +1,14 @@
 import type { GetterTree } from 'vuex'
 import type { QidiBoxState } from './types'
 import type { RootState } from '../types'
-import { QIDI_BOX_EXTERNAL_SLOT, qidiBoxSlotNumber, qidiBoxSlots, type QidiBoxSlot } from '@/util/qidi-box'
+import {
+  QIDI_BOX_EXTERNAL_SLOT,
+  qidiBoxSlotNumber,
+  qidiBoxSlots,
+  qidiBoxToolButtons,
+  type QidiBoxSlot,
+  type QidiBoxToolButton
+} from '@/util/qidi-box'
 import {
   qidiBoxHubSensor,
   qidiBoxHubSlot,
@@ -63,6 +70,27 @@ export const getters = {
     }
 
     return map
+  },
+
+  // QIDI defines T0 through T15 whatever Boxes are connected, so the toolhead's tool buttons follow the Box instead.
+  getManagesTools: (state, getters, rootState): boolean => {
+    const printer = rootState.printer.printer
+
+    return printer.save_variables?.variables?.box_count != null || printer.multi_color_controller != null
+  },
+
+  // T_MANAGER does nothing while the Box is disabled.
+  getToolButtons: (state, getters, rootState): QidiBoxToolButton[] => {
+    if (!getters.getEnabled) return []
+
+    const currentTool = Number(rootState.printer.printer.save_variables?.variables?.extrude_state)
+
+    return qidiBoxToolButtons(
+      getters.getToolMap,
+      getters.getSlots,
+      getters.getLoadedSlot,
+      Number.isInteger(currentTool) ? currentTool : null
+    )
   },
 
   getToolheadFilament: (state, getters, rootState): boolean => {
