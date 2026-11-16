@@ -1589,6 +1589,10 @@ app:
         When filament runs out, the Box switches to a slot with the same
         filament, vendor, and color.
       title: Box settings
+      vo_box_spool_roll: Turn spools while heating
+      vo_box_spool_roll_help: >-
+        While the Box heater is on, including during a print, each empty slot
+        turns its spool every 5 minutes. Slots with filament fed never turn.
     step:
       bite: Gripping the external spool's filament
       cut: Cutting filament
