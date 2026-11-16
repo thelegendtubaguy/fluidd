@@ -44,6 +44,9 @@ import QidiBoxMotion from './QidiBoxMotion.vue'
 // QIDI's Box settings, saved variables read by its Box modules; set to 1 or 0 as QIDI's Fluidd did.
 const VARIABLES = ['auto_read_rfid', 'auto_init_detect', 'auto_reload_detect']
 
+// Valve Oil's spool turning while the Box heats. On unless saved as 0; its module reports whether it's on.
+const SPOOL_ROLL = 'vo_box_spool_roll'
+
 @Component({
   components: { QidiBoxMotion }
 })
@@ -54,7 +57,14 @@ export default class QidiBoxSettingsDialog extends Mixins(StateMixin) {
   get settings () {
     const variables = this.$typedState.printer.printer.save_variables?.variables ?? {}
 
-    return VARIABLES.map(variable => ({ variable, value: Number(variables[variable] ?? 0) === 1 }))
+    const settings = VARIABLES.map(variable => ({ variable, value: Number(variables[variable] ?? 0) === 1 }))
+
+    const spoolRoll = this.$typedState.printer.printer.tltg_box_spool_roll
+    if (spoolRoll != null) {
+      settings.push({ variable: SPOOL_ROLL, value: spoolRoll.enabled === true })
+    }
+
+    return settings
   }
 
   get hasMotion (): boolean {
