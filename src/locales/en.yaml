@@ -1609,11 +1609,8 @@ app:
         No tag came past the reader. The Box reads a tag only on the side of the
         spool facing the reader. If the tag is on the other side, turn the spool
         over and try again.
-      refused_anycubic: >-
-        Tag not written. It holds Anycubic's data, which the Box already reads.
-        Valve Oil writes only blank tags and tags it wrote before.
-      refused_elegoo: >-
-        Tag not written. It holds Elegoo's data, which the Box already reads.
+      refused_brand: >-
+        Tag not written. It holds %{brand} data, which the Box already reads.
         Valve Oil writes only blank tags and tags it wrote before.
       refused_bambu: >-
         Tag not written. It's a Bambu Lab tag, which the Box already reads.

@@ -236,7 +236,11 @@ interface TagJob {
 }
 
 const MAX_COLORS = 4
-const REFUSALS = ['anycubic', 'elegoo', 'bambu', 'locked', 'unsupported']
+const REFUSALS = ['bambu', 'locked', 'unsupported']
+// Tag formats the Box already reads, which Valve Oil never writes over.
+const BRANDS: Record<string, string> = {
+  anycubic: 'Anycubic', elegoo: 'Elegoo', creality: 'Creality', tigertag: 'TigerTag', opentag3d: 'OpenTag3D'
+}
 
 // Writes a filament to the RFID tag on a Box slot's spool with Valve Oil's VO_BOX_RFID_WRITE. The Box turns a spool
 // sitting on an empty slot's rollers until its tag comes past the reader; with filament fed, the operator turns it.
@@ -331,6 +335,9 @@ export default class QidiBoxTagWriteDialog extends Mixins(StateMixin) {
   get failure (): string {
     const result = this.job?.result
 
+    if (result && !result.written && BRANDS[result.layout]) {
+      return this.$t('app.qidi_box.tag.refused_brand', { brand: BRANDS[result.layout] }).toString()
+    }
     if (result && !result.written) {
       const layout = REFUSALS.includes(result.layout) ? result.layout : 'other'
 
