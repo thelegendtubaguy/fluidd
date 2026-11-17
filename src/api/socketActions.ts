@@ -565,6 +565,33 @@ export const SocketActions = {
     )
   },
 
+  // QIDI Moonraker's settings table, shared with QIDI's touchscreen app.
+  serverDatabaseConfigSelect (section: string, key: string, defaultValue?: unknown, options?: RequestOptions) {
+    return baseEmit(
+      'server.database.config.select', {
+        ...options,
+        params: {
+          section,
+          key,
+          default: defaultValue
+        }
+      }
+    )
+  },
+
+  serverDatabaseConfigUpdate (section: string, key: string, value: unknown, options?: RequestOptions) {
+    return baseEmit(
+      'server.database.config.update', {
+        ...options,
+        params: {
+          section,
+          key,
+          value
+        }
+      }
+    )
+  },
+
   serverRestart (options?: RequestOptions) {
     return baseEmit(
       'server.restart', {

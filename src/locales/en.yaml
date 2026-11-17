@@ -2018,6 +2018,7 @@ app:
       board_firmware_unknown: Firmware not read
       dev_build: Dev build
       dev_build_commit: Dev build {commit}
+      lan_only: LAN only mode
       qidi_firmware: QIDI firmware
       report_problem: Report a problem
       unknown: Unknown
@@ -2038,6 +2039,11 @@ app:
         Install new Valve Oil releases, QIDI firmware, and board firmware by
         themselves while the printer is idle.
       auto_update_failed: "Automatic updates couldn't be changed: {error}"
+      lan_only: >-
+        Turn off QIDI's cloud connection and remote access, as the touchscreen's
+        LAN Only switch does. The Qidi Joy app and QIDI account sign-in don't
+        work while it's on. Fluidd and the slicers keep working on your network.
+      lan_only_failed: "LAN only mode couldn't be changed: {error}"
       check_failed: 'The last check for updates failed: {message}'
       check_failed_plain: The last check for updates failed.
       checked_at: Last checked for updates {time}

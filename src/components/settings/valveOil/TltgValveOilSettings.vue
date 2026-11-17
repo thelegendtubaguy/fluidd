@@ -65,6 +65,8 @@
           />
         </app-setting>
 
+        <tltg-qidi-lan-only />
+
         <v-divider />
 
         <app-setting
@@ -294,6 +296,7 @@ import { Component, Vue, Watch } from 'vue-property-decorator'
 import { getAccessToken } from '@/store/socket/actions'
 import downloadUrl from '@/util/download-url'
 import TltgValveOilUpdate from './TltgValveOilUpdate.vue'
+import TltgQidiLanOnly from './TltgQidiLanOnly.vue'
 import {
   parseTltgStatus,
   parseTltgStatusJob,
@@ -359,7 +362,8 @@ const saveUpdating = (updating: boolean) => {
 
 @Component({
   components: {
-    TltgValveOilUpdate
+    TltgValveOilUpdate,
+    TltgQidiLanOnly
   }
 })
 export default class TltgValveOilSettings extends Vue {
