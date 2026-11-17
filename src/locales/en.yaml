@@ -1477,9 +1477,16 @@ app:
       retry: Retry
       stop: Stop
       unload: Unload
+      write_tag: Write spool tag
+      write_tag_hide: Hide
+      write_tag_retry: Try again
+      write_tag_start: Write tag
     label:
       box: Box %{box}
       color: Color
+      colors: Colors · up to four for a multicolor spool
+      add_color: Add a color
+      remove_color: Remove color
       custom_color: Custom color
       empty: Empty
       external: External
@@ -1575,6 +1582,51 @@ app:
         This file doesn't say which filaments it uses, so every filament in
         its slicer project is listed. Any left without a slot keep the slot
         they were last mapped to.
+    tag:
+      intro: >-
+        Put what's on this spool on its RFID tag. The Box then sets the slot
+        from the tag whenever the spool is loaded, here or in any Box slot.
+      turns: >-
+        The Box turns the spool backward until its tag comes past the reader,
+        about one turn at most.
+      by_hand: >-
+        Filament is fed from this slot, so the Box can't turn the spool. Once
+        you start, turn it slowly backward by hand for up to a minute.
+      rules: >-
+        The tag must be on the side of the spool facing the reader. Only blank
+        tags and tags Valve Oil wrote before are written.
+      turning: Turning the spool to find its tag…
+      turning_progress: '%{turned} of %{turn} mm'
+      by_hand_running: Turn the spool slowly backward by hand…
+      seconds_left: '%{seconds} s left'
+      lost: >-
+        The tag moved away before it could be written; trying again as it comes
+        past.
+      done: >-
+        Tag written and checked. Whenever this spool is loaded into a Box slot,
+        the slot is set to %{filament}.
+      not_found: >-
+        No tag came past the reader. The Box reads a tag only on the side of the
+        spool facing the reader. If the tag is on the other side, turn the spool
+        over and try again.
+      refused_anycubic: >-
+        Tag not written. It holds Anycubic's data, which the Box already reads.
+        Valve Oil writes only blank tags and tags it wrote before.
+      refused_elegoo: >-
+        Tag not written. It holds Elegoo's data, which the Box already reads.
+        Valve Oil writes only blank tags and tags it wrote before.
+      refused_bambu: >-
+        Tag not written. It's a Bambu Lab tag, which the Box already reads.
+        Bambu tags can't be rewritten.
+      refused_locked: Tag not written. The tag is locked against writing.
+      refused_unsupported: >-
+        Tag not written. The Box can't write this kind of tag. Use a MIFARE
+        Classic 1K or NTAG213, 215, or 216 tag.
+      refused_other: >-
+        Tag not written. The tag holds data Valve Oil doesn't write over.
+      unverified: >-
+        Tag not written. It didn't read back as written; it may have moved away
+        mid-write. Try again.
     settings:
       auto_init_detect: Detection on startup
       auto_init_detect_help: >-
@@ -1616,6 +1668,7 @@ app:
       working: Working…
     title:
       edit_slot: Edit slot %{slot}
+      write_tag: Write %{slot}'s spool tag
       qidi_box: QIDI Box
       tool_mapping: Tool mapping
   qidi_filaments:
