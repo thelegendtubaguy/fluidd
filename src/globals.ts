@@ -208,6 +208,8 @@ import {
   mdiDockTop,
   mdiDockBottom,
   mdiNfcVariant,
+  mdiTagEditOutline,
+  mdiHandBackLeftOutline,
   mdiTagMultipleOutline,
 } from '@mdi/js'
 
@@ -594,6 +596,9 @@ export const Icons = Object.freeze({
   qidiBoxHumidity: mdiWater,
   qidiBoxEject: mdiEject,
   qidiBoxRfid: mdiNfcVariant,
+  qidiBoxWriteTag: mdiTagEditOutline,
+  qidiBoxTurnByHand: mdiHandBackLeftOutline,
+  qidiBoxTurnSpool: mdiRotateLeft,
   qidiBoxCut: mdiContentCut,
 })
 

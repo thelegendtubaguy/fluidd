@@ -149,6 +149,27 @@
             </template>
             <span>{{ $t('app.qidi_box.btn.edit_filament') }}</span>
           </v-tooltip>
+          <v-tooltip
+            v-if="canWriteTag"
+            top
+          >
+            <template #activator="{ on, attrs }">
+              <app-btn
+                icon
+                small
+                :disabled="busy || currentExternal"
+                :aria-label="$t('app.qidi_box.btn.write_tag')"
+                v-bind="attrs"
+                v-on="on"
+                @click="writingTag = true"
+              >
+                <v-icon small>
+                  $qidiBoxWriteTag
+                </v-icon>
+              </app-btn>
+            </template>
+            <span>{{ $t('app.qidi_box.btn.write_tag') }}</span>
+          </v-tooltip>
         </div>
         <div
           v-if="current.present && current.name"
@@ -310,6 +331,13 @@
       :busy="busy"
     />
 
+    <qidi-box-tag-write-dialog
+      v-if="writingTag"
+      v-model="writingTag"
+      :box-slot="current"
+      :busy="busy"
+    />
+
     <qidi-box-settings-dialog
       v-if="settings"
       v-model="settings"
@@ -343,6 +371,7 @@ import QidiBoxFlow from './QidiBoxFlow.vue'
 import QidiBoxToolMapDialog from './QidiBoxToolMapDialog.vue'
 import QidiBoxFilamentDialog from './QidiBoxFilamentDialog.vue'
 import QidiBoxSettingsDialog from './QidiBoxSettingsDialog.vue'
+import QidiBoxTagWriteDialog from './QidiBoxTagWriteDialog.vue'
 
 const [EJECT, LOAD, UNLOAD] = [0, 1, 2]
 // Firmware 01.01.07.01 replaced E_BOX, E_LOAD, E_UNLOAD, and RFID_READ with multi_color_controller commands.
@@ -353,6 +382,8 @@ const JOG_COMMAND = 'TLTG_BOX_SLOT_JOG'
 // Qidi-Max-4-Optimized's cut homes X and Y first if needed, and cuts with the nozzle cold. The same release unloads
 // and ejects with COLD=1 without heating the nozzle.
 const CUT_COMMAND = 'TLTG_CUT_FILAMENT'
+// Valve Oil writes a filament to a Box spool's RFID tag on a USB Box running its Box firmware.
+const WRITE_TAG_COMMAND = 'VO_BOX_RFID_WRITE'
 const JOG_DISTANCE = 10
 
 @Component({
@@ -360,7 +391,8 @@ const JOG_DISTANCE = 10
     QidiBoxFlow,
     QidiBoxToolMapDialog,
     QidiBoxFilamentDialog,
-    QidiBoxSettingsDialog
+    QidiBoxSettingsDialog,
+    QidiBoxTagWriteDialog
   }
 })
 export default class QidiBoxCard extends Mixins(StateMixin, QidiBoxMixin) {
@@ -372,6 +404,7 @@ export default class QidiBoxCard extends Mixins(StateMixin, QidiBoxMixin) {
 
   selected = 0
   editing = false
+  writingTag = false
   mapping = false
   settings = false
 
@@ -578,6 +611,12 @@ export default class QidiBoxCard extends Mixins(StateMixin, QidiBoxMixin) {
   // The jog refuses only while printing, paused, or the Box is busy, so an empty slot can still move.
   get jogDisabled (): boolean {
     return this.mappingLocked || this.currentExternal
+  }
+
+  // Writing needs the firmware filament database, whose QF IDs the tag carries.
+  get canWriteTag (): boolean {
+    return WRITE_TAG_COMMAND in this.$typedGetters['printer/getAvailableCommands'] &&
+      this.hasController && this.$typedState.qidiBox.filamentDatabase != null
   }
 
   get canCut (): boolean {
