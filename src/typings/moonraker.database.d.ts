@@ -39,6 +39,13 @@ declare namespace Moonraker.Database {
     key: string | string[] | null;
     value: T;
   }
+
+  /** An answer from QIDI Moonraker's settings table, which upstream Moonraker doesn't have. */
+  export interface QidiConfigResponse {
+    status: 'success' | 'error';
+    result?: Record<string, unknown>;
+    message?: string;
+  }
 }
 
 declare namespace Moonraker {
@@ -90,6 +97,22 @@ declare namespace Moonraker {
         key?: string | string[] | null
       },
       result: Database.GetItemResponse
+    },
+    'server.database.config.select': {
+      params: {
+        section: string,
+        key: string,
+        default?: unknown
+      },
+      result: Database.QidiConfigResponse
+    },
+    'server.database.config.update': {
+      params: {
+        section: string,
+        key: string,
+        value: unknown
+      },
+      result: Database.QidiConfigResponse
     }
   }
 }
