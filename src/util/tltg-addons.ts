@@ -70,6 +70,32 @@ export interface TltgTailscaleStatus {
   problems: string[];
 }
 
+export type TltgZerotierNetworkState =
+  | 'ok'
+  | 'requesting_configuration'
+  | 'access_denied'
+  | 'not_found'
+  | 'port_error'
+  | 'client_too_old'
+  | 'authentication_required'
+
+export interface TltgZerotierNetwork {
+  /** The 16-character network ID. */
+  id: string;
+  name: string;
+  state: TltgZerotierNetworkState;
+  /** The printer's addresses on the network, without their prefix length. */
+  addresses: string[];
+}
+
+export interface TltgZerotierStatus {
+  /** The printer's 10-character ZeroTier address, which the network's member list shows. */
+  nodeId: string;
+  /** Whether ZeroTier reaches its root servers. */
+  online: boolean;
+  networks: TltgZerotierNetwork[];
+}
+
 export const TLTG_OBICO_CLOUD = 'https://app.obico.io'
 
 export const TLTG_ADDONS_POLL_BUSY_MS = 2000
@@ -256,6 +282,57 @@ export const parseTltgTailscaleStatus = (value: unknown): TltgTailscaleStatus | 
     tailnet: text(value.tailnet),
     keyExpiry: Number.isFinite(expiry) && expiry > 0 ? expiry : null,
     problems: strings(value.problems)
+  }
+}
+
+const ZEROTIER_NETWORK_STATES: readonly string[] = [
+  'ok',
+  'requesting_configuration',
+  'access_denied',
+  'not_found',
+  'port_error',
+  'client_too_old',
+  'authentication_required'
+]
+
+const ZEROTIER_NETWORK_ID = /^[0-9a-f]{16}$/
+
+/** Whether a value is a ZeroTier network ID: 16 characters, 0-9 and a-f, in either case. */
+export const tltgZerotierNetworkIdValid = (value: unknown): boolean => (
+  typeof value === 'string' &&
+  ZEROTIER_NETWORK_ID.test(value.trim().toLowerCase())
+)
+
+/**
+ * Reads the ZeroTier add-on's status, or null when zerotier-one didn't answer. Networks without a valid ID are
+ * skipped, and states this doesn't know read as still joining.
+ */
+export const parseTltgZerotierStatus = (value: unknown): TltgZerotierStatus | null => {
+  if (!isRecord(value) || typeof value.node_id !== 'string' || !Array.isArray(value.networks)) {
+    return null
+  }
+
+  const networks = value.networks
+    .filter(isRecord)
+    .filter(network => typeof network.id === 'string' && ZEROTIER_NETWORK_ID.test(network.id))
+    .map((network): TltgZerotierNetwork => ({
+      id: network.id as string,
+      name: text(network.name),
+      state: ZEROTIER_NETWORK_STATES.includes(text(network.status))
+        ? network.status as TltgZerotierNetworkState
+        : 'requesting_configuration',
+      addresses: Array.isArray(network.addresses)
+        ? network.addresses
+          .filter((address): address is string => typeof address === 'string')
+          .map(address => address.split('/')[0])
+          .filter(address => /^[0-9a-f:.]+$/i.test(address))
+        : []
+    }))
+
+  return {
+    nodeId: /^[0-9a-f]{10}$/.test(value.node_id) ? value.node_id : '',
+    online: value.online === true,
+    networks
   }
 }
 

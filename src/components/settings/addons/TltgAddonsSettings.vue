@@ -152,6 +152,12 @@
               :addon="addon"
               :request="request"
             />
+
+            <tltg-zerotier-status
+              v-if="addon.id === 'zerotier' && hasStatusPanel(addon)"
+              :addon="addon"
+              :request="request"
+            />
           </div>
         </div>
       </template>
@@ -166,6 +172,7 @@ import TltgAddonJob from './TltgAddonJob.vue'
 import TltgOctoEverywhereStatus from './TltgOctoEverywhereStatus.vue'
 import TltgObicoStatus from './TltgObicoStatus.vue'
 import TltgTailscaleStatus from './TltgTailscaleStatus.vue'
+import TltgZerotierStatus from './TltgZerotierStatus.vue'
 import {
   parseTltgAddonsList,
   parseTltgAddonsJob,
@@ -204,7 +211,8 @@ const loadDismissedJobs = (): string[] => {
     TltgAddonJob,
     TltgOctoEverywhereStatus,
     TltgObicoStatus,
-    TltgTailscaleStatus
+    TltgTailscaleStatus,
+    TltgZerotierStatus
   }
 })
 export default class TltgAddonsSettings extends Vue {

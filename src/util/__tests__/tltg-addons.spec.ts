@@ -1,12 +1,14 @@
 import {
   parseTltgAddonsList,
   parseTltgTailscaleStatus,
+  parseTltgZerotierStatus,
   tltgAddonActions,
   tltgAddonsApiBase,
   tltgAddonsPollInterval,
   tltgAddonsRequest,
   TltgAddonsRequestError,
-  tltgServerUrlValid
+  tltgServerUrlValid,
+  tltgZerotierNetworkIdValid
 } from '../tltg-addons'
 
 const octoEverywhere = {
@@ -257,5 +259,45 @@ describe('parseTltgTailscaleStatus', () => {
 
   it('leaves out a name that is not a host name', () => {
     expect(parseTltgTailscaleStatus({ ...running, name: 'evil.example/path' })?.name).toBe('')
+  })
+})
+
+describe('parseTltgZerotierStatus', () => {
+  it('reads the printer and its networks', () => {
+    expect(parseTltgZerotierStatus({
+      node_id: 'da63a5a253',
+      online: true,
+      networks: [
+        { id: '8056c2e21c000001', name: 'home', status: 'ok', addresses: ['10.147.17.12/24', 'fd80:56c2:e21c::1/88', '<b>/1', 7] },
+        { id: '1234567890abcdef', name: '', status: 'ACCESS_DENIED', addresses: null },
+        { id: '--help', name: 'x', status: 'ok', addresses: [] },
+        'not a network'
+      ]
+    })).toEqual({
+      nodeId: 'da63a5a253',
+      online: true,
+      networks: [
+        { id: '8056c2e21c000001', name: 'home', state: 'ok', addresses: ['10.147.17.12', 'fd80:56c2:e21c::1'] },
+        { id: '1234567890abcdef', name: '', state: 'requesting_configuration', addresses: [] }
+      ]
+    })
+  })
+
+  it('reads a ZeroTier that did not answer as unavailable', () => {
+    expect(parseTltgZerotierStatus({ unavailable: "ZeroTier isn't answering yet." })).toBeNull()
+    expect(parseTltgZerotierStatus(null)).toBeNull()
+  })
+})
+
+describe('tltgZerotierNetworkIdValid', () => {
+  it.each([
+    ['8056c2e21c000001', true],
+    [' 8056C2E21C000001 ', true],
+    ['8056c2e21c00000', false],
+    ['8056c2e21c00000g', false],
+    ['--help', false],
+    [null, false]
+  ])('%s is %s', (value, valid) => {
+    expect(tltgZerotierNetworkIdValid(value)).toBe(valid)
   })
 })

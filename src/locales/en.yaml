@@ -1914,6 +1914,8 @@ app:
       unlink: Unlink
       update: Update
       use_server: Use this server
+      zerotier_join: Join
+      zerotier_leave: Leave
     job:
       install:
         failed: Installing {name} failed
@@ -1938,6 +1940,8 @@ app:
       not_connected: Not connected
       not_linked: Not linked
       obico_cloud: Obico Cloud
+      offline: Offline
+      online: Online
       obico_self_hosted: My own Obico server
       octoeverywhere: OctoEverywhere
       server: Server
@@ -1949,6 +1953,12 @@ app:
       tailscale_name: Name
       version: Version {version}
       version_update: Version {installed}, {available} available
+      zerotier: ZeroTier
+      zerotier_address: Address
+      zerotier_network: Network
+      zerotier_network_id: Network ID
+      zerotier_node_id: Node ID
+      zerotier_state: Status
     msg:
       blocked_by: Remove {names} first. Only one remote access add-on can be installed.
       code_expires: Expires at {time}
@@ -1990,6 +2000,26 @@ app:
         Open this address on any device and sign in to Tailscale to add this
         printer to your tailnet.
       unavailable: Add-ons aren't available on this printer.
+      zerotier_confirm_leave: >-
+        Leave {network}? Devices on that network can no longer reach the
+        printer until it joins again.
+      zerotier_connected: >-
+        Devices on this network can open Fluidd at the address above, and reach
+        the printer's other services, such as SSH.
+      zerotier_needs_approval: >-
+        Waiting for approval. In the network's members at my.zerotier.com,
+        authorize node {node}.
+      zerotier_network_id: Enter the 16-character ID of the network to join, from my.zerotier.com.
+      zerotier_network_id_invalid: A network ID is 16 characters, 0-9 and a-f.
+      zerotier_no_network: >-
+        This printer isn't on a ZeroTier network. Enter the ID of the network to
+        join.
+      zerotier_not_found: >-
+        ZeroTier has no network with this ID. Check the ID, then leave this
+        network and join the right one.
+      zerotier_sso: >-
+        This network needs a sign-in in a browser, which the printer can't do.
+        Turn off SSO for this network to use the printer on it.
     service:
       active: Running
       activating: Starting
@@ -2013,6 +2043,15 @@ app:
       obico_unlink: Unlink Obico
       remove: Remove {name}
       tailscale_log_out: Log out of Tailscale
+      zerotier_leave: Leave ZeroTier network
+    zerotier_state:
+      access_denied: Waiting for approval
+      authentication_required: Needs a browser sign-in
+      client_too_old: ZeroTier is too old for this network
+      not_found: Network not found
+      ok: Connected
+      port_error: Couldn't create its network interface
+      requesting_configuration: Joining
   tltg_valve_oil:
     board_build:
       patched: Valve Oil's build
