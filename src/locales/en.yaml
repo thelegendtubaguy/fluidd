@@ -2101,6 +2101,7 @@ app:
       report_problem: Open an issue
       show_log: Show log
       update_now: Update now
+      use_timezone: Use {timezone}
     label:
       auto_update: Automatic updates
       board_firmware: Firmware {version}
@@ -2111,6 +2112,12 @@ app:
       qidi_firmware: QIDI firmware
       report_problem: Report a problem
       unknown: Unknown
+      update_window: Update window
+      update_window_any_time: Any time
+      update_window_end: End hour
+      update_window_hours: Set hours
+      update_window_start: Start hour
+      update_window_to: to
       valve_oil: Valve Oil release
       waiting: Waiting to install
       waiting_board: New firmware for {name}
@@ -2193,6 +2200,18 @@ app:
       update_now_blocked_unknown: Not available right now.
       update_now_failed: "The update couldn't be started: {error}"
       update_now_refused: "Update now couldn't start. {reasons}"
+      update_window_any_time: Automatic updates can start at any hour.
+      update_window_failed: "The update window couldn't be changed: {error}"
+      update_window_hours: Automatic updates start only between these hours.
+      update_window_same_hour: Pick a different start and end hour.
+      update_window_timezone:
+        browser: Times are in {timezone} (this browser's timezone).
+        lookup: >-
+          Times are in {timezone} (found from the printer's internet address).
+        operator: Times are in {timezone} (set over SSH).
+        other_browser: Times are in {timezone} (set from a browser).
+        unknown: Times are in {timezone}.
+        utc: Times are in UTC.
       waiting_auto_off: >-
         An update is waiting. Automatic updates are off, so install it with
         Update now or by running the Valve Oil installer.
@@ -2225,6 +2244,16 @@ app:
       waiting_next_check_reinstall_at: >-
         Automatic updates are on, so Valve Oil will be installed again at the
         next update check, around {time}, while the printer is idle.
+      waiting_window: >-
+        Automatic updates are on, so the update will be installed during the
+        update window, {window} {timezone}, while the printer is idle.
+      waiting_window_firmware: >-
+        Automatic updates are on, so the update will be installed during the
+        update window, {window} {timezone}, while the printer is idle. The
+        printer can't be used while it installs.
+      waiting_window_reinstall: >-
+        Automatic updates are on, so Valve Oil will be installed again during
+        the update window, {window} {timezone}, while the printer is idle.
     title:
       continue_update: Continue the update
       update_now: Update now
