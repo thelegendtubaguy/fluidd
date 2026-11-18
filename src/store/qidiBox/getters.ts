@@ -157,7 +157,7 @@ export const getters = {
       qidiBoxStrandedRecovery(rootState.printer.printer)
   },
 
-  // Like TLTG_RESET_TOOL_MAPPINGS, mappings change only while idle, so a paused print keeps its recovery state.
+  // Like VO_RESET_TOOL_MAPPINGS, mappings change only while idle, so a paused print keeps its recovery state.
   getMappingLocked: (state, getters, rootState): boolean => {
     return getters.getBusy || rootState.printer.printer.print_stats?.state === 'paused'
   },

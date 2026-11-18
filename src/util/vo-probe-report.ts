@@ -9,7 +9,7 @@ const isFiniteNumber = (value: unknown): value is number => (
   Number.isFinite(value)
 )
 
-const isProbeReportPoint = (value: unknown): value is Klipper.TltgProbeReportPoint => (
+const isProbeReportPoint = (value: unknown): value is Klipper.VoProbeReportPoint => (
   isRecord(value) &&
   isFiniteNumber(value.x) &&
   isFiniteNumber(value.y) &&
@@ -22,7 +22,7 @@ const isProbeReportPoint = (value: unknown): value is Klipper.TltgProbeReportPoi
  * Optimized's tltg_probe_report. Empty when the object is absent, or when the
  * loaded mesh isn't the one the report describes.
  */
-const tltgProbeReportPoints = (state: unknown): Klipper.TltgProbeReportPoint[] => {
+const voProbeReportPoints = (state: unknown): Klipper.VoProbeReportPoint[] => {
   if (!isRecord(state) || state.loaded !== true || !Array.isArray(state.points)) {
     return []
   }
@@ -32,4 +32,4 @@ const tltgProbeReportPoints = (state: unknown): Klipper.TltgProbeReportPoint[] =
     .map(({ x, y, tries, spread }) => ({ x, y, tries, spread }))
 }
 
-export default tltgProbeReportPoints
+export default voProbeReportPoints

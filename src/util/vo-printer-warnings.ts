@@ -1,4 +1,4 @@
-import { tltgIssueUrlValid } from './tltg-status'
+import { voIssueUrlValid } from './vo-status'
 
 const isRecord = (value: unknown): value is Record<string, unknown> => (
   typeof value === 'object' &&
@@ -6,7 +6,7 @@ const isRecord = (value: unknown): value is Record<string, unknown> => (
   !Array.isArray(value)
 )
 
-const isTltgPrinterWarning = (value: unknown): value is Klipper.TltgPrinterWarning => (
+const isVoPrinterWarning = (value: unknown): value is Klipper.VoPrinterWarning => (
   isRecord(value) &&
   typeof value.id === 'string' &&
   value.id !== '' &&
@@ -23,7 +23,7 @@ const isTltgPrinterWarning = (value: unknown): value is Klipper.TltgPrinterWarni
  * an id, are skipped rather than hiding the rest. A board warning's issue link
  * is kept only when it is Valve Oil's issue form, as in the Valve Oil section.
  */
-const tltgPrinterWarnings = (state: unknown): Klipper.TltgPrinterWarning[] => {
+const voPrinterWarnings = (state: unknown): Klipper.VoPrinterWarning[] => {
   if (!isRecord(state) || !Array.isArray(state.warnings)) {
     return []
   }
@@ -31,7 +31,7 @@ const tltgPrinterWarnings = (state: unknown): Klipper.TltgPrinterWarning[] => {
   const ids = new Set<string>()
 
   return state.warnings
-    .filter(isTltgPrinterWarning)
+    .filter(isVoPrinterWarning)
     .filter(warning => {
       if (ids.has(warning.id)) {
         return false
@@ -47,8 +47,8 @@ const tltgPrinterWarnings = (state: unknown): Klipper.TltgPrinterWarning[] => {
       title,
       message,
       // A board's prefilled support issue, only when it is this project's issue form.
-      ...(tltgIssueUrlValid(url) ? { url } : {})
+      ...(voIssueUrlValid(url) ? { url } : {})
     }))
 }
 
-export default tltgPrinterWarnings
+export default voPrinterWarnings

@@ -7,8 +7,8 @@ import decimalRound from '@/util/decimal-round'
  * state.
  */
 const klipperHealthChartValues = (
-  stored?: Partial<Klipper.TltgKlipperHealthState>,
-  update?: Partial<Klipper.TltgKlipperHealthState>
+  stored?: Partial<Klipper.VoKlipperHealthState>,
+  update?: Partial<Klipper.VoKlipperHealthState>
 ): Record<string, number> => {
   const health = { ...stored, ...update }
   const values: Record<string, number> = {}

@@ -41,7 +41,7 @@ export interface BedSoakSettings {
   time_limit: number | null;
   stop_when_settled: boolean;
   keep_heating: boolean;
-  limits: Partial<Klipper.TltgBedSoakLimits>;
+  limits: Partial<Klipper.VoBedSoakLimits>;
   check_point: [number, number] | null;
 }
 
@@ -94,7 +94,7 @@ export interface BedSoakResult {
   state: BedSoakEndState;
   reason: string;
   ended: number | null;
-  milestones: Klipper.TltgBedSoakMilestones;
+  milestones: Klipper.VoBedSoakMilestones;
   meshes: number;
   warning: boolean;
 }
@@ -155,7 +155,7 @@ const isMatrix = (value: unknown): value is number[][] => (
   ))
 )
 
-const parseMilestones = (value: unknown): Klipper.TltgBedSoakMilestones => {
+const parseMilestones = (value: unknown): Klipper.VoBedSoakMilestones => {
   const milestones = isRecord(value) ? value : {}
 
   return {
@@ -186,7 +186,7 @@ const parseSettings = (line: Record<string, unknown>): BedSoakSettings | null =>
     time_limit: num(line.time_limit),
     stop_when_settled: line.stop_when_settled === true,
     keep_heating: line.keep_heating === true,
-    limits: isRecord(line.limits) ? line.limits as Partial<Klipper.TltgBedSoakLimits> : {},
+    limits: isRecord(line.limits) ? line.limits as Partial<Klipper.VoBedSoakLimits> : {},
     check_point: pair(line.check_point)
   }
 }
@@ -481,7 +481,7 @@ const firstReached = (temps: BedSoakTemp[], column: 1 | 2, value: number): numbe
  * The run's milestones: the result's, or for a run without one, the
  * temperature milestones its saved temperatures show.
  */
-export const bedSoakMilestones = (run: BedSoakRun): Klipper.TltgBedSoakMilestones => {
+export const bedSoakMilestones = (run: BedSoakRun): Klipper.VoBedSoakMilestones => {
   if (run.result) return run.result.milestones
 
   const { bed, chamber, limits } = run.settings
@@ -527,7 +527,7 @@ export interface BedSoakStartOptions {
 }
 
 export const bedSoakStartCommand = (options: BedSoakStartOptions): string => [
-  'TLTG_BED_SOAK',
+  'VO_BED_SOAK',
   `BED=${Math.round(options.bed)}`,
   ...(options.chamber != null && options.chamber > 0 ? [`CHAMBER=${Math.round(options.chamber)}`] : []),
   `PROBE_COUNT=${Math.round(options.probeCount)}`,

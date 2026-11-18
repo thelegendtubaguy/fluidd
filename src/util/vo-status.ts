@@ -6,9 +6,9 @@
 //
 // Kept free of Vue and the store: Valve Oil UI ports this file and its spec.
 
-export type TltgPendingKind = 'release' | 'firmware' | 'board'
+export type VoPendingKind = 'release' | 'firmware' | 'board'
 
-export type TltgBoardState =
+export type VoBoardState =
   | 'current'
   | 'needs_image'
   | 'unrecognized_firmware'
@@ -16,43 +16,43 @@ export type TltgBoardState =
   | 'held'
   | 'unknown'
 
-export type TltgRunState = 'running' | 'succeeded' | 'failed' | 'interrupted'
+export type VoRunState = 'running' | 'succeeded' | 'failed' | 'interrupted'
 
-export type TltgJobState = 'running' | 'succeeded' | 'failed'
+export type VoJobState = 'running' | 'succeeded' | 'failed'
 
 /** Which run an update result came from: Update now, the automatic update, or the installer run by hand. */
-export type TltgRunKind = 'update_now' | 'automatic' | 'install' | 'other'
+export type VoRunKind = 'update_now' | 'automatic' | 'install' | 'other'
 
 /**
  * Where the update window's timezone came from: looked up from the printer's public address by the installer, this or
  * another browser's when a window was set, or set over SSH.
  */
-export type TltgTimezoneSource = 'lookup' | 'browser' | 'operator'
+export type VoTimezoneSource = 'lookup' | 'browser' | 'operator'
 
 /** Whole hours automatic updates install in: from start up to, not including, end; past midnight when end < start. */
-export interface TltgUpdateWindowHours {
+export interface VoUpdateWindowHours {
   start: number;
   end: number;
 }
 
-export interface TltgStatusUpdateWindow {
+export interface VoStatusUpdateWindow {
   /** null: any time. */
-  hours: TltgUpdateWindowHours | null;
+  hours: VoUpdateWindowHours | null;
   /** The IANA timezone the hours are read in; null reads them in UTC. */
   timezone: string | null;
-  timezone_source: TltgTimezoneSource | null;
+  timezone_source: VoTimezoneSource | null;
   /** Whether it's within the hours now; true when any time. */
   in_window: boolean;
 }
 
-export interface TltgStatusBlocker {
+export interface VoStatusBlocker {
   code: string;
   /** Why the work hasn't run, written to follow "It hasn't been installed yet: ". */
   message: string;
 }
 
-export interface TltgStatusPending {
-  kind: TltgPendingKind;
+export interface VoStatusPending {
+  kind: VoPendingKind;
   /** The release, the QIDI firmware, or the board image it would install. */
   version: string | null;
   /** What the printer or board has now. */
@@ -62,19 +62,19 @@ export interface TltgStatusPending {
   /** A release that installs the installed one again, as its installed files are missing or changed; version is the installed release. */
   reinstall: boolean;
   /** Empty when automatic updates are off, or when it can run at the next check. */
-  blocked_by: TltgStatusBlocker[];
+  blocked_by: VoStatusBlocker[];
 }
 
-export interface TltgStatusBoard {
+export interface VoStatusBoard {
   id: string;
-  state: TltgBoardState;
+  state: VoBoardState;
   name: string;
   firmware: string | null;
   /** "patched", "stock", "superseded", "qidi", "unrecognized", or null when not read. */
   build: string | null;
   pinned: string | null;
   bootloader: string | null;
-  /** A prefilled Valve Oil issue form, only when it is one (see tltgIssueUrlValid). */
+  /** A prefilled Valve Oil issue form, only when it is one (see voIssueUrlValid). */
   issue_url: string | null;
   report: string | null;
   /** The printer's own explanation, such as why it wasn't read or how to update it. */
@@ -84,10 +84,10 @@ export interface TltgStatusBoard {
   waiting_for_firmware_update: boolean | null;
 }
 
-export interface TltgStatusRun {
+export interface VoStatusRun {
   id: string;
-  kind: TltgRunKind;
-  state: TltgRunState;
+  kind: VoRunKind;
+  state: VoRunState;
   step: string;
   step_label: string;
   started_at: string | null;
@@ -100,9 +100,9 @@ export interface TltgStatusRun {
   can_continue: boolean | null;
 }
 
-export interface TltgStatusJob {
+export interface VoStatusJob {
   id: string;
-  state: TltgJobState;
+  state: VoJobState;
   started_at: string | null;
   finished_at: string | null;
   log: string[];
@@ -111,14 +111,14 @@ export interface TltgStatusJob {
   run_id: string | null;
 }
 
-export interface TltgStatusUpdateNow {
+export interface VoStatusUpdateNow {
   /** Whether Update now would start a run now. */
   allowed: boolean;
   /** Every reason it wouldn't, read live by the printer. */
-  blocked_by: TltgStatusBlocker[];
+  blocked_by: VoStatusBlocker[];
 }
 
-export interface TltgStatus {
+export interface VoStatus {
   updated_at: string | null;
   release: {
     installed: string | null;
@@ -138,7 +138,7 @@ export interface TltgStatus {
     enabled: boolean | null;
     scheduled: boolean | null;
     /** null from a service without update windows. */
-    window: TltgStatusUpdateWindow | null;
+    window: VoStatusUpdateWindow | null;
   };
   check: {
     at: string | null;
@@ -147,20 +147,20 @@ export interface TltgStatus {
     /** When the next automatic check is due. */
     next_at: string | null;
   };
-  pending: TltgStatusPending[];
-  boards: TltgStatusBoard[];
-  run: TltgStatusRun | null;
-  job: TltgStatusJob | null;
+  pending: VoStatusPending[];
+  boards: VoStatusBoard[];
+  run: VoStatusRun | null;
+  job: VoStatusJob | null;
   busy: boolean;
   printer_busy: boolean;
-  /** null from a printer whose service doesn't say; tltgStatusView then works it out from busy and printer_busy. */
-  update_now: TltgStatusUpdateNow | null;
+  /** null from a printer whose service doesn't say; voStatusView then works it out from busy and printer_busy. */
+  update_now: VoStatusUpdateNow | null;
   /** The prefilled support issue, for the support bundle to be attached to; null from a service without the bundle. */
   support_issue_url: string | null;
 }
 
 /** Why the waiting work hasn't been installed. */
-export type TltgWaitingNotice =
+export type VoWaitingNotice =
   /** Nothing is waiting. */
   | 'none'
   /** Automatic updates are off: the operator has to install it. */
@@ -176,16 +176,16 @@ export type TltgWaitingNotice =
  * What Update now would do: continue a QIDI firmware update that failed part way, install what's waiting, or finish an
  * update that stopped.
  */
-export type TltgUpdateNowAction = 'continue' | 'install' | 'finish'
+export type VoUpdateNowAction = 'continue' | 'install' | 'finish'
 
-export interface TltgUpdateNowView {
+export interface VoUpdateNowView {
   /** Offered only when something is waiting, or an update failed or stopped part way. */
   offered: boolean;
-  action: TltgUpdateNowAction;
+  action: VoUpdateNowAction;
   /** Whether it can start now. */
   allowed: boolean;
-  /** Why it can't start now, by code (see TLTG_UPDATE_NOW_BLOCKERS); empty when it can, or when the printer didn't say. */
-  blockedBy: TltgStatusBlocker[];
+  /** Why it can't start now, by code (see VO_UPDATE_NOW_BLOCKERS); empty when it can, or when the printer didn't say. */
+  blockedBy: VoStatusBlocker[];
 }
 
 /**
@@ -198,7 +198,7 @@ export interface TltgUpdateNowView {
  * - after_firmware: a board that is updated once the QIDI firmware update waiting has run, in the same update.
  * Null when the state's name says enough, or when the printer's own detail explains a held board.
  */
-export type TltgBoardNote =
+export type VoBoardNote =
   | 'unrecognized_bootloader'
   | 'unrecognized_bootloader_box'
   | 'unrecognized_firmware'
@@ -209,11 +209,11 @@ export type TltgBoardNote =
   | 'after_firmware'
 
 /** The short state shown beside a board: its state, or one of the per-board cases of a held or waiting board. */
-export type TltgBoardBadge = TltgBoardState | 'after_firmware' | 'touchscreen'
+export type VoBoardBadge = VoBoardState | 'after_firmware' | 'touchscreen'
 
-export interface TltgBoardView extends TltgStatusBoard {
-  badge: TltgBoardBadge;
-  note: TltgBoardNote | null;
+export interface VoBoardView extends VoStatusBoard {
+  badge: VoBoardBadge;
+  note: VoBoardNote | null;
   /** The version a note names: the QIDI firmware an after_firmware board waits for. */
   noteVersion: string | null;
   /** The printer's detail to show, after the note or alone; null when there is none or the note says the same. */
@@ -222,11 +222,11 @@ export interface TltgBoardView extends TltgStatusBoard {
   reportUrl: string | null;
 }
 
-export interface TltgUpdateView {
+export interface VoUpdateView {
   /** The run's id, or the job's when no run is recorded for it; a result is dismissed by it. */
   id: string;
-  kind: TltgRunKind;
-  state: TltgRunState;
+  kind: VoRunKind;
+  state: VoRunState;
   /** A QIDI firmware update, or Update now continuing one. */
   firmware: boolean;
   /** A failed firmware update that Update now or the installer continues. */
@@ -241,7 +241,7 @@ export interface TltgUpdateView {
   log: string[];
 }
 
-export interface TltgStatusView {
+export interface VoStatusView {
   release: string | null;
   /** A dev build's short commit, or '' for a dev build that doesn't say; null for a release. */
   devBuild: string | null;
@@ -251,9 +251,9 @@ export interface TltgStatusView {
   targetFirmware: string | null;
   autoUpdate: boolean | null;
   /** The update window, or null when the printer doesn't have them. */
-  updateWindow: TltgStatusUpdateWindow | null;
-  waiting: TltgStatusPending[];
-  notice: TltgWaitingNotice;
+  updateWindow: VoStatusUpdateWindow | null;
+  waiting: VoStatusPending[];
+  notice: VoWaitingNotice;
   /** Every distinct reason the waiting work hasn't run, while automatic updates are on, being outside the window included. */
   reasons: string[];
   /** All that's waiting is installing the installed Valve Oil release again. */
@@ -268,16 +268,16 @@ export interface TltgStatusView {
    * looks for, so it isn't reported there.
    */
   checkFailed: string | null;
-  boards: TltgBoardView[];
+  boards: VoBoardView[];
   updating: boolean;
-  update: TltgUpdateView | null;
-  updateNow: TltgUpdateNowView;
+  update: VoUpdateView | null;
+  updateNow: VoUpdateNowView;
   /** The prefilled support issue, offered with the support bundle; null when the printer can't make the bundle. */
   supportIssueUrl: string | null;
 }
 
 /** What to do after a status request fails. */
-export type TltgStatusFailure =
+export type VoStatusFailure =
   /** Keep the last status and say the printer is being reconnected to, as while an update restarts services. */
   | 'reconnecting'
   /** Keep the last status quietly and try again. */
@@ -285,20 +285,20 @@ export type TltgStatusFailure =
   /** Say the status isn't available. */
   | 'unavailable'
 
-export const TLTG_STATUS_SCHEMA = 1
+export const VO_STATUS_SCHEMA = 1
 
-export const TLTG_STATUS_POLL_BUSY_MS = 2000
-export const TLTG_STATUS_POLL_IDLE_MS = 10000
-export const TLTG_STATUS_POLL_RECONNECT_MS = 3000
+export const VO_STATUS_POLL_BUSY_MS = 2000
+export const VO_STATUS_POLL_IDLE_MS = 10000
+export const VO_STATUS_POLL_RECONNECT_MS = 3000
 
 /** Failed polls in a row before a status shown is dropped, when no update is running. */
-export const TLTG_STATUS_FAILURES_BEFORE_UNAVAILABLE = 3
+export const VO_STATUS_FAILURES_BEFORE_UNAVAILABLE = 3
 
 /** How long without an answer during an update before the page says the printer is taking unusually long. */
-export const TLTG_STATUS_RECONNECT_PATIENCE_MS = 30 * 60 * 1000
+export const VO_STATUS_RECONNECT_PATIENCE_MS = 30 * 60 * 1000
 
 /** The only issue links passed on: this project's issue form, prefilled. */
-export const TLTG_ISSUE_URL_PREFIX = 'https://github.com/thelegendtubaguy/valve-oil/issues/new?'
+export const VO_ISSUE_URL_PREFIX = 'https://github.com/thelegendtubaguy/valve-oil/issues/new?'
 
 const MAX_ISSUE_URL = 8000
 
@@ -306,7 +306,7 @@ const MAX_ISSUE_URL = 8000
  * The reasons the printer gives for refusing Update now that are shown in plain words; any other is shown as the printer
  * says it, as recovery_required is, whose message names what to run.
  */
-export const TLTG_UPDATE_NOW_BLOCKERS: readonly string[] = [
+export const VO_UPDATE_NOW_BLOCKERS: readonly string[] = [
   'run_in_progress',
   'installer_busy',
   'printing',
@@ -316,8 +316,8 @@ export const TLTG_UPDATE_NOW_BLOCKERS: readonly string[] = [
 ]
 
 // What the printer says for each, for a printer that doesn't send update_now.
-const RUN_IN_PROGRESS: TltgStatusBlocker = { code: 'run_in_progress', message: 'another update is still running' }
-const PRINTING: TltgStatusBlocker = { code: 'printing', message: 'a print is running or paused' }
+const RUN_IN_PROGRESS: VoStatusBlocker = { code: 'run_in_progress', message: 'another update is still running' }
+const PRINTING: VoStatusBlocker = { code: 'printing', message: 'a print is running or paused' }
 
 // Fallback for a service without run.firmware_update: the steps only a QIDI firmware update reports
 // (installer/runtime/firmware_update.py STEPS), and Update now's "resume", which continues one. Before stop_services
@@ -325,7 +325,7 @@ const PRINTING: TltgStatusBlocker = { code: 'printing', message: 'a print is run
 const FIRMWARE_STEPS: readonly string[] = ['stage', 'closed_loop', 'stop_services', 'soc', 'update_folder', 'finish', 'resume']
 
 /** The blocker a waiting item carries while automatic updates wait for the update window. */
-export const TLTG_OUTSIDE_WINDOW = 'outside_window'
+export const VO_OUTSIDE_WINDOW = 'outside_window'
 
 const PENDING_KINDS: readonly string[] = ['release', 'firmware', 'board']
 const TIMEZONE_SOURCES: readonly string[] = ['lookup', 'browser', 'operator']
@@ -352,7 +352,7 @@ const optionalText = (value: unknown): string | null => typeof value === 'string
 const optionalBoolean = (value: unknown): boolean | null => typeof value === 'boolean' ? value : null
 
 /** The printer's text as a sentence: capitalized, ending in a full stop. */
-export const tltgSentence = (value: string): string => {
+export const voSentence = (value: string): string => {
   const sentence = value.trim()
 
   if (sentence === '') {
@@ -363,20 +363,20 @@ export const tltgSentence = (value: string): string => {
 }
 
 /** An hour of the day as the update window shows it: 02:00. */
-export const tltgHourLabel = (hour: number): string => `${String(hour).padStart(2, '0')}:00`
+export const voHourLabel = (hour: number): string => `${String(hour).padStart(2, '0')}:00`
 
 /** An update window's hours as the printer words them: 02:00–05:00. */
-export const tltgUpdateWindowLabel = (hours: TltgUpdateWindowHours): string => `${tltgHourLabel(hours.start)}–${tltgHourLabel(hours.end)}`
+export const voUpdateWindowLabel = (hours: VoUpdateWindowHours): string => `${voHourLabel(hours.start)}–${voHourLabel(hours.end)}`
 
 /** Whether hours can be saved as an update window: whole hours of the day, starting and ending at different hours. */
-export const tltgUpdateWindowValid = (hours: TltgUpdateWindowHours): boolean => {
+export const voUpdateWindowValid = (hours: VoUpdateWindowHours): boolean => {
   const hour = (value: number) => Number.isInteger(value) && value >= 0 && value <= 23
 
   return hour(hours.start) && hour(hours.end) && hours.start !== hours.end
 }
 
 /** This browser's IANA timezone, or null when it doesn't say. */
-export const tltgBrowserTimezone = (): string | null => {
+export const voBrowserTimezone = (): string | null => {
   try {
     return optionalText(Intl.DateTimeFormat().resolvedOptions().timeZone)
   } catch {
@@ -394,7 +394,7 @@ const time = (value: string | null): number | null => {
  * The status API base, on the nginx that served this Fluidd. Only used while Fluidd talks to that same printer's
  * Moonraker, so the access token and the status shown both belong to the printer in use.
  */
-export const tltgStatusApiBase = (apiUrl: string, location: Pick<Location, 'origin' | 'hostname'>): string | null => {
+export const voStatusApiBase = (apiUrl: string, location: Pick<Location, 'origin' | 'hostname'>): string | null => {
   if (!apiUrl) {
     return null
   }
@@ -411,8 +411,8 @@ export const tltgStatusApiBase = (apiUrl: string, location: Pick<Location, 'orig
 }
 
 /** Whether a link is a prefilled Valve Oil issue form, the only kind a board's issue link may open. */
-export const tltgIssueUrlValid = (value: unknown): value is string => {
-  if (typeof value !== 'string' || !value.startsWith(TLTG_ISSUE_URL_PREFIX) || value.length > MAX_ISSUE_URL) {
+export const voIssueUrlValid = (value: unknown): value is string => {
+  if (typeof value !== 'string' || !value.startsWith(VO_ISSUE_URL_PREFIX) || value.length > MAX_ISSUE_URL) {
     return false
   }
 
@@ -426,16 +426,16 @@ export const tltgIssueUrlValid = (value: unknown): value is string => {
 }
 
 /** A board's display name when the printer doesn't send one: THR, Mainboard, Closed-loop drivers, or Box N. */
-export const tltgBoardName = (id: string): string => {
+export const voBoardName = (id: string): string => {
   const box = /^box(\d+)$/.exec(id)
 
   return box ? `Box ${box[1]}` : BOARD_NAMES[id] ?? id
 }
 
 /** Whether a board is a USB Box. */
-export const tltgBoardIsBox = (id: string | null): boolean => id != null && /^box\d+$/.test(id)
+export const voBoardIsBox = (id: string | null): boolean => id != null && /^box\d+$/.test(id)
 
-const parseBlockers = (value: unknown): TltgStatusBlocker[] => records(value)
+const parseBlockers = (value: unknown): VoStatusBlocker[] => records(value)
   .filter(blocker => optionalText(blocker.code) != null)
   .map(blocker => ({
     code: text(blocker.code),
@@ -446,12 +446,12 @@ const parseBlockers = (value: unknown): TltgStatusBlocker[] => records(value)
  * The update window, or null from a service without them, which leaves the window out of auto_update, or one that sends
  * hours this page can't read.
  */
-const parseUpdateWindow = (autoUpdate: Record<string, unknown>): TltgStatusUpdateWindow | null => {
+const parseUpdateWindow = (autoUpdate: Record<string, unknown>): VoStatusUpdateWindow | null => {
   if (!('window' in autoUpdate)) {
     return null
   }
 
-  let hours: TltgUpdateWindowHours | null = null
+  let hours: VoUpdateWindowHours | null = null
 
   if (autoUpdate.window != null) {
     const window = record(autoUpdate.window)
@@ -462,7 +462,7 @@ const parseUpdateWindow = (autoUpdate: Record<string, unknown>): TltgStatusUpdat
 
     hours = { start: window.start, end: window.end }
 
-    if (!tltgUpdateWindowValid(hours)) {
+    if (!voUpdateWindowValid(hours)) {
       return null
     }
   }
@@ -474,19 +474,19 @@ const parseUpdateWindow = (autoUpdate: Record<string, unknown>): TltgStatusUpdat
     hours,
     timezone,
     timezone_source: timezone != null && typeof source === 'string' && TIMEZONE_SOURCES.includes(source)
-      ? source as TltgTimezoneSource
+      ? source as VoTimezoneSource
       : null,
     in_window: hours == null || autoUpdate.in_window !== false
   }
 }
 
-const parsePending = (value: Record<string, unknown>): TltgStatusPending | null => {
+const parsePending = (value: Record<string, unknown>): VoStatusPending | null => {
   if (typeof value.kind !== 'string' || !PENDING_KINDS.includes(value.kind)) {
     return null
   }
 
   return {
-    kind: value.kind as TltgPendingKind,
+    kind: value.kind as VoPendingKind,
     version: optionalText(value.version),
     current: optionalText(value.current),
     board: optionalText(value.board),
@@ -495,13 +495,13 @@ const parsePending = (value: Record<string, unknown>): TltgStatusPending | null 
   }
 }
 
-const parseUpdateNow = (value: unknown): TltgStatusUpdateNow | null => (
+const parseUpdateNow = (value: unknown): VoStatusUpdateNow | null => (
   isRecord(value) && typeof value.allowed === 'boolean'
     ? { allowed: value.allowed, blocked_by: parseBlockers(value.blocked_by) }
     : null
 )
 
-const parseBoard = (value: Record<string, unknown>): TltgStatusBoard | null => {
+const parseBoard = (value: Record<string, unknown>): VoStatusBoard | null => {
   const id = optionalText(value.id)
 
   if (id == null) {
@@ -511,14 +511,14 @@ const parseBoard = (value: Record<string, unknown>): TltgStatusBoard | null => {
   return {
     id,
     state: typeof value.state === 'string' && BOARD_STATES.includes(value.state)
-      ? value.state as TltgBoardState
+      ? value.state as VoBoardState
       : 'unknown',
-    name: optionalText(value.name) ?? tltgBoardName(id),
+    name: optionalText(value.name) ?? voBoardName(id),
     firmware: optionalText(value.firmware),
     build: optionalText(value.build),
     pinned: optionalText(value.pinned),
     bootloader: optionalText(value.bootloader),
-    issue_url: tltgIssueUrlValid(value.issue_url) ? value.issue_url : null,
+    issue_url: voIssueUrlValid(value.issue_url) ? value.issue_url : null,
     report: optionalText(value.report),
     detail: optionalText(value.detail),
     checked_at: optionalText(value.checked_at),
@@ -526,7 +526,7 @@ const parseBoard = (value: Record<string, unknown>): TltgStatusBoard | null => {
   }
 }
 
-const parseRun = (value: unknown): TltgStatusRun | null => {
+const parseRun = (value: unknown): VoStatusRun | null => {
   if (
     !isRecord(value) ||
     optionalText(value.id) == null ||
@@ -538,8 +538,8 @@ const parseRun = (value: unknown): TltgStatusRun | null => {
 
   return {
     id: text(value.id),
-    kind: typeof value.kind === 'string' && RUN_KINDS.includes(value.kind) ? value.kind as TltgRunKind : 'other',
-    state: value.state as TltgRunState,
+    kind: typeof value.kind === 'string' && RUN_KINDS.includes(value.kind) ? value.kind as VoRunKind : 'other',
+    state: value.state as VoRunState,
     step: text(value.step),
     step_label: text(value.step_label),
     started_at: optionalText(value.started_at),
@@ -551,7 +551,7 @@ const parseRun = (value: unknown): TltgStatusRun | null => {
   }
 }
 
-const parseJob = (value: unknown): TltgStatusJob | null => {
+const parseJob = (value: unknown): VoStatusJob | null => {
   if (
     !isRecord(value) ||
     optionalText(value.id) == null ||
@@ -563,7 +563,7 @@ const parseJob = (value: unknown): TltgStatusJob | null => {
 
   return {
     id: text(value.id),
-    state: value.state as TltgJobState,
+    state: value.state as VoJobState,
     started_at: optionalText(value.started_at),
     finished_at: optionalText(value.finished_at),
     log: Array.isArray(value.log)
@@ -578,8 +578,8 @@ const parseJob = (value: unknown): TltgStatusJob | null => {
  * Reads the status, or null when the response isn't one this page understands, as from a printer without the service
  * or with a schema it doesn't know. Missing or null fields read as unknown, and entries it can't read are skipped.
  */
-export const parseTltgStatus = (value: unknown): TltgStatus | null => {
-  if (!isRecord(value) || value.schema !== TLTG_STATUS_SCHEMA) {
+export const parseVoStatus = (value: unknown): VoStatus | null => {
+  if (!isRecord(value) || value.schema !== VO_STATUS_SCHEMA) {
     return null
   }
 
@@ -618,10 +618,10 @@ export const parseTltgStatus = (value: unknown): TltgStatus | null => {
     },
     pending: records(value.pending)
       .map(parsePending)
-      .filter((item): item is TltgStatusPending => item != null),
+      .filter((item): item is VoStatusPending => item != null),
     boards: records(value.boards)
       .map(parseBoard)
-      .filter((board): board is TltgStatusBoard => {
+      .filter((board): board is VoStatusBoard => {
         if (board == null || seen.has(board.id)) {
           return false
         }
@@ -635,12 +635,12 @@ export const parseTltgStatus = (value: unknown): TltgStatus | null => {
     busy: value.busy === true || run?.state === 'running' || job?.state === 'running',
     printer_busy: value.printer_busy === true,
     update_now: parseUpdateNow(value.update_now),
-    support_issue_url: tltgIssueUrlValid(support.issue_url) ? support.issue_url : null
+    support_issue_url: voIssueUrlValid(support.issue_url) ? support.issue_url : null
   }
 }
 
 /** Reads the job an Update now request started. */
-export const parseTltgStatusJob = (value: unknown): TltgStatusJob | null => (
+export const parseVoStatusJob = (value: unknown): VoStatusJob | null => (
   isRecord(value)
     ? parseJob(value.job)
     : null
@@ -651,7 +651,7 @@ export const parseTltgStatusJob = (value: unknown): TltgStatusJob | null => (
  * step, the steps only a firmware update has, its "install" step (which names the QIDI firmware), and its "boards" step
  * unless that's the update check's own board update, whose failures don't send the operator to the installer.
  */
-const isFirmwareRun = (run: TltgStatusRun): boolean => run.firmware_update ?? (
+const isFirmwareRun = (run: VoStatusRun): boolean => run.firmware_update ?? (
   FIRMWARE_STEPS.includes(run.step) ||
   (run.step === 'install' && run.step_label.includes('QIDI firmware')) ||
   (run.step === 'boards' && (run.kind !== 'automatic' || run.message.includes('./install.sh')))
@@ -661,14 +661,14 @@ const isFirmwareRun = (run: TltgStatusRun): boolean => run.firmware_update ?? (
  * Whether a failed firmware update is kept for Update now or the installer to continue, as the service says. Fallback
  * for a service that doesn't say: any failed firmware update, as a failure from stop_services on is kept.
  */
-const canContinueRun = (run: TltgStatusRun): boolean => run.state === 'failed' && (run.can_continue ?? isFirmwareRun(run))
+const canContinueRun = (run: VoStatusRun): boolean => run.state === 'failed' && (run.can_continue ?? isFirmwareRun(run))
 
 /**
  * The update to show: one running, or the last one's result. The run record says what an update is doing and how it
  * ended; Update now's job adds its output, and stands in for the run until the run record is written. The job names
  * its run once the run has begun; before that, or for an older service, their times match them.
  */
-const updateView = (status: TltgStatus): TltgUpdateView | null => {
+const updateView = (status: VoStatus): VoUpdateView | null => {
   const { run, job } = status
   const jobStarted = time(job?.started_at ?? null)
   const jobFinished = time(job?.finished_at ?? null)
@@ -686,7 +686,7 @@ const updateView = (status: TltgStatus): TltgUpdateView | null => {
   )
 
   if (current) {
-    const state: TltgRunState = status.busy ? 'running' : current.state
+    const state: VoRunState = status.busy ? 'running' : current.state
     // A run that has recorded success has no step left, though its process may still be finishing.
     const stopped = state !== 'running' && (current.state === 'interrupted' || current.state === 'failed')
 
@@ -706,7 +706,7 @@ const updateView = (status: TltgStatus): TltgUpdateView | null => {
   }
 
   if (job) {
-    const state: TltgRunState = status.busy ? 'running' : job.state
+    const state: VoRunState = status.busy ? 'running' : job.state
 
     return {
       id: job.id,
@@ -727,7 +727,7 @@ const updateView = (status: TltgStatus): TltgUpdateView | null => {
 }
 
 /** What Update now would do, and whether it can start; the printer's own answer, or for an older service, busy and printing. */
-const updateNowView = (status: TltgStatus, update: TltgUpdateView | null): TltgUpdateNowView => {
+const updateNowView = (status: VoStatus, update: VoUpdateView | null): VoUpdateNowView => {
   const waiting = status.pending.length > 0
   const unfinished = update?.state === 'failed' || update?.state === 'interrupted'
   const live = status.update_now
@@ -740,7 +740,7 @@ const updateNowView = (status: TltgStatus, update: TltgUpdateView | null): TltgU
     blockedBy.unshift(RUN_IN_PROGRESS)
   }
 
-  let action: TltgUpdateNowAction = 'finish'
+  let action: VoUpdateNowAction = 'finish'
 
   if (update?.canContinue) {
     action = 'continue'
@@ -756,12 +756,12 @@ const updateNowView = (status: TltgStatus, update: TltgUpdateView | null): TltgU
   }
 }
 
-/** A board with what its state means for this printer; see TltgBoardNote. */
-const boardView = (board: TltgStatusBoard, status: TltgStatus): TltgBoardView => {
-  const box = tltgBoardIsBox(board.id)
+/** A board with what its state means for this printer; see VoBoardNote. */
+const boardView = (board: VoStatusBoard, status: VoStatus): VoBoardView => {
+  const box = voBoardIsBox(board.id)
   const firmware = status.pending.find(item => item.kind === 'firmware')
-  let badge: TltgBoardBadge = board.state
-  let note: TltgBoardNote | null = null
+  let badge: VoBoardBadge = board.state
+  let note: VoBoardNote | null = null
 
   switch (board.state) {
     case 'unrecognized_bootloader':
@@ -811,7 +811,7 @@ const boardView = (board: TltgStatusBoard, status: TltgStatus): TltgBoardView =>
 }
 
 /** What the Valve Oil section shows for a status, at `now`. */
-export const tltgStatusView = (status: TltgStatus, now: number = Date.now()): TltgStatusView => {
+export const voStatusView = (status: VoStatus, now: number = Date.now()): VoStatusView => {
   const autoUpdate = status.auto_update.enabled
   const updateWindow = status.auto_update.window
   const waiting = status.pending
@@ -822,7 +822,7 @@ export const tltgStatusView = (status: TltgStatus, now: number = Date.now()): Tl
   if (autoUpdate === true) {
     for (const item of waiting) {
       for (const blocker of item.blocked_by) {
-        if (blocker.code === TLTG_OUTSIDE_WINDOW) {
+        if (blocker.code === VO_OUTSIDE_WINDOW) {
           outsideWindow = true
         } else {
           otherReasons = true
@@ -835,7 +835,7 @@ export const tltgStatusView = (status: TltgStatus, now: number = Date.now()): Tl
     }
   }
 
-  let notice: TltgWaitingNotice = 'none'
+  let notice: VoWaitingNotice = 'none'
 
   if (waiting.length > 0) {
     if (autoUpdate !== true) {
@@ -883,10 +883,10 @@ export const tltgStatusView = (status: TltgStatus, now: number = Date.now()): Tl
 }
 
 /** How long a finished update's success is shown; a failed or stopped one is shown until dismissed or replaced. */
-export const TLTG_UPDATE_SUCCESS_SHOWN_MS = 24 * 60 * 60 * 1000
+export const VO_UPDATE_SUCCESS_SHOWN_MS = 24 * 60 * 60 * 1000
 
 /** The update to show, at `now`: one running, or a result not dismissed, and a success only for a day after it finished. */
-export const tltgShownUpdate = (update: TltgUpdateView | null, dismissed: string[], now: number = Date.now()): TltgUpdateView | null => {
+export const voShownUpdate = (update: VoUpdateView | null, dismissed: string[], now: number = Date.now()): VoUpdateView | null => {
   if (update == null || update.state === 'running') {
     return update
   }
@@ -895,7 +895,7 @@ export const tltgShownUpdate = (update: TltgUpdateView | null, dismissed: string
     return null
   }
 
-  return update.state === 'succeeded' && update.finishedAt != null && now - update.finishedAt > TLTG_UPDATE_SUCCESS_SHOWN_MS
+  return update.state === 'succeeded' && update.finishedAt != null && now - update.finishedAt > VO_UPDATE_SUCCESS_SHOWN_MS
     ? null
     : update
 }
@@ -905,40 +905,40 @@ export const tltgShownUpdate = (update: TltgUpdateView | null, dismissed: string
  * services that answer, so failures mean "reconnecting" for as long as they last. Otherwise a status already shown is
  * kept through a few failures before it's dropped.
  */
-export const tltgStatusPollFailure = (options: { hasStatus: boolean, failures: number, updating: boolean }): TltgStatusFailure => {
+export const voStatusPollFailure = (options: { hasStatus: boolean, failures: number, updating: boolean }): VoStatusFailure => {
   if (options.updating) {
     return 'reconnecting'
   }
 
-  return options.hasStatus && options.failures < TLTG_STATUS_FAILURES_BEFORE_UNAVAILABLE
+  return options.hasStatus && options.failures < VO_STATUS_FAILURES_BEFORE_UNAVAILABLE
     ? 'retry'
     : 'unavailable'
 }
 
-export const tltgStatusPollInterval = (status: TltgStatus | null, reconnecting = false): number => {
+export const voStatusPollInterval = (status: VoStatus | null, reconnecting = false): number => {
   if (reconnecting) {
-    return TLTG_STATUS_POLL_RECONNECT_MS
+    return VO_STATUS_POLL_RECONNECT_MS
   }
 
   return status?.busy
-    ? TLTG_STATUS_POLL_BUSY_MS
-    : TLTG_STATUS_POLL_IDLE_MS
+    ? VO_STATUS_POLL_BUSY_MS
+    : VO_STATUS_POLL_IDLE_MS
 }
 
-export class TltgStatusRequestError extends Error {
+export class VoStatusRequestError extends Error {
   readonly status: number
   /** Why Update now was refused (409), as the printer listed it. */
-  readonly blockedBy: TltgStatusBlocker[]
+  readonly blockedBy: VoStatusBlocker[]
 
-  constructor (status: number, message: string, blockedBy: TltgStatusBlocker[] = []) {
+  constructor (status: number, message: string, blockedBy: VoStatusBlocker[] = []) {
     super(message)
-    this.name = 'TltgStatusRequestError'
+    this.name = 'VoStatusRequestError'
     this.status = status
     this.blockedBy = blockedBy
   }
 }
 
-export interface TltgStatusRequestOptions {
+export interface VoStatusRequestOptions {
   method?: 'GET' | 'POST';
   token?: string | null;
   signal?: AbortSignal;
@@ -947,11 +947,11 @@ export interface TltgStatusRequestOptions {
 }
 
 /**
- * Calls the status API and returns its JSON body. Throws TltgStatusRequestError with the server's error text, and the
+ * Calls the status API and returns its JSON body. Throws VoStatusRequestError with the server's error text, and the
  * reasons it lists, on an error status, and with status 0 when the printer can't be reached or doesn't answer with JSON.
  * POSTs carry the header and body the service requires of them.
  */
-export const tltgStatusRequest = async (base: string, path: string, options: TltgStatusRequestOptions = {}): Promise<unknown> => {
+export const voStatusRequest = async (base: string, path: string, options: VoStatusRequestOptions = {}): Promise<unknown> => {
   const method = options.method ?? 'GET'
   const headers: Record<string, string> = {
     Accept: 'application/json'
@@ -982,7 +982,7 @@ export const tltgStatusRequest = async (base: string, path: string, options: Tlt
       throw e
     }
 
-    throw new TltgStatusRequestError(0, e instanceof Error ? e.message : String(e))
+    throw new VoStatusRequestError(0, e instanceof Error ? e.message : String(e))
   }
 
   let body: unknown = null
@@ -996,7 +996,7 @@ export const tltgStatusRequest = async (base: string, path: string, options: Tlt
   if (!response.ok) {
     const error = isRecord(body) ? text(body.error) : ''
 
-    throw new TltgStatusRequestError(
+    throw new VoStatusRequestError(
       response.status,
       error || `${response.status} ${response.statusText}`.trim(),
       isRecord(body) ? parseBlockers(body.blocked_by) : []
@@ -1004,7 +1004,7 @@ export const tltgStatusRequest = async (base: string, path: string, options: Tlt
   }
 
   if (body === null) {
-    throw new TltgStatusRequestError(0, 'Invalid response')
+    throw new VoStatusRequestError(0, 'Invalid response')
   }
 
   return body
@@ -1019,9 +1019,9 @@ const supportBundleName = (disposition: string | null): string => {
 
 /**
  * Fetches the support bundle (GET api/support-bundle): the printer's logs and Valve Oil's status, zipped. Throws
- * TltgStatusRequestError as tltgStatusRequest does.
+ * VoStatusRequestError as voStatusRequest does.
  */
-export const tltgSupportBundle = async (base: string, options: { token?: string | null } = {}): Promise<{ blob: Blob, name: string }> => {
+export const voSupportBundle = async (base: string, options: { token?: string | null } = {}): Promise<{ blob: Blob, name: string }> => {
   let response: Response
 
   try {
@@ -1031,7 +1031,7 @@ export const tltgSupportBundle = async (base: string, options: { token?: string 
       credentials: 'same-origin'
     })
   } catch (e) {
-    throw new TltgStatusRequestError(0, e instanceof Error ? e.message : String(e))
+    throw new VoStatusRequestError(0, e instanceof Error ? e.message : String(e))
   }
 
   if (!response.ok) {
@@ -1045,7 +1045,7 @@ export const tltgSupportBundle = async (base: string, options: { token?: string 
       error = ''
     }
 
-    throw new TltgStatusRequestError(response.status, error || `${response.status} ${response.statusText}`.trim())
+    throw new VoStatusRequestError(response.status, error || `${response.status} ${response.statusText}`.trim())
   }
 
   return { blob: await response.blob(), name: supportBundleName(response.headers.get('Content-Disposition')) }

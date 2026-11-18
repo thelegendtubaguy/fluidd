@@ -2,7 +2,7 @@
   <div>
     <template v-if="job.state === 'running'">
       <div class="text-body-2 mb-1">
-        {{ $t(`app.tltg_addons.job.${job.action}.running`, { name }) }}
+        {{ $t(`app.vo_addons.job.${job.action}.running`, { name }) }}
       </div>
       <v-progress-linear
         indeterminate
@@ -11,7 +11,7 @@
       />
       <div
         v-if="job.message"
-        class="text-caption secondary--text tltg-addon-job__message"
+        class="text-caption secondary--text vo-addon-job__message"
       >
         {{ job.message }}
       </div>
@@ -26,10 +26,10 @@
       class="mb-0"
       @input="$emit('dismiss', job.id)"
     >
-      <div>{{ $t(`app.tltg_addons.job.${job.action}.${job.state}`, { name }) }}</div>
+      <div>{{ $t(`app.vo_addons.job.${job.action}.${job.state}`, { name }) }}</div>
       <div
         v-if="job.state === 'failed' && job.message"
-        class="text-body-2 tltg-addon-job__message"
+        class="text-body-2 vo-addon-job__message"
       >
         {{ job.message }}
       </div>
@@ -50,13 +50,13 @@
         >
           $chevronDown
         </v-icon>
-        {{ logVisible ? $t('app.tltg_addons.btn.hide_log') : $t('app.tltg_addons.btn.show_log') }}
+        {{ logVisible ? $t('app.vo_addons.btn.hide_log') : $t('app.vo_addons.btn.show_log') }}
       </app-btn>
 
       <pre
         v-if="logVisible"
         ref="log"
-        class="tltg-addon-job__log mt-1"
+        class="vo-addon-job__log mt-1"
       >{{ job.log.join('\n') }}</pre>
     </template>
   </div>
@@ -64,10 +64,10 @@
 
 <script lang="ts">
 import { Component, Prop, Ref, Vue, Watch } from 'vue-property-decorator'
-import type { TltgAddonJob as AddonJob } from '@/util/tltg-addons'
+import type { VoAddonJob as AddonJob } from '@/util/vo-addons'
 
 @Component({})
-export default class TltgAddonJob extends Vue {
+export default class VoAddonJob extends Vue {
   @Prop({ type: Object, required: true })
   readonly job!: AddonJob
 
@@ -110,11 +110,11 @@ export default class TltgAddonJob extends Vue {
 </script>
 
 <style lang="scss" scoped>
-  .tltg-addon-job__message {
+  .vo-addon-job__message {
     overflow-wrap: anywhere;
   }
 
-  .tltg-addon-job__log {
+  .vo-addon-job__log {
     max-height: 240px;
     overflow: auto;
     padding: 8px;

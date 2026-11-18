@@ -98,7 +98,7 @@ import StateMixin from '@/mixins/state'
 import ToolheadMixin from '@/mixins/toolhead'
 import BrowserMixin from '@/mixins/browser'
 import type { AppMeshes, MatrixType, MeshMarker, MeshPreview } from '@/store/mesh/types'
-import { BedSoakColors } from '@/util/tltg-bed-soak'
+import { BedSoakColors } from '@/util/vo-bed-soak'
 
 @Component({
   components: {
@@ -214,8 +214,8 @@ export default class BedMeshCard extends Mixins(StateMixin, ToolheadMixin, Brows
     return this.$typedState.mesh.preview
   }
 
-  get problemPoints (): Klipper.TltgProbeReportPoint[] {
-    return this.$typedGetters['printer/getTltgProbeReportPoints']
+  get problemPoints (): Klipper.VoProbeReportPoint[] {
+    return this.$typedGetters['printer/getVoProbeReportPoints']
   }
 
   // Points marked on the surface: the preview's, or else the loaded mesh's retried probe points

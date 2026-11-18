@@ -4,8 +4,8 @@
     rounded
     class="px-3 py-2"
   >
-    <div class="tltg-tailscale__row">
-      <span class="secondary--text">{{ $t('app.tltg_addons.label.service') }}</span>
+    <div class="vo-tailscale__row">
+      <span class="secondary--text">{{ $t('app.vo_addons.label.service') }}</span>
       <span :class="`${serviceColor}--text`">{{ serviceText }}</span>
     </div>
 
@@ -17,25 +17,25 @@
     </div>
 
     <template v-else-if="status">
-      <div class="tltg-tailscale__row">
-        <span class="secondary--text">{{ $t('app.tltg_addons.label.tailscale') }}</span>
-        <span :class="`${stateColor}--text`">{{ $t(`app.tltg_addons.tailscale_state.${status.state}`) }}</span>
+      <div class="vo-tailscale__row">
+        <span class="secondary--text">{{ $t('app.vo_addons.label.tailscale') }}</span>
+        <span :class="`${stateColor}--text`">{{ $t(`app.vo_addons.tailscale_state.${status.state}`) }}</span>
       </div>
 
       <template v-if="status.state === 'running'">
         <div
           v-if="status.tailnet"
-          class="tltg-tailscale__row"
+          class="vo-tailscale__row"
         >
-          <span class="secondary--text">{{ $t('app.tltg_addons.label.tailnet') }}</span>
+          <span class="secondary--text">{{ $t('app.vo_addons.label.tailnet') }}</span>
           <span class="text-break text-right">{{ status.tailnet }}</span>
         </div>
 
         <div
           v-if="status.name"
-          class="tltg-tailscale__row"
+          class="vo-tailscale__row"
         >
-          <span class="secondary--text">{{ $t('app.tltg_addons.label.tailscale_name') }}</span>
+          <span class="secondary--text">{{ $t('app.vo_addons.label.tailscale_name') }}</span>
           <a
             :href="`http://${status.name}/`"
             target="_blank"
@@ -46,9 +46,9 @@
 
         <div
           v-if="status.addresses.length > 0"
-          class="tltg-tailscale__row"
+          class="vo-tailscale__row"
         >
-          <span class="secondary--text">{{ $t('app.tltg_addons.label.tailscale_address') }}</span>
+          <span class="secondary--text">{{ $t('app.vo_addons.label.tailscale_address') }}</span>
           <span class="text-break text-right">
             <template v-for="(address, index) in status.addresses">
               <br
@@ -72,14 +72,14 @@
 
         <div
           v-if="status.keyExpiry"
-          class="tltg-tailscale__row"
+          class="vo-tailscale__row"
         >
-          <span class="secondary--text">{{ $t('app.tltg_addons.label.tailscale_key_expiry') }}</span>
+          <span class="secondary--text">{{ $t('app.vo_addons.label.tailscale_key_expiry') }}</span>
           <span class="text-right">{{ $filters.formatDateTime(status.keyExpiry) }}</span>
         </div>
 
         <div class="text-body-2 secondary--text mt-1">
-          {{ $t('app.tltg_addons.msg.tailscale_running') }}
+          {{ $t('app.vo_addons.msg.tailscale_running') }}
         </div>
 
         <v-alert
@@ -98,12 +98,12 @@
         v-else-if="status.state === 'needs_approval'"
         class="text-body-2 mt-1"
       >
-        {{ $t('app.tltg_addons.msg.tailscale_needs_approval') }}
+        {{ $t('app.vo_addons.msg.tailscale_needs_approval') }}
       </div>
 
       <template v-else-if="status.state === 'needs_login'">
         <div class="text-body-2 mt-1">
-          {{ $t(status.loginUrl ? 'app.tltg_addons.msg.tailscale_sign_in' : 'app.tltg_addons.msg.tailscale_needs_login') }}
+          {{ $t(status.loginUrl ? 'app.vo_addons.msg.tailscale_sign_in' : 'app.vo_addons.msg.tailscale_needs_login') }}
         </div>
 
         <div
@@ -140,7 +140,7 @@
             target="_blank"
             rel="noopener noreferrer"
           >
-            {{ $t('app.tltg_addons.btn.tailscale_sign_in') }}
+            {{ $t('app.vo_addons.btn.tailscale_sign_in') }}
             <v-icon
               small
               right
@@ -156,7 +156,7 @@
             :loading="working"
             @click="run('login')"
           >
-            {{ $t(status.loginUrl ? 'app.tltg_addons.btn.tailscale_new_link' : 'app.tltg_addons.btn.tailscale_log_in') }}
+            {{ $t(status.loginUrl ? 'app.vo_addons.btn.tailscale_new_link' : 'app.vo_addons.btn.tailscale_log_in') }}
           </app-btn>
         </template>
 
@@ -168,7 +168,7 @@
           :loading="working"
           @click="run('login')"
         >
-          {{ $t('app.tltg_addons.btn.tailscale_connect') }}
+          {{ $t('app.vo_addons.btn.tailscale_connect') }}
         </app-btn>
 
         <app-btn
@@ -180,7 +180,7 @@
           :disabled="working"
           @click="logOut"
         >
-          {{ $t('app.tltg_addons.btn.tailscale_log_out') }}
+          {{ $t('app.vo_addons.btn.tailscale_log_out') }}
         </app-btn>
       </div>
     </template>
@@ -189,12 +189,12 @@
 
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
-import { parseTltgTailscaleStatus, type TltgAddon, type TltgTailscaleStatus as TailscaleStatus } from '@/util/tltg-addons'
+import { parseVoTailscaleStatus, type VoAddon, type VoTailscaleStatus as TailscaleStatus } from '@/util/vo-addons'
 
 @Component({})
-export default class TltgTailscaleStatus extends Vue {
+export default class VoTailscaleStatus extends Vue {
   @Prop({ type: Object, required: true })
-  readonly addon!: TltgAddon
+  readonly addon!: VoAddon
 
   @Prop({ type: Function, required: true })
   readonly request!: (path: string, method?: 'GET' | 'POST') => Promise<unknown>
@@ -205,7 +205,7 @@ export default class TltgTailscaleStatus extends Vue {
   error = ''
 
   get status (): TailscaleStatus | null {
-    return this.answered ?? parseTltgTailscaleStatus(this.addon.status)
+    return this.answered ?? parseVoTailscaleStatus(this.addon.status)
   }
 
   get unavailable (): string {
@@ -230,7 +230,7 @@ export default class TltgTailscaleStatus extends Vue {
   }
 
   get serviceText (): string {
-    const key = `app.tltg_addons.service.${this.serviceState}`
+    const key = `app.vo_addons.service.${this.serviceState}`
 
     return this.$te(key)
       ? this.$t(key).toString()
@@ -266,7 +266,7 @@ export default class TltgTailscaleStatus extends Vue {
     this.error = ''
 
     try {
-      this.answered = parseTltgTailscaleStatus(await this.request(`/addons/${encodeURIComponent(this.addon.id)}/${action}`, 'POST'))
+      this.answered = parseVoTailscaleStatus(await this.request(`/addons/${encodeURIComponent(this.addon.id)}/${action}`, 'POST'))
     } catch (e) {
       this.error = e instanceof Error ? e.message : String(e)
     } finally {
@@ -276,8 +276,8 @@ export default class TltgTailscaleStatus extends Vue {
 
   async logOut () {
     const confirmed = await this.$confirm(
-      this.$t('app.tltg_addons.msg.tailscale_confirm_log_out').toString(),
-      { title: this.$t('app.tltg_addons.title.tailscale_log_out').toString(), color: 'card-heading', icon: '$error' }
+      this.$t('app.vo_addons.msg.tailscale_confirm_log_out').toString(),
+      { title: this.$t('app.vo_addons.title.tailscale_log_out').toString(), color: 'card-heading', icon: '$error' }
     )
 
     if (confirmed) {
@@ -288,7 +288,7 @@ export default class TltgTailscaleStatus extends Vue {
 </script>
 
 <style lang="scss" scoped>
-  .tltg-tailscale__row {
+  .vo-tailscale__row {
     display: flex;
     justify-content: space-between;
     align-items: center;

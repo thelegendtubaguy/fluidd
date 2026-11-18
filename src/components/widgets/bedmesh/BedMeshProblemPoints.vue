@@ -15,7 +15,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator'
 @Component({})
 export default class BedMeshProblemPoints extends Vue {
   @Prop({ type: Array, required: true })
-  readonly points!: Klipper.TltgProbeReportPoint[]
+  readonly points!: Klipper.VoProbeReportPoint[]
 
   get list (): string {
     return this.points

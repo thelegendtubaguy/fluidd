@@ -2,24 +2,24 @@
   <div>
     <template v-if="update.state === 'running'">
       <div class="text-body-2 mb-1">
-        {{ $t(`app.tltg_valve_oil.update.running.${update.kind}`) }}
+        {{ $t(`app.vo_valve_oil.update.running.${update.kind}`) }}
       </div>
       <v-progress-linear
         indeterminate
         color="primary"
         class="mb-1"
       />
-      <div class="text-body-2 tltg-valve-oil-update__message">
-        {{ update.stepLabel || $t('app.tltg_valve_oil.update.starting') }}
+      <div class="text-body-2 vo-valve-oil-update__message">
+        {{ update.stepLabel || $t('app.vo_valve_oil.update.starting') }}
       </div>
       <div
         v-if="update.resumed"
         class="text-caption secondary--text"
       >
-        {{ $t('app.tltg_valve_oil.update.resumed') }}
+        {{ $t('app.vo_valve_oil.update.resumed') }}
       </div>
       <div class="text-caption warning--text">
-        {{ $t('app.tltg_valve_oil.update.dont_power_off') }}
+        {{ $t('app.vo_valve_oil.update.dont_power_off') }}
       </div>
     </template>
 
@@ -43,13 +43,13 @@
       </div>
       <div
         v-if="update.stepLabel"
-        class="text-body-2 tltg-valve-oil-update__message"
+        class="text-body-2 vo-valve-oil-update__message"
       >
-        {{ $t('app.tltg_valve_oil.update.stopped_at', { step: update.stepLabel }) }}
+        {{ $t('app.vo_valve_oil.update.stopped_at', { step: update.stepLabel }) }}
       </div>
       <div
         v-if="update.message"
-        class="text-body-2 tltg-valve-oil-update__message"
+        class="text-body-2 vo-valve-oil-update__message"
       >
         {{ update.message }}
       </div>
@@ -57,13 +57,13 @@
         v-if="update.state === 'interrupted'"
         class="text-body-2"
       >
-        {{ $t('app.tltg_valve_oil.update.finish_interrupted') }}
+        {{ $t('app.vo_valve_oil.update.finish_interrupted') }}
       </div>
       <div
         v-else-if="update.canContinue && !recoveryRequired"
         class="text-body-2"
       >
-        {{ $t('app.tltg_valve_oil.update.continue_failed') }}
+        {{ $t('app.vo_valve_oil.update.continue_failed') }}
       </div>
     </v-alert>
 
@@ -82,13 +82,13 @@
         >
           $chevronDown
         </v-icon>
-        {{ logVisible ? $t('app.tltg_valve_oil.btn.hide_log') : $t('app.tltg_valve_oil.btn.show_log') }}
+        {{ logVisible ? $t('app.vo_valve_oil.btn.hide_log') : $t('app.vo_valve_oil.btn.show_log') }}
       </app-btn>
 
       <pre
         v-if="logVisible"
         ref="log"
-        class="tltg-valve-oil-update__log mt-1"
+        class="vo-valve-oil-update__log mt-1"
       >{{ update.log.join('\n') }}</pre>
     </template>
   </div>
@@ -96,12 +96,12 @@
 
 <script lang="ts">
 import { Component, Prop, Ref, Vue, Watch } from 'vue-property-decorator'
-import type { TltgUpdateView } from '@/util/tltg-status'
+import type { VoUpdateView } from '@/util/vo-status'
 
 @Component({})
-export default class TltgValveOilUpdate extends Vue {
+export default class VoValveOilUpdate extends Vue {
   @Prop({ type: Object, required: true })
-  readonly update!: TltgUpdateView
+  readonly update!: VoUpdateView
 
   // A recovery comes first, as the update's message says; Update now waits for it.
   @Prop({ type: Boolean, default: false })
@@ -119,8 +119,8 @@ export default class TltgValveOilUpdate extends Vue {
 
   get title (): string {
     return this.update.state === 'failed' && this.update.firmware
-      ? this.$t('app.tltg_valve_oil.update.failed_firmware').toString()
-      : this.$t(`app.tltg_valve_oil.update.${this.update.state}.${this.update.kind}`).toString()
+      ? this.$t('app.vo_valve_oil.update.failed_firmware').toString()
+      : this.$t(`app.vo_valve_oil.update.${this.update.state}.${this.update.kind}`).toString()
   }
 
   get alertType (): string {
@@ -160,11 +160,11 @@ export default class TltgValveOilUpdate extends Vue {
 </script>
 
 <style lang="scss" scoped>
-  .tltg-valve-oil-update__message {
+  .vo-valve-oil-update__message {
     overflow-wrap: anywhere;
   }
 
-  .tltg-valve-oil-update__log {
+  .vo-valve-oil-update__log {
     max-height: 240px;
     overflow: auto;
     padding: 8px;

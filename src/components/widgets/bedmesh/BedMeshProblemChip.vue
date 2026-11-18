@@ -16,7 +16,7 @@
 
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator'
-import { BedSoakColors } from '@/util/tltg-bed-soak'
+import { BedSoakColors } from '@/util/vo-bed-soak'
 
 @Component({
   inheritAttrs: false

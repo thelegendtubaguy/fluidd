@@ -344,7 +344,7 @@ export const SocketActions = {
     )
   },
 
-  printerTltgBedSoakStop (options?: RequestOptions) {
+  printerVoBedSoakStop (options?: RequestOptions) {
     return baseEmit(
       'printer.tltg_bed_soak.stop', {
         wait: Waits.onBedSoakStop,

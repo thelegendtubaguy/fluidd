@@ -209,7 +209,7 @@ import {
   bedSoakMilestones,
   bedSoakProblemPoints,
   type BedSoakRun
-} from '@/util/tltg-bed-soak'
+} from '@/util/vo-bed-soak'
 import { bedSoakClock, bedSoakDuration } from './bed-soak-format'
 
 export interface BedSoakRunEntry {

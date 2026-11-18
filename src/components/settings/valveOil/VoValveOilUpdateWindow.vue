@@ -3,12 +3,12 @@
     <v-divider />
 
     <app-setting
-      :title="$t('app.tltg_valve_oil.label.update_window')"
+      :title="$t('app.vo_valve_oil.label.update_window')"
       :r-cols="5"
     >
       <template #sub-title>
         <div>
-          {{ hours ? $t('app.tltg_valve_oil.msg.update_window_hours') : $t('app.tltg_valve_oil.msg.update_window_any_time') }}
+          {{ hours ? $t('app.vo_valve_oil.msg.update_window_hours') : $t('app.vo_valve_oil.msg.update_window_any_time') }}
         </div>
         <div v-if="hours">
           {{ timezoneText }}
@@ -21,7 +21,7 @@
             :disabled="disabled"
             @click="$emit('save', { timezone: offeredTimezone })"
           >
-            {{ $t('app.tltg_valve_oil.btn.use_timezone', { timezone: offeredTimezone }) }}
+            {{ $t('app.vo_valve_oil.btn.use_timezone', { timezone: offeredTimezone }) }}
           </app-btn>
         </div>
       </template>
@@ -52,12 +52,12 @@
             :items="hourItems"
             :value="hours.start"
             :disabled="disabled"
-            :aria-label="$t('app.tltg_valve_oil.label.update_window_start')"
-            class="tltg-valve-oil-update-window__hour"
+            :aria-label="$t('app.vo_valve_oil.label.update_window_start')"
+            class="vo-valve-oil-update-window__hour"
             @change="setHours({ start: $event })"
           />
           <span class="text-body-2 mx-2">
-            {{ $t('app.tltg_valve_oil.label.update_window_to') }}
+            {{ $t('app.vo_valve_oil.label.update_window_to') }}
           </span>
           <v-select
             filled
@@ -67,8 +67,8 @@
             :items="hourItems"
             :value="hours.end"
             :disabled="disabled"
-            :aria-label="$t('app.tltg_valve_oil.label.update_window_end')"
-            class="tltg-valve-oil-update-window__hour"
+            :aria-label="$t('app.vo_valve_oil.label.update_window_end')"
+            class="vo-valve-oil-update-window__hour"
             @change="setHours({ end: $event })"
           />
         </template>
@@ -100,7 +100,7 @@
         v-if="!valid"
         class="text-caption error--text text-right mt-1"
       >
-        {{ $t('app.tltg_valve_oil.msg.update_window_same_hour') }}
+        {{ $t('app.vo_valve_oil.msg.update_window_same_hour') }}
       </div>
     </div>
 
@@ -116,7 +116,7 @@
         class="mb-0"
         @input="$emit('dismiss-error')"
       >
-        {{ $t('app.tltg_valve_oil.msg.update_window_failed', { error }) }}
+        {{ $t('app.vo_valve_oil.msg.update_window_failed', { error }) }}
       </v-alert>
     </div>
   </div>
@@ -125,24 +125,24 @@
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
 import {
-  tltgBrowserTimezone,
-  tltgHourLabel,
-  tltgUpdateWindowValid,
-  type TltgStatusUpdateWindow,
-  type TltgUpdateWindowHours
-} from '@/util/tltg-status'
+  voBrowserTimezone,
+  voHourLabel,
+  voUpdateWindowValid,
+  type VoStatusUpdateWindow,
+  type VoUpdateWindowHours
+} from '@/util/vo-status'
 
 // The hours offered when a window is first set, before it's saved.
-const SUGGESTED_HOURS: TltgUpdateWindowHours = { start: 2, end: 6 }
+const SUGGESTED_HOURS: VoUpdateWindowHours = { start: 2, end: 6 }
 
 /**
  * The hours automatic updates start in, and the timezone they're read in. Edits are kept here until saved; the
  * section sends them (POST api/auto-update) and passes back whether that's pending and why it failed.
  */
 @Component({})
-export default class TltgValveOilUpdateWindow extends Vue {
+export default class VoValveOilUpdateWindow extends Vue {
   @Prop({ type: Object, required: true })
-  readonly updateWindow!: TltgStatusUpdateWindow
+  readonly updateWindow!: VoStatusUpdateWindow
 
   @Prop({ type: Boolean, default: false })
   readonly disabled!: boolean
@@ -154,11 +154,11 @@ export default class TltgValveOilUpdateWindow extends Vue {
   readonly error!: string
 
   // undefined while not edited; null for any time.
-  draft: TltgUpdateWindowHours | null | undefined = undefined
+  draft: VoUpdateWindowHours | null | undefined = undefined
 
-  readonly browserTimezone = tltgBrowserTimezone()
+  readonly browserTimezone = voBrowserTimezone()
 
-  get hours (): TltgUpdateWindowHours | null {
+  get hours (): VoUpdateWindowHours | null {
     return this.draft === undefined ? this.updateWindow.hours : this.draft
   }
 
@@ -174,7 +174,7 @@ export default class TltgValveOilUpdateWindow extends Vue {
   }
 
   get valid (): boolean {
-    return this.hours == null || tltgUpdateWindowValid(this.hours)
+    return this.hours == null || voUpdateWindowValid(this.hours)
   }
 
   // A window saved without a timezone is saved with this browser's.
@@ -186,11 +186,11 @@ export default class TltgValveOilUpdateWindow extends Vue {
     const { timezone, timezone_source: source } = this.updateWindow
 
     if (this.changed && this.savesBrowserTimezone) {
-      return this.$t('app.tltg_valve_oil.msg.update_window_timezone.browser', { timezone: this.browserTimezone }).toString()
+      return this.$t('app.vo_valve_oil.msg.update_window_timezone.browser', { timezone: this.browserTimezone }).toString()
     }
 
     if (timezone == null) {
-      return this.$t('app.tltg_valve_oil.msg.update_window_timezone.utc').toString()
+      return this.$t('app.vo_valve_oil.msg.update_window_timezone.utc').toString()
     }
 
     let key = source ?? 'unknown'
@@ -199,7 +199,7 @@ export default class TltgValveOilUpdateWindow extends Vue {
       key = 'other_browser'
     }
 
-    return this.$t(`app.tltg_valve_oil.msg.update_window_timezone.${key}`, { timezone }).toString()
+    return this.$t(`app.vo_valve_oil.msg.update_window_timezone.${key}`, { timezone }).toString()
   }
 
   // This browser's timezone, when the window is read in another; not while the hours are being edited, as saving it
@@ -216,13 +216,13 @@ export default class TltgValveOilUpdateWindow extends Vue {
 
   get modes () {
     return [
-      { value: 'any', text: this.$t('app.tltg_valve_oil.label.update_window_any_time') },
-      { value: 'hours', text: this.$t('app.tltg_valve_oil.label.update_window_hours') }
+      { value: 'any', text: this.$t('app.vo_valve_oil.label.update_window_any_time') },
+      { value: 'hours', text: this.$t('app.vo_valve_oil.label.update_window_hours') }
     ]
   }
 
   get hourItems () {
-    return Array.from({ length: 24 }, (_, hour) => ({ value: hour, text: tltgHourLabel(hour) }))
+    return Array.from({ length: 24 }, (_, hour) => ({ value: hour, text: voHourLabel(hour) }))
   }
 
   @Watch('pending')
@@ -239,7 +239,7 @@ export default class TltgValveOilUpdateWindow extends Vue {
       : null
   }
 
-  setHours (change: Partial<TltgUpdateWindowHours>) {
+  setHours (change: Partial<VoUpdateWindowHours>) {
     this.draft = { ...(this.hours ?? SUGGESTED_HOURS), ...change }
   }
 
@@ -257,7 +257,7 @@ export default class TltgValveOilUpdateWindow extends Vue {
 </script>
 
 <style lang="scss" scoped>
-  .tltg-valve-oil-update-window__hour {
+  .vo-valve-oil-update-window__hour {
     max-width: 120px;
   }
 </style>

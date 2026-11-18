@@ -141,7 +141,7 @@ import {
   bedSoakStartTemps,
   type BedSoakRun,
   type BedSoakTemp
-} from '@/util/tltg-bed-soak'
+} from '@/util/vo-bed-soak'
 import { bedSoakClock, bedSoakDuration, bedSoakPointName } from './bed-soak-format'
 
 interface Stat {
@@ -164,7 +164,7 @@ export default class BedSoakRunView extends Mixins(StateMixin, FilesMixin) {
 
   /** The live status, for the run in progress */
   @Prop({ type: Object })
-  readonly status?: Klipper.TltgBedSoakState | null
+  readonly status?: Klipper.VoBedSoakState | null
 
   @Prop({ type: Boolean })
   readonly live?: boolean
@@ -201,7 +201,7 @@ export default class BedSoakRunView extends Mixins(StateMixin, FilesMixin) {
     return this.status?.limits?.speed ?? this.run?.settings.limits.speed ?? 0.002
   }
 
-  get milestones (): Klipper.TltgBedSoakMilestones {
+  get milestones (): Klipper.VoBedSoakMilestones {
     if (this.live && this.status) return this.status.milestones
 
     return this.run

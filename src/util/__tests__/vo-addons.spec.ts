@@ -1,15 +1,15 @@
 import {
-  parseTltgAddonsList,
-  parseTltgTailscaleStatus,
-  parseTltgZerotierStatus,
-  tltgAddonActions,
-  tltgAddonsApiBase,
-  tltgAddonsPollInterval,
-  tltgAddonsRequest,
-  TltgAddonsRequestError,
-  tltgServerUrlValid,
-  tltgZerotierNetworkIdValid
-} from '../tltg-addons'
+  parseVoAddonsList,
+  parseVoTailscaleStatus,
+  parseVoZerotierStatus,
+  voAddonActions,
+  voAddonsApiBase,
+  voAddonsPollInterval,
+  voAddonsRequest,
+  VoAddonsRequestError,
+  voServerUrlValid,
+  voZerotierNetworkIdValid
+} from '../vo-addons'
 
 const octoEverywhere = {
   id: 'octoeverywhere',
@@ -34,14 +34,14 @@ const runningJob = {
   log: ['Starting', 'Downloading']
 }
 
-describe('tltgAddonsApiBase', () => {
+describe('voAddonsApiBase', () => {
   const location = { origin: 'http://192.168.1.166', hostname: '192.168.1.166' }
 
   it.each([
     ['the page', 'http://192.168.1.166'],
     ["Moonraker's own port", 'http://192.168.1.166:7125']
   ])('uses the nginx that served Fluidd when Fluidd talks to %s', (_, apiUrl) => {
-    expect(tltgAddonsApiBase(apiUrl, location)).toBe('http://192.168.1.166/tltg-addons/api')
+    expect(voAddonsApiBase(apiUrl, location)).toBe('http://192.168.1.166/tltg-addons/api')
   })
 
   it.each([
@@ -49,21 +49,21 @@ describe('tltgAddonsApiBase', () => {
     ['no printer', ''],
     ['an invalid address', 'not a url']
   ])('is unavailable when Fluidd talks to %s', (_, apiUrl) => {
-    expect(tltgAddonsApiBase(apiUrl, location)).toBeNull()
+    expect(voAddonsApiBase(apiUrl, location)).toBeNull()
   })
 })
 
-describe('parseTltgAddonsList', () => {
+describe('parseVoAddonsList', () => {
   it.each([
     ['an HTML page', '<!doctype html>'],
     ['null', null],
     ['an object without add-ons', { error: 'Not found' }]
   ])('is unavailable for %s', (_, body) => {
-    expect(parseTltgAddonsList(body)).toBeNull()
+    expect(parseVoAddonsList(body)).toBeNull()
   })
 
   it('keeps well-formed add-ons and skips malformed or repeated ones', () => {
-    const list = parseTltgAddonsList({
+    const list = parseVoAddonsList({
       busy: false,
       printer_busy: true,
       addons: [
@@ -85,7 +85,7 @@ describe('parseTltgAddonsList', () => {
   })
 
   it('names the installed add-ons that block an install', () => {
-    const list = parseTltgAddonsList({
+    const list = parseVoAddonsList({
       addons: [{ ...octoEverywhere, id: 'obico', name: 'Obico', blocked_by: ['OctoEverywhere', 3, ''] }],
       job: { ...runningJob, addon: 'obico', action: 'relink' }
     })
@@ -95,32 +95,32 @@ describe('parseTltgAddonsList', () => {
   })
 
   it('treats a running job as busy and polls faster while it runs', () => {
-    const running = parseTltgAddonsList({ busy: false, printer_busy: false, addons: [], job: runningJob })
-    const finished = parseTltgAddonsList({ busy: false, printer_busy: false, addons: [], job: { ...runningJob, state: 'failed' } })
+    const running = parseVoAddonsList({ busy: false, printer_busy: false, addons: [], job: runningJob })
+    const finished = parseVoAddonsList({ busy: false, printer_busy: false, addons: [], job: { ...runningJob, state: 'failed' } })
 
     expect(running?.busy).toBe(true)
     expect(running?.job?.log).toEqual(['Starting', 'Downloading'])
-    expect(tltgAddonsPollInterval(running)).toBe(2000)
+    expect(voAddonsPollInterval(running)).toBe(2000)
 
     expect(finished?.busy).toBe(false)
     expect(finished?.job?.state).toBe('failed')
-    expect(tltgAddonsPollInterval(finished)).toBe(10000)
-    expect(tltgAddonsPollInterval(null)).toBe(10000)
+    expect(voAddonsPollInterval(finished)).toBe(10000)
+    expect(voAddonsPollInterval(null)).toBe(10000)
   })
 })
 
-describe('tltgAddonActions', () => {
+describe('voAddonActions', () => {
   it.each([
     ['not_installed', { primary: 'install', remove: false }],
     ['update_available', { primary: 'update', remove: true }],
     ['installed', { primary: 'remove', remove: false }],
     ['foreign', { primary: null, remove: false }]
   ] as const)('offers the right actions when %s', (state, expected) => {
-    expect(tltgAddonActions({ state })).toEqual(expected)
+    expect(voAddonActions({ state })).toEqual(expected)
   })
 })
 
-describe('tltgAddonsRequest', () => {
+describe('voAddonsRequest', () => {
   const fetchMock = vi.fn()
 
   beforeEach(() => {
@@ -139,7 +139,7 @@ describe('tltgAddonsRequest', () => {
   it('sends the headers and body the service requires of a POST', async () => {
     respond(202, JSON.stringify({ job: runningJob }))
 
-    await tltgAddonsRequest('http://printer/tltg-addons/api', '/addons/octoeverywhere/install', { method: 'POST', token: 'abc' })
+    await voAddonsRequest('http://printer/tltg-addons/api', '/addons/octoeverywhere/install', { method: 'POST', token: 'abc' })
 
     const [url, init] = fetchMock.mock.calls[0]
 
@@ -158,7 +158,7 @@ describe('tltgAddonsRequest', () => {
   it("sends a relink's server in the body", async () => {
     respond(202, JSON.stringify({ job: { ...runningJob, action: 'relink' } }))
 
-    await tltgAddonsRequest('http://printer/tltg-addons/api', '/addons/obico/relink', { method: 'POST', body: { server: 'http://192.168.1.10:3334' } })
+    await voAddonsRequest('http://printer/tltg-addons/api', '/addons/obico/relink', { method: 'POST', body: { server: 'http://192.168.1.10:3334' } })
 
     expect(fetchMock.mock.calls[0][1].body).toBe('{"server":"http://192.168.1.10:3334"}')
   })
@@ -166,7 +166,7 @@ describe('tltgAddonsRequest', () => {
   it('sends no token when Fluidd has none', async () => {
     respond(200, JSON.stringify({ addons: [] }))
 
-    await tltgAddonsRequest('http://printer/tltg-addons/api', '/addons', { token: null })
+    await voAddonsRequest('http://printer/tltg-addons/api', '/addons', { token: null })
 
     expect(fetchMock.mock.calls[0][1].headers).not.toHaveProperty('Authorization')
   })
@@ -174,7 +174,7 @@ describe('tltgAddonsRequest', () => {
   it("reports the server's error text with its status", async () => {
     respond(409, JSON.stringify({ error: 'The printer is printing' }))
 
-    await expect(tltgAddonsRequest('http://printer/tltg-addons/api', '/addons/octoeverywhere/install', { method: 'POST' }))
+    await expect(voAddonsRequest('http://printer/tltg-addons/api', '/addons/octoeverywhere/install', { method: 'POST' }))
       .rejects.toMatchObject({ status: 409, message: 'The printer is printing' })
   })
 
@@ -184,21 +184,21 @@ describe('tltgAddonsRequest', () => {
   ])('fails without a status when the printer %s', async (_, arrange) => {
     arrange()
 
-    const request = tltgAddonsRequest('http://printer/tltg-addons/api', '/addons')
+    const request = voAddonsRequest('http://printer/tltg-addons/api', '/addons')
 
-    await expect(request).rejects.toBeInstanceOf(TltgAddonsRequestError)
+    await expect(request).rejects.toBeInstanceOf(VoAddonsRequestError)
     await expect(request).rejects.toMatchObject({ status: 0 })
   })
 })
 
-describe('tltgServerUrlValid', () => {
+describe('voServerUrlValid', () => {
   it.each([
     'https://app.obico.io',
     'http://192.168.1.10:3334',
     'http://obico.local/',
     'http://[fe80::1]:3334/obico'
   ])('accepts %s', (url) => {
-    expect(tltgServerUrlValid(url)).toBe(true)
+    expect(voServerUrlValid(url)).toBe(true)
   })
 
   it.each([
@@ -208,11 +208,11 @@ describe('tltgServerUrlValid', () => {
     'http://obico local',
     'javascript:alert(1)'
   ])('refuses %s', (url) => {
-    expect(tltgServerUrlValid(url)).toBe(false)
+    expect(voServerUrlValid(url)).toBe(false)
   })
 })
 
-describe('parseTltgTailscaleStatus', () => {
+describe('parseVoTailscaleStatus', () => {
   const running = {
     state: 'Running',
     connected: true,
@@ -224,7 +224,7 @@ describe('parseTltgTailscaleStatus', () => {
   }
 
   it('reads a connected printer', () => {
-    expect(parseTltgTailscaleStatus({ ...running, login_url: 'https://login.tailscale.com/a/abc' })).toEqual({
+    expect(parseVoTailscaleStatus({ ...running, login_url: 'https://login.tailscale.com/a/abc' })).toEqual({
       state: 'running',
       loginUrl: '',
       name: 'qidi-plus5.example.ts.net',
@@ -238,9 +238,9 @@ describe('parseTltgTailscaleStatus', () => {
   it('offers only http and https sign-in addresses, and only to a printer that needs to log in', () => {
     const needsLogin = { state: 'NeedsLogin', login_url: 'https://login.tailscale.com/a/abc' }
 
-    expect(parseTltgTailscaleStatus(needsLogin)?.loginUrl).toBe('https://login.tailscale.com/a/abc')
-    expect(parseTltgTailscaleStatus({ ...needsLogin, login_url: 'javascript:alert(1)' })?.loginUrl).toBe('')
-    expect(parseTltgTailscaleStatus({ ...needsLogin, login_url: null })).toMatchObject({ state: 'needs_login', loginUrl: '', keyExpiry: null })
+    expect(parseVoTailscaleStatus(needsLogin)?.loginUrl).toBe('https://login.tailscale.com/a/abc')
+    expect(parseVoTailscaleStatus({ ...needsLogin, login_url: 'javascript:alert(1)' })?.loginUrl).toBe('')
+    expect(parseVoTailscaleStatus({ ...needsLogin, login_url: null })).toMatchObject({ state: 'needs_login', loginUrl: '', keyExpiry: null })
   })
 
   it.each([
@@ -249,22 +249,22 @@ describe('parseTltgTailscaleStatus', () => {
     ['Starting', 'starting'],
     ['NoState', 'starting']
   ])('reads %s as %s', (state, expected) => {
-    expect(parseTltgTailscaleStatus({ state })?.state).toBe(expected)
+    expect(parseVoTailscaleStatus({ state })?.state).toBe(expected)
   })
 
   it('reads nothing while tailscaled is not answering', () => {
-    expect(parseTltgTailscaleStatus({ unavailable: 'Not yet' })).toBeNull()
-    expect(parseTltgTailscaleStatus(null)).toBeNull()
+    expect(parseVoTailscaleStatus({ unavailable: 'Not yet' })).toBeNull()
+    expect(parseVoTailscaleStatus(null)).toBeNull()
   })
 
   it('leaves out a name that is not a host name', () => {
-    expect(parseTltgTailscaleStatus({ ...running, name: 'evil.example/path' })?.name).toBe('')
+    expect(parseVoTailscaleStatus({ ...running, name: 'evil.example/path' })?.name).toBe('')
   })
 })
 
-describe('parseTltgZerotierStatus', () => {
+describe('parseVoZerotierStatus', () => {
   it('reads the printer and its networks', () => {
-    expect(parseTltgZerotierStatus({
+    expect(parseVoZerotierStatus({
       node_id: 'da63a5a253',
       online: true,
       networks: [
@@ -284,12 +284,12 @@ describe('parseTltgZerotierStatus', () => {
   })
 
   it('reads a ZeroTier that did not answer as unavailable', () => {
-    expect(parseTltgZerotierStatus({ unavailable: "ZeroTier isn't answering yet." })).toBeNull()
-    expect(parseTltgZerotierStatus(null)).toBeNull()
+    expect(parseVoZerotierStatus({ unavailable: "ZeroTier isn't answering yet." })).toBeNull()
+    expect(parseVoZerotierStatus(null)).toBeNull()
   })
 })
 
-describe('tltgZerotierNetworkIdValid', () => {
+describe('voZerotierNetworkIdValid', () => {
   it.each([
     ['8056c2e21c000001', true],
     [' 8056C2E21C000001 ', true],
@@ -298,6 +298,6 @@ describe('tltgZerotierNetworkIdValid', () => {
     ['--help', false],
     [null, false]
   ])('%s is %s', (value, valid) => {
-    expect(tltgZerotierNetworkIdValid(value)).toBe(valid)
+    expect(voZerotierNetworkIdValid(value)).toBe(valid)
   })
 })

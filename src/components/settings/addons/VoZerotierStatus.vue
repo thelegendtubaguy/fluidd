@@ -4,8 +4,8 @@
     rounded
     class="px-3 py-2"
   >
-    <div class="tltg-zerotier__row">
-      <span class="secondary--text">{{ $t('app.tltg_addons.label.service') }}</span>
+    <div class="vo-zerotier__row">
+      <span class="secondary--text">{{ $t('app.vo_addons.label.service') }}</span>
       <span :class="`${serviceColor}--text`">{{ serviceText }}</span>
     </div>
 
@@ -17,18 +17,18 @@
     </div>
 
     <template v-else-if="status">
-      <div class="tltg-zerotier__row">
-        <span class="secondary--text">{{ $t('app.tltg_addons.label.zerotier') }}</span>
+      <div class="vo-zerotier__row">
+        <span class="secondary--text">{{ $t('app.vo_addons.label.zerotier') }}</span>
         <span :class="`${status.online ? 'success' : 'warning'}--text`">
-          {{ $t(status.online ? 'app.tltg_addons.label.online' : 'app.tltg_addons.label.offline') }}
+          {{ $t(status.online ? 'app.vo_addons.label.online' : 'app.vo_addons.label.offline') }}
         </span>
       </div>
 
       <div
         v-if="status.nodeId"
-        class="tltg-zerotier__row"
+        class="vo-zerotier__row"
       >
-        <span class="secondary--text">{{ $t('app.tltg_addons.label.zerotier_node_id') }}</span>
+        <span class="secondary--text">{{ $t('app.vo_addons.label.zerotier_node_id') }}</span>
         <span class="text-right">{{ status.nodeId }}</span>
       </div>
 
@@ -36,7 +36,7 @@
         v-if="status.networks.length === 0"
         class="text-body-2 mt-1"
       >
-        {{ $t('app.tltg_addons.msg.zerotier_no_network') }}
+        {{ $t('app.vo_addons.msg.zerotier_no_network') }}
       </div>
 
       <v-sheet
@@ -46,25 +46,25 @@
         rounded
         class="px-3 py-2 mt-2"
       >
-        <div class="tltg-zerotier__row">
-          <span class="secondary--text">{{ $t('app.tltg_addons.label.zerotier_network') }}</span>
+        <div class="vo-zerotier__row">
+          <span class="secondary--text">{{ $t('app.vo_addons.label.zerotier_network') }}</span>
           <span class="text-break text-right">
             {{ network.name ? `${network.name} (${network.id})` : network.id }}
           </span>
         </div>
 
-        <div class="tltg-zerotier__row">
-          <span class="secondary--text">{{ $t('app.tltg_addons.label.zerotier_state') }}</span>
+        <div class="vo-zerotier__row">
+          <span class="secondary--text">{{ $t('app.vo_addons.label.zerotier_state') }}</span>
           <span :class="`${networkColor(network.state)}--text`">
-            {{ $t(`app.tltg_addons.zerotier_state.${network.state}`) }}
+            {{ $t(`app.vo_addons.zerotier_state.${network.state}`) }}
           </span>
         </div>
 
         <div
           v-if="network.addresses.length > 0"
-          class="tltg-zerotier__row"
+          class="vo-zerotier__row"
         >
-          <span class="secondary--text">{{ $t('app.tltg_addons.label.zerotier_address') }}</span>
+          <span class="secondary--text">{{ $t('app.vo_addons.label.zerotier_address') }}</span>
           <span class="text-break text-right">
             <template v-for="(address, index) in network.addresses">
               <br
@@ -103,7 +103,7 @@
             :disabled="working"
             @click="leave(network)"
           >
-            {{ $t('app.tltg_addons.btn.zerotier_leave') }}
+            {{ $t('app.vo_addons.btn.zerotier_leave') }}
           </app-btn>
         </div>
       </v-sheet>
@@ -121,9 +121,9 @@
       <div class="d-flex align-start mt-2">
         <v-text-field
           v-model="networkId"
-          :label="$t('app.tltg_addons.label.zerotier_network_id')"
+          :label="$t('app.vo_addons.label.zerotier_network_id')"
           :rules="[networkIdRule]"
-          :hint="$t('app.tltg_addons.msg.zerotier_network_id')"
+          :hint="$t('app.vo_addons.msg.zerotier_network_id')"
           placeholder="8056c2e21c000001"
           maxlength="16"
           autocomplete="off"
@@ -142,7 +142,7 @@
           :disabled="!networkIdValid"
           @click="join"
         >
-          {{ $t('app.tltg_addons.btn.zerotier_join') }}
+          {{ $t('app.vo_addons.btn.zerotier_join') }}
         </app-btn>
       </div>
     </template>
@@ -152,18 +152,18 @@
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
 import {
-  parseTltgZerotierStatus,
-  tltgZerotierNetworkIdValid,
-  type TltgAddon,
-  type TltgZerotierNetwork,
-  type TltgZerotierNetworkState,
-  type TltgZerotierStatus as ZerotierStatus
-} from '@/util/tltg-addons'
+  parseVoZerotierStatus,
+  voZerotierNetworkIdValid,
+  type VoAddon,
+  type VoZerotierNetwork,
+  type VoZerotierNetworkState,
+  type VoZerotierStatus as ZerotierStatus
+} from '@/util/vo-addons'
 
 @Component({})
-export default class TltgZerotierStatus extends Vue {
+export default class VoZerotierStatus extends Vue {
   @Prop({ type: Object, required: true })
-  readonly addon!: TltgAddon
+  readonly addon!: VoAddon
 
   @Prop({ type: Function, required: true })
   readonly request!: (path: string, method?: 'GET' | 'POST', signal?: AbortSignal, body?: Record<string, unknown>) => Promise<unknown>
@@ -175,7 +175,7 @@ export default class TltgZerotierStatus extends Vue {
   networkId = ''
 
   get status (): ZerotierStatus | null {
-    return this.answered ?? parseTltgZerotierStatus(this.addon.status)
+    return this.answered ?? parseVoZerotierStatus(this.addon.status)
   }
 
   get unavailable (): string {
@@ -185,7 +185,7 @@ export default class TltgZerotierStatus extends Vue {
   }
 
   get networkIdValid (): boolean {
-    return tltgZerotierNetworkIdValid(this.networkId)
+    return voZerotierNetworkIdValid(this.networkId)
   }
 
   get serviceState (): string {
@@ -193,7 +193,7 @@ export default class TltgZerotierStatus extends Vue {
   }
 
   get serviceText (): string {
-    const key = `app.tltg_addons.service.${this.serviceState}`
+    const key = `app.vo_addons.service.${this.serviceState}`
 
     return this.$te(key)
       ? this.$t(key).toString()
@@ -221,10 +221,10 @@ export default class TltgZerotierStatus extends Vue {
   }
 
   networkIdRule (value: string): boolean | string {
-    return !value || tltgZerotierNetworkIdValid(value) || this.$t('app.tltg_addons.msg.zerotier_network_id_invalid').toString()
+    return !value || voZerotierNetworkIdValid(value) || this.$t('app.vo_addons.msg.zerotier_network_id_invalid').toString()
   }
 
-  networkColor (state: TltgZerotierNetworkState): string {
+  networkColor (state: VoZerotierNetworkState): string {
     switch (state) {
       case 'ok':
         return 'success'
@@ -237,16 +237,16 @@ export default class TltgZerotierStatus extends Vue {
     }
   }
 
-  networkMessage (state: TltgZerotierNetworkState): string {
+  networkMessage (state: VoZerotierNetworkState): string {
     switch (state) {
       case 'ok':
-        return this.$t('app.tltg_addons.msg.zerotier_connected').toString()
+        return this.$t('app.vo_addons.msg.zerotier_connected').toString()
       case 'access_denied':
-        return this.$t('app.tltg_addons.msg.zerotier_needs_approval', { node: this.status?.nodeId ?? '' }).toString()
+        return this.$t('app.vo_addons.msg.zerotier_needs_approval', { node: this.status?.nodeId ?? '' }).toString()
       case 'not_found':
-        return this.$t('app.tltg_addons.msg.zerotier_not_found').toString()
+        return this.$t('app.vo_addons.msg.zerotier_not_found').toString()
       case 'authentication_required':
-        return this.$t('app.tltg_addons.msg.zerotier_sso').toString()
+        return this.$t('app.vo_addons.msg.zerotier_sso').toString()
       default:
         return ''
     }
@@ -261,7 +261,7 @@ export default class TltgZerotierStatus extends Vue {
     this.error = ''
 
     try {
-      this.answered = parseTltgZerotierStatus(
+      this.answered = parseVoZerotierStatus(
         await this.request(`/addons/${encodeURIComponent(this.addon.id)}/${action}`, 'POST', undefined, { network })
       )
 
@@ -285,10 +285,10 @@ export default class TltgZerotierStatus extends Vue {
     }
   }
 
-  async leave (network: TltgZerotierNetwork) {
+  async leave (network: VoZerotierNetwork) {
     const confirmed = await this.$confirm(
-      this.$t('app.tltg_addons.msg.zerotier_confirm_leave', { network: network.name || network.id }).toString(),
-      { title: this.$t('app.tltg_addons.title.zerotier_leave').toString(), color: 'card-heading', icon: '$error' }
+      this.$t('app.vo_addons.msg.zerotier_confirm_leave', { network: network.name || network.id }).toString(),
+      { title: this.$t('app.vo_addons.title.zerotier_leave').toString(), color: 'card-heading', icon: '$error' }
     )
 
     if (confirmed) {
@@ -299,7 +299,7 @@ export default class TltgZerotierStatus extends Vue {
 </script>
 
 <style lang="scss" scoped>
-  .tltg-zerotier__row {
+  .vo-zerotier__row {
     display: flex;
     justify-content: space-between;
     align-items: center;

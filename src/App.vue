@@ -43,7 +43,7 @@
     </v-btn>
 
     <v-main :style="customBackgroundImageStyle">
-      <app-tltg-warning-banner />
+      <app-vo-warning-banner />
 
       <v-container
         v-if="socketReady"
