@@ -1,17 +1,17 @@
 import {
-  parseTltgStatus,
-  parseTltgStatusJob,
-  tltgIssueUrlValid,
-  tltgSentence,
-  tltgStatusApiBase,
-  tltgStatusPollFailure,
-  tltgStatusPollInterval,
-  tltgShownUpdate,
-  tltgStatusRequest,
-  TltgStatusRequestError,
-  tltgStatusView,
-  tltgSupportBundle
-} from '../tltg-status'
+  parseVoStatus,
+  parseVoStatusJob,
+  voIssueUrlValid,
+  voSentence,
+  voStatusApiBase,
+  voStatusPollFailure,
+  voStatusPollInterval,
+  voShownUpdate,
+  voStatusRequest,
+  VoStatusRequestError,
+  voStatusView,
+  voSupportBundle
+} from '../vo-status'
 
 const issue = 'https://github.com/thelegendtubaguy/valve-oil/issues/new?template=printer-support.yml&board=box1'
 
@@ -89,23 +89,23 @@ const windowed = (changes: Record<string, unknown> = {}) => ({
 const outsideWindow = blocker('outside_window', "it's outside the update window, 02:00–05:00 America/Chicago")
 
 const view = (changes: Record<string, unknown>) => {
-  const status = parseTltgStatus({ ...base, ...changes })
+  const status = parseVoStatus({ ...base, ...changes })
 
   if (!status) {
     throw new Error('status did not parse')
   }
 
-  return tltgStatusView(status, now)
+  return voStatusView(status, now)
 }
 
-describe('tltgStatusApiBase', () => {
+describe('voStatusApiBase', () => {
   const location = { origin: 'http://192.168.1.166', hostname: '192.168.1.166' }
 
   it.each([
     ['the page', 'http://192.168.1.166'],
     ["Moonraker's own port", 'http://192.168.1.166:7125']
   ])('uses the nginx that served Fluidd when Fluidd talks to %s', (_, apiUrl) => {
-    expect(tltgStatusApiBase(apiUrl, location)).toBe('http://192.168.1.166/tltg-status/api')
+    expect(voStatusApiBase(apiUrl, location)).toBe('http://192.168.1.166/tltg-status/api')
   })
 
   it.each([
@@ -113,11 +113,11 @@ describe('tltgStatusApiBase', () => {
     ['no printer', ''],
     ['an invalid address', 'not a url']
   ])('is unavailable when Fluidd talks to %s', (_, apiUrl) => {
-    expect(tltgStatusApiBase(apiUrl, location)).toBeNull()
+    expect(voStatusApiBase(apiUrl, location)).toBeNull()
   })
 })
 
-describe('parseTltgStatus', () => {
+describe('parseVoStatus', () => {
   it.each([
     ['an HTML page', '<!doctype html>'],
     ['null', null],
@@ -125,11 +125,11 @@ describe('parseTltgStatus', () => {
     ['a status without a schema', { ...base, schema: undefined }],
     ['a schema this page does not know', { ...base, schema: 2 }]
   ])('is unavailable for %s', (_, body) => {
-    expect(parseTltgStatus(body)).toBeNull()
+    expect(parseVoStatus(body)).toBeNull()
   })
 
   it('reads a status whose fields are all missing or null as unknown', () => {
-    expect(parseTltgStatus({ schema: 1, release: null, printer: null, auto_update: null, check: null, pending: null, boards: null })).toEqual({
+    expect(parseVoStatus({ schema: 1, release: null, printer: null, auto_update: null, check: null, pending: null, boards: null })).toEqual({
       updated_at: null,
       release: { installed: null, channel: null, commit: null },
       printer: { id: null, name: null, firmware: null, target_firmware: null },
@@ -147,7 +147,7 @@ describe('parseTltgStatus', () => {
   })
 
   it('skips waiting work and blockers it cannot read, and ignores keys it does not know', () => {
-    const status = parseTltgStatus({
+    const status = parseVoStatus({
       ...base,
       future: { anything: true },
       pending: [
@@ -170,11 +170,11 @@ describe('parseTltgStatus', () => {
     ["only this project's issue form as a link", { id: 'box1', state: 'unrecognized_bootloader', issue_url: issue }, { issue_url: issue }],
     ['any other link as none', { id: 'box1', state: 'unrecognized_bootloader', issue_url: 'javascript:alert(1)' }, { issue_url: null }]
   ])('reads a board with %s', (_, board, expected) => {
-    expect(parseTltgStatus({ ...base, boards: [board] })?.boards[0]).toMatchObject(expected)
+    expect(parseVoStatus({ ...base, boards: [board] })?.boards[0]).toMatchObject(expected)
   })
 
   it('skips boards without an id and repeats of one', () => {
-    const boards = parseTltgStatus({ ...base, boards: [{ state: 'current' }, { id: 'thr', state: 'current' }, { id: 'thr', state: 'held' }] })?.boards
+    const boards = parseVoStatus({ ...base, boards: [{ state: 'current' }, { id: 'thr', state: 'current' }, { id: 'thr', state: 'held' }] })?.boards
 
     expect(boards?.map(board => [board.id, board.state])).toEqual([['thr', 'current']])
   })
@@ -216,7 +216,7 @@ describe('parseTltgStatus', () => {
     ['a timezone from a source it does not know', windowed({ timezone_source: 'guess' }), { auto_update: { window: { timezone_source: null } } }],
     ['a service without update windows', {}, { auto_update: { window: null } }]
   ])('reads %s', (_, changes, expected) => {
-    expect(parseTltgStatus({ ...base, ...changes })).toMatchObject(expected)
+    expect(parseVoStatus({ ...base, ...changes })).toMatchObject(expected)
   })
 
   it.each([
@@ -225,33 +225,33 @@ describe('parseTltgStatus', () => {
     ['a window starting and ending at the same hour', { start: 3, end: 3 }],
     ['part hours', { start: 2.5, end: 5 }]
   ])('reads %s as no update window', (_, window) => {
-    expect(parseTltgStatus({ ...base, ...windowed({ window }) })?.auto_update.window).toBeNull()
+    expect(parseVoStatus({ ...base, ...windowed({ window }) })?.auto_update.window).toBeNull()
   })
 })
 
-describe('parseTltgStatusJob', () => {
+describe('parseVoStatusJob', () => {
   it('reads the job Update now started', () => {
-    expect(parseTltgStatusJob({ job })).toEqual(job)
-    expect(parseTltgStatusJob({ error: 'An update is already running.' })).toBeNull()
+    expect(parseVoStatusJob({ job })).toEqual(job)
+    expect(parseVoStatusJob({ error: 'An update is already running.' })).toBeNull()
   })
 })
 
-describe('tltgSentence', () => {
+describe('voSentence', () => {
   it.each([
     ["a mainboard firmware write wasn't verified; run ./mainboard-firmware.sh rescue first", "A mainboard firmware write wasn't verified; run ./mainboard-firmware.sh rescue first."],
     ['Already a sentence.', 'Already a sentence.'],
     ['  ', '']
   ])('makes a sentence of %j', (value, expected) => {
-    expect(tltgSentence(value)).toBe(expected)
+    expect(voSentence(value)).toBe(expected)
   })
 })
 
-describe('tltgIssueUrlValid', () => {
+describe('voIssueUrlValid', () => {
   it.each([
     issue,
     'https://github.com/thelegendtubaguy/valve-oil/issues/new?template=printer-support.yml'
   ])('accepts %s', (url) => {
-    expect(tltgIssueUrlValid(url)).toBe(true)
+    expect(voIssueUrlValid(url)).toBe(true)
   })
 
   it.each([
@@ -263,11 +263,11 @@ describe('tltgIssueUrlValid', () => {
     ['an oversized link', `${issue}&report=${'x'.repeat(8000)}`],
     ['not text', 7]
   ])('refuses %s', (_, url) => {
-    expect(tltgIssueUrlValid(url)).toBe(false)
+    expect(voIssueUrlValid(url)).toBe(false)
   })
 })
 
-describe('tltgStatusView', () => {
+describe('voStatusView', () => {
   it.each([
     ['nothing waiting', {}, { notice: 'none', reasons: [], firmwareWaiting: false }],
     [
@@ -374,7 +374,7 @@ describe('tltgStatusView', () => {
   })
 })
 
-describe('tltgStatusView updateNow', () => {
+describe('voStatusView updateNow', () => {
   it.each([
     ['nothing waiting', {}, { offered: false }],
     ['nothing waiting while printing', { printer_busy: true, update_now: { allowed: false, blocked_by: [printing] } }, { offered: false }],
@@ -423,7 +423,7 @@ describe('tltgStatusView updateNow', () => {
   })
 })
 
-describe('tltgStatusView boards', () => {
+describe('voStatusView boards', () => {
   const board = (id: string, state: string, extra: Record<string, unknown> = {}) => ({ id, state, firmware: '1.0.2', ...extra })
   const closedLoopDetail = 'The closed-loop motor drivers were not updated: Valve Oil doesn\'t update them yet, so they keep their firmware (X 03.01.01, Y 03.01.01). Update the motor drivers from the touchscreen\'s firmware page to install it.'
   const boxNote = "QIDI firmware 01.01.08.01 carries Box firmware 1.0.5; update this Box from the touchscreen's firmware page."
@@ -488,7 +488,7 @@ describe('tltgStatusView boards', () => {
   })
 })
 
-describe('tltgStatusView update', () => {
+describe('voStatusView update', () => {
   const finishedJob = { ...job, state: 'succeeded', finished_at: '2026-11-11T09:05:00Z' }
 
   it.each([
@@ -583,9 +583,9 @@ describe('tltgStatusView update', () => {
       { state: 'running', canContinue: false }
     ]
   ])('shows %s', (_, changes, expected) => {
-    const status = parseTltgStatus({ ...base, ...changes })
+    const status = parseVoStatus({ ...base, ...changes })
 
-    expect(status && tltgStatusView(status, now).update).toMatchObject(expected)
+    expect(status && voStatusView(status, now).update).toMatchObject(expected)
   })
 
   it.each([
@@ -611,7 +611,7 @@ describe('tltgStatusView update', () => {
   })
 })
 
-describe('tltgShownUpdate', () => {
+describe('voShownUpdate', () => {
   const finished = Date.parse('2026-11-11T09:05:00Z')
   const hours = (count: number) => finished + count * 60 * 60 * 1000
   const update = (state: string) => view({ run: { ...run, state, finished_at: '2026-11-11T09:05:00Z' } }).update
@@ -622,16 +622,16 @@ describe('tltgShownUpdate', () => {
     ['a failure, until dismissed', 'failed', hours(24 * 30), true],
     ['an interrupted update, until dismissed', 'interrupted', hours(24 * 30), true]
   ])('shows %s', (_, state, at, shown) => {
-    expect(tltgShownUpdate(update(state), [], at) != null).toBe(shown)
-    expect(tltgShownUpdate(update(state), ['run-1'], hours(1))).toBeNull()
+    expect(voShownUpdate(update(state), [], at) != null).toBe(shown)
+    expect(voShownUpdate(update(state), ['run-1'], hours(1))).toBeNull()
   })
 
   it('shows a running update even when an earlier result with its id was dismissed', () => {
-    expect(tltgShownUpdate(view({ run, busy: true }).update, ['run-1'], hours(48))?.state).toBe('running')
+    expect(voShownUpdate(view({ run, busy: true }).update, ['run-1'], hours(48))?.state).toBe('running')
   })
 })
 
-describe('tltgSupportBundle', () => {
+describe('voSupportBundle', () => {
   afterEach(() => {
     vi.unstubAllGlobals()
   })
@@ -644,16 +644,16 @@ describe('tltgSupportBundle', () => {
 
     vi.stubGlobal('fetch', fetch)
 
-    const bundle = await tltgSupportBundle('/tltg-status/api', { token: 'abc' })
+    const bundle = await voSupportBundle('/tltg-status/api', { token: 'abc' })
 
     expect(bundle.name).toBe('valve-oil-support-max4-20261116T150300Z.zip')
     expect(fetch.mock.calls[0][0]).toBe('/tltg-status/api/support-bundle')
     expect(fetch.mock.calls[0][1].headers).toEqual({ Authorization: 'Bearer abc' })
-    await expect(tltgSupportBundle('/tltg-status/api')).rejects.toMatchObject({ status: 409, message: 'A support bundle is already being made.' })
+    await expect(voSupportBundle('/tltg-status/api')).rejects.toMatchObject({ status: 409, message: 'A support bundle is already being made.' })
   })
 })
 
-describe('tltgStatusPollFailure', () => {
+describe('voStatusPollFailure', () => {
   it.each([
     ['during an update, however long it lasts', { hasStatus: true, failures: 40, updating: true }, 'reconnecting'],
     ['right after Update now, before any status', { hasStatus: false, failures: 1, updating: true }, 'reconnecting'],
@@ -661,21 +661,21 @@ describe('tltgStatusPollFailure', () => {
     ['repeatedly, with a status shown', { hasStatus: true, failures: 3, updating: false }, 'unavailable'],
     ['before any status, as on a printer without the service', { hasStatus: false, failures: 1, updating: false }, 'unavailable']
   ] as const)('after a failure %s: %s', (_, options, expected) => {
-    expect(tltgStatusPollFailure(options)).toBe(expected)
+    expect(voStatusPollFailure(options)).toBe(expected)
   })
 
   it('polls faster while an update runs and while reconnecting', () => {
-    const idle = parseTltgStatus(base)
-    const busy = parseTltgStatus({ ...base, job })
+    const idle = parseVoStatus(base)
+    const busy = parseVoStatus({ ...base, job })
 
-    expect(tltgStatusPollInterval(idle)).toBe(10000)
-    expect(tltgStatusPollInterval(null)).toBe(10000)
-    expect(tltgStatusPollInterval(busy)).toBe(2000)
-    expect(tltgStatusPollInterval(busy, true)).toBe(3000)
+    expect(voStatusPollInterval(idle)).toBe(10000)
+    expect(voStatusPollInterval(null)).toBe(10000)
+    expect(voStatusPollInterval(busy)).toBe(2000)
+    expect(voStatusPollInterval(busy, true)).toBe(3000)
   })
 })
 
-describe('tltgStatusRequest', () => {
+describe('voStatusRequest', () => {
   const fetchMock = vi.fn()
 
   beforeEach(() => {
@@ -694,7 +694,7 @@ describe('tltgStatusRequest', () => {
   it('sends the headers and body the service requires of a POST', async () => {
     respond(200, JSON.stringify(base))
 
-    await tltgStatusRequest('http://printer/tltg-status/api', '/auto-update', { method: 'POST', token: 'abc', body: { enabled: false } })
+    await voStatusRequest('http://printer/tltg-status/api', '/auto-update', { method: 'POST', token: 'abc', body: { enabled: false } })
 
     const [url, init] = fetchMock.mock.calls[0]
 
@@ -717,8 +717,8 @@ describe('tltgStatusRequest', () => {
     respond(202, JSON.stringify({ job }))
     respond(200, JSON.stringify(base))
 
-    await tltgStatusRequest('http://printer/tltg-status/api', '/update-now', { method: 'POST' })
-    await tltgStatusRequest('http://printer/tltg-status/api', '/status', { token: null })
+    await voStatusRequest('http://printer/tltg-status/api', '/update-now', { method: 'POST' })
+    await voStatusRequest('http://printer/tltg-status/api', '/status', { token: null })
 
     expect(fetchMock.mock.calls[0][1].body).toBe('{}')
     expect(fetchMock.mock.calls[1][1].body).toBeUndefined()
@@ -732,13 +732,13 @@ describe('tltgStatusRequest', () => {
     }))
     respond(400, JSON.stringify({ error: 'Update now takes no options.' }))
 
-    await expect(tltgStatusRequest('http://printer/tltg-status/api', '/update-now', { method: 'POST' }))
+    await expect(voStatusRequest('http://printer/tltg-status/api', '/update-now', { method: 'POST' }))
       .rejects.toMatchObject({
         status: 409,
         message: "Update now can't start: a print is running or paused; another installer run is in progress.",
         blockedBy: [printing, { code: 'installer_busy', message: 'another installer run is in progress' }]
       })
-    await expect(tltgStatusRequest('http://printer/tltg-status/api', '/update-now', { method: 'POST' }))
+    await expect(voStatusRequest('http://printer/tltg-status/api', '/update-now', { method: 'POST' }))
       .rejects.toMatchObject({ status: 400, blockedBy: [] })
   })
 
@@ -748,15 +748,15 @@ describe('tltgStatusRequest', () => {
   ])('fails without a status when the printer %s', async (_, arrange) => {
     arrange()
 
-    const request = tltgStatusRequest('http://printer/tltg-status/api', '/status')
+    const request = voStatusRequest('http://printer/tltg-status/api', '/status')
 
-    await expect(request).rejects.toBeInstanceOf(TltgStatusRequestError)
+    await expect(request).rejects.toBeInstanceOf(VoStatusRequestError)
     await expect(request).rejects.toMatchObject({ status: 0 })
   })
 
   it('fails with the status when nginx answers without JSON', async () => {
     respond(502, '<html>Bad Gateway</html>')
 
-    await expect(tltgStatusRequest('http://printer/tltg-status/api', '/status')).rejects.toMatchObject({ status: 502 })
+    await expect(voStatusRequest('http://printer/tltg-status/api', '/status')).rejects.toMatchObject({ status: 502 })
   })
 })

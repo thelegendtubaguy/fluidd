@@ -3,8 +3,8 @@
     <v-divider />
 
     <app-setting
-      :title="$t('app.tltg_valve_oil.label.lan_only')"
-      :sub-title="$t('app.tltg_valve_oil.msg.lan_only')"
+      :title="$t('app.vo_valve_oil.label.lan_only')"
+      :sub-title="$t('app.vo_valve_oil.msg.lan_only')"
       :r-cols="5"
     >
       <v-switch
@@ -29,7 +29,7 @@
         class="mb-0"
         @input="error = ''"
       >
-        {{ $t('app.tltg_valve_oil.msg.lan_only_failed', { error }) }}
+        {{ $t('app.vo_valve_oil.msg.lan_only_failed', { error }) }}
       </v-alert>
     </div>
   </div>
@@ -50,7 +50,7 @@ import {
  * has QIDI's settings table.
  */
 @Component({})
-export default class TltgQidiLanOnly extends Vue {
+export default class VoQidiLanOnly extends Vue {
   lanOnly: boolean | null = null
   request: boolean | null = null
   error = ''

@@ -292,7 +292,7 @@
 <script lang="ts">
 import { Component, Mixins } from 'vue-property-decorator'
 import SaveMeshDialog from './SaveMeshDialog.vue'
-import { BedSoakColors } from '@/util/tltg-bed-soak'
+import { BedSoakColors } from '@/util/vo-bed-soak'
 import StateMixin from '@/mixins/state'
 import ToolheadMixin from '@/mixins/toolhead'
 import type {
@@ -377,8 +377,8 @@ export default class BedMesh extends Mixins(StateMixin, ToolheadMixin) {
   }
 
   // Retried probe points of the loaded mesh, from QIDI Max 4 Optimized's tltg_probe_report
-  get problemPoints (): Klipper.TltgProbeReportPoint[] {
-    return this.$typedGetters['printer/getTltgProbeReportPoints']
+  get problemPoints (): Klipper.VoProbeReportPoint[] {
+    return this.$typedGetters['printer/getVoProbeReportPoints']
   }
 
   readonly warningColor = BedSoakColors.warning

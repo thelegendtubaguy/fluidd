@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-subheader id="addons">
-      {{ $t('app.tltg_addons.title.addons') }}
+      {{ $t('app.vo_addons.title.addons') }}
     </v-subheader>
     <v-card
       :elevation="5"
@@ -12,7 +12,7 @@
         v-if="!list || addons.length === 0"
         class="text-body-2 secondary--text px-4 py-3"
       >
-        {{ !list ? (unavailable ? $t('app.tltg_addons.msg.unavailable') : $t('app.tltg_addons.msg.loading')) : $t('app.tltg_addons.msg.none') }}
+        {{ !list ? (unavailable ? $t('app.vo_addons.msg.unavailable') : $t('app.vo_addons.msg.loading')) : $t('app.vo_addons.msg.none') }}
       </div>
 
       <template v-for="(addon, index) in addons">
@@ -44,7 +44,7 @@
                 :color="stateColor(addon)"
                 class="ml-2"
               >
-                {{ $t(`app.tltg_addons.state.${addon.state}`) }}
+                {{ $t(`app.vo_addons.state.${addon.state}`) }}
               </v-chip>
             </template>
 
@@ -68,7 +68,7 @@
                   :disabled="actionsDisabled"
                   @click="handleAction(addon, 'remove')"
                 >
-                  {{ $t('app.tltg_addons.btn.remove') }}
+                  {{ $t('app.vo_addons.btn.remove') }}
                 </app-btn>
 
                 <app-btn
@@ -81,7 +81,7 @@
                   :disabled="actionsDisabled || installBlocked(addon)"
                   @click="handleAction(addon, actions(addon).primary)"
                 >
-                  {{ $t(`app.tltg_addons.btn.${actions(addon).primary}`) }}
+                  {{ $t(`app.vo_addons.btn.${actions(addon).primary}`) }}
                 </app-btn>
               </div>
 
@@ -89,14 +89,14 @@
                 v-if="installBlocked(addon)"
                 class="text-caption secondary--text text-right"
               >
-                {{ $t('app.tltg_addons.msg.blocked_by', { names: addon.blocked_by.join(', ') }) }}
+                {{ $t('app.vo_addons.msg.blocked_by', { names: addon.blocked_by.join(', ') }) }}
               </div>
 
               <div
                 v-else-if="actions(addon).primary && printerBusyHint"
                 class="text-caption secondary--text"
               >
-                {{ $t('app.tltg_addons.msg.printer_busy') }}
+                {{ $t('app.vo_addons.msg.printer_busy') }}
               </div>
             </div>
           </app-setting>
@@ -112,7 +112,7 @@
               type="info"
               class="mb-2"
             >
-              {{ $t('app.tltg_addons.msg.foreign', { name: addon.name }) }}
+              {{ $t('app.vo_addons.msg.foreign', { name: addon.name }) }}
             </v-alert>
 
             <v-alert
@@ -125,7 +125,7 @@
               {{ actionErrors[addon.id] }}
             </v-alert>
 
-            <tltg-addon-job
+            <vo-addon-job
               v-if="jobFor(addon)"
               :job="jobFor(addon)"
               :name="addon.name"
@@ -133,13 +133,13 @@
               @dismiss="dismissJob"
             />
 
-            <tltg-octo-everywhere-status
+            <vo-octo-everywhere-status
               v-if="addon.id === 'octoeverywhere' && hasStatusPanel(addon)"
               :addon="addon"
               :request="request"
             />
 
-            <tltg-obico-status
+            <vo-obico-status
               v-if="addon.id === 'obico' && hasStatusPanel(addon)"
               :addon="addon"
               :request="request"
@@ -147,13 +147,13 @@
               @action="handlePanelAction(addon, $event)"
             />
 
-            <tltg-tailscale-status
+            <vo-tailscale-status
               v-if="addon.id === 'tailscale' && hasStatusPanel(addon)"
               :addon="addon"
               :request="request"
             />
 
-            <tltg-zerotier-status
+            <vo-zerotier-status
               v-if="addon.id === 'zerotier' && hasStatusPanel(addon)"
               :addon="addon"
               :request="request"
@@ -168,25 +168,25 @@
 <script lang="ts">
 import { Component, Vue, Watch } from 'vue-property-decorator'
 import { getAccessToken } from '@/store/socket/actions'
-import TltgAddonJob from './TltgAddonJob.vue'
-import TltgOctoEverywhereStatus from './TltgOctoEverywhereStatus.vue'
-import TltgObicoStatus from './TltgObicoStatus.vue'
-import TltgTailscaleStatus from './TltgTailscaleStatus.vue'
-import TltgZerotierStatus from './TltgZerotierStatus.vue'
+import VoAddonJob from './VoAddonJob.vue'
+import VoOctoEverywhereStatus from './VoOctoEverywhereStatus.vue'
+import VoObicoStatus from './VoObicoStatus.vue'
+import VoTailscaleStatus from './VoTailscaleStatus.vue'
+import VoZerotierStatus from './VoZerotierStatus.vue'
 import {
-  parseTltgAddonsList,
-  parseTltgAddonsJob,
-  tltgAddonActions,
-  tltgAddonsApiBase,
-  tltgAddonsPollInterval,
-  tltgAddonsRequest,
-  TltgAddonsRequestError,
-  type TltgAddon,
-  type TltgAddonAction,
-  type TltgAddonJob as AddonJob,
-  type TltgAddonPanelAction,
-  type TltgAddonsList
-} from '@/util/tltg-addons'
+  parseVoAddonsList,
+  parseVoAddonsJob,
+  voAddonActions,
+  voAddonsApiBase,
+  voAddonsPollInterval,
+  voAddonsRequest,
+  VoAddonsRequestError,
+  type VoAddon,
+  type VoAddonAction,
+  type VoAddonJob as AddonJob,
+  type VoAddonPanelAction,
+  type VoAddonsList
+} from '@/util/vo-addons'
 
 // Polls lose the list only after this many failures in a row, so a service restart mid-job keeps it on screen.
 const FAILURES_BEFORE_UNAVAILABLE = 3
@@ -208,18 +208,18 @@ const loadDismissedJobs = (): string[] => {
 
 @Component({
   components: {
-    TltgAddonJob,
-    TltgOctoEverywhereStatus,
-    TltgObicoStatus,
-    TltgTailscaleStatus,
-    TltgZerotierStatus
+    VoAddonJob,
+    VoOctoEverywhereStatus,
+    VoObicoStatus,
+    VoTailscaleStatus,
+    VoZerotierStatus
   }
 })
-export default class TltgAddonsSettings extends Vue {
-  list: TltgAddonsList | null = null
+export default class VoAddonsSettings extends Vue {
+  list: VoAddonsList | null = null
   unavailable = false
   failures = 0
-  pendingAction: { addon: string, action: TltgAddonAction } | null = null
+  pendingAction: { addon: string, action: VoAddonAction } | null = null
   actionErrors: Record<string, string> = {}
   dismissedJobs: string[] = loadDismissedJobs()
   successTimer: ReturnType<typeof setTimeout> | undefined = undefined
@@ -229,10 +229,10 @@ export default class TltgAddonsSettings extends Vue {
   destroyed = false
 
   get apiBase (): string | null {
-    return tltgAddonsApiBase(this.$typedState.config.apiUrl, window.location)
+    return voAddonsApiBase(this.$typedState.config.apiUrl, window.location)
   }
 
-  get addons (): TltgAddon[] {
+  get addons (): VoAddon[] {
     return this.list?.addons ?? []
   }
 
@@ -289,7 +289,7 @@ export default class TltgAddonsSettings extends Vue {
     clearTimeout(this.timer)
 
     if (!this.destroyed && !document.hidden) {
-      this.timer = setTimeout(() => this.poll(), tltgAddonsPollInterval(this.list))
+      this.timer = setTimeout(() => this.poll(), voAddonsPollInterval(this.list))
     }
   }
 
@@ -297,7 +297,7 @@ export default class TltgAddonsSettings extends Vue {
     const base = this.apiBase
 
     if (!base) {
-      throw new TltgAddonsRequestError(0, 'Not connected to this printer')
+      throw new VoAddonsRequestError(0, 'Not connected to this printer')
     }
 
     let token: string | null = null
@@ -308,7 +308,7 @@ export default class TltgAddonsSettings extends Vue {
       token = null
     }
 
-    return tltgAddonsRequest(base, path, { method, token, signal, body })
+    return voAddonsRequest(base, path, { method, token, signal, body })
   }
 
   async poll () {
@@ -329,7 +329,7 @@ export default class TltgAddonsSettings extends Vue {
     this.abortController = abortController
 
     try {
-      const list = parseTltgAddonsList(await this.request('/addons', 'GET', abortController.signal))
+      const list = parseVoAddonsList(await this.request('/addons', 'GET', abortController.signal))
 
       if (abortController.signal.aborted) {
         return
@@ -366,11 +366,11 @@ export default class TltgAddonsSettings extends Vue {
     }
   }
 
-  actions (addon: TltgAddon) {
-    return tltgAddonActions(addon)
+  actions (addon: VoAddon) {
+    return voAddonActions(addon)
   }
 
-  jobFor (addon: TltgAddon): AddonJob | null {
+  jobFor (addon: VoAddon): AddonJob | null {
     const job = this.list?.job
 
     return job && job.addon === addon.id && (job.state === 'running' || !this.dismissedJobs.includes(job.id))
@@ -404,33 +404,33 @@ export default class TltgAddonsSettings extends Vue {
   }
 
   // Only one remote-access add-on can be installed; the service names the installed one in the way.
-  installBlocked (addon: TltgAddon): boolean {
+  installBlocked (addon: VoAddon): boolean {
     return addon.state === 'not_installed' && addon.blocked_by.length > 0
   }
 
-  hasStatusPanel (addon: TltgAddon): boolean {
+  hasStatusPanel (addon: VoAddon): boolean {
     return addon.state !== 'not_installed' && (addon.status != null || addon.service != null)
   }
 
-  versionText (addon: TltgAddon): string {
+  versionText (addon: VoAddon): string {
     const { installed_version: installed, available_version: available } = addon
 
     if (addon.state === 'update_available' && installed && available) {
-      return this.$t('app.tltg_addons.label.version_update', { installed, available }).toString()
+      return this.$t('app.vo_addons.label.version_update', { installed, available }).toString()
     }
 
     if (addon.state !== 'not_installed' && installed) {
-      return this.$t('app.tltg_addons.label.version', { version: installed }).toString()
+      return this.$t('app.vo_addons.label.version', { version: installed }).toString()
     }
 
     if (available) {
-      return this.$t('app.tltg_addons.label.version', { version: available }).toString()
+      return this.$t('app.vo_addons.label.version', { version: available }).toString()
     }
 
     return ''
   }
 
-  stateColor (addon: TltgAddon): string {
+  stateColor (addon: VoAddon): string {
     switch (addon.state) {
       case 'installed':
         return 'success'
@@ -443,19 +443,19 @@ export default class TltgAddonsSettings extends Vue {
     }
   }
 
-  handlePanelAction (addon: TltgAddon, request: TltgAddonPanelAction) {
+  handlePanelAction (addon: VoAddon, request: VoAddonPanelAction) {
     this.handleAction(addon, request.action, request.body)
   }
 
-  async handleAction (addon: TltgAddon, action: TltgAddonAction | null, body?: Record<string, unknown>) {
+  async handleAction (addon: VoAddon, action: VoAddonAction | null, body?: Record<string, unknown>) {
     if (!action || this.actionsDisabled || (action === 'install' && this.installBlocked(addon))) {
       return
     }
 
     if (action === 'remove') {
       const confirmed = await this.$confirm(
-        this.$t('app.tltg_addons.msg.confirm_remove', { name: addon.name }).toString(),
-        { title: this.$t('app.tltg_addons.title.remove', { name: addon.name }).toString(), color: 'card-heading', icon: '$error' }
+        this.$t('app.vo_addons.msg.confirm_remove', { name: addon.name }).toString(),
+        { title: this.$t('app.vo_addons.title.remove', { name: addon.name }).toString(), color: 'card-heading', icon: '$error' }
       )
 
       if (!confirmed || this.actionsDisabled) {
@@ -468,7 +468,7 @@ export default class TltgAddonsSettings extends Vue {
 
     try {
       const response = await this.request(`/addons/${encodeURIComponent(addon.id)}/${action}`, 'POST', undefined, body)
-      const job = parseTltgAddonsJob(response)
+      const job = parseVoAddonsJob(response)
 
       if (job && this.list) {
         this.list = { ...this.list, busy: job.state === 'running' || this.list.busy, job }

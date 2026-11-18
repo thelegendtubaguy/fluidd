@@ -6,7 +6,7 @@ import {
   bedSoakStartCommand,
   parseBedSoakRun,
   type BedSoakRun
-} from '../tltg-bed-soak'
+} from '../vo-bed-soak'
 
 const settings = {
   type: 'settings',
@@ -168,11 +168,11 @@ describe('bedSoakProblemPoints', () => {
 describe('bedSoakStartCommand', () => {
   it('leaves the chamber out when it is not heated', () => {
     expect(bedSoakStartCommand({ bed: 100, chamber: 0, probeCount: 5, timeLimit: 90, stopWhenSettled: true, keepHeating: false }))
-      .toBe('TLTG_BED_SOAK BED=100 PROBE_COUNT=5 TIME_LIMIT=90 STOP_WHEN_SETTLED=1 KEEP_HEATING=0')
+      .toBe('VO_BED_SOAK BED=100 PROBE_COUNT=5 TIME_LIMIT=90 STOP_WHEN_SETTLED=1 KEEP_HEATING=0')
   })
 
   it('passes every setting', () => {
     expect(bedSoakStartCommand({ bed: 110, chamber: 60, probeCount: 9, timeLimit: 240, stopWhenSettled: false, keepHeating: true }))
-      .toBe('TLTG_BED_SOAK BED=110 CHAMBER=60 PROBE_COUNT=9 TIME_LIMIT=240 STOP_WHEN_SETTLED=0 KEEP_HEATING=1')
+      .toBe('VO_BED_SOAK BED=110 CHAMBER=60 PROBE_COUNT=9 TIME_LIMIT=240 STOP_WHEN_SETTLED=0 KEEP_HEATING=1')
   })
 })

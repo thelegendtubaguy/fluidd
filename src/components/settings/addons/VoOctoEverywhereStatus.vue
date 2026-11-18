@@ -4,8 +4,8 @@
     rounded
     class="px-3 py-2"
   >
-    <div class="tltg-octoeverywhere__row">
-      <span class="secondary--text">{{ $t('app.tltg_addons.label.service') }}</span>
+    <div class="vo-octoeverywhere__row">
+      <span class="secondary--text">{{ $t('app.vo_addons.label.service') }}</span>
       <span :class="`${serviceColor}--text`">{{ serviceText }}</span>
     </div>
 
@@ -17,15 +17,15 @@
     </div>
 
     <template v-else-if="status">
-      <div class="tltg-octoeverywhere__row">
-        <span class="secondary--text">{{ $t('app.tltg_addons.label.octoeverywhere') }}</span>
+      <div class="vo-octoeverywhere__row">
+        <span class="secondary--text">{{ $t('app.vo_addons.label.octoeverywhere') }}</span>
         <span :class="connected ? 'success--text' : 'warning--text'">
-          {{ connected ? $t('app.tltg_addons.label.connected') : $t('app.tltg_addons.label.not_connected') }}
+          {{ connected ? $t('app.vo_addons.label.connected') : $t('app.vo_addons.label.not_connected') }}
         </span>
       </div>
 
-      <div class="tltg-octoeverywhere__row">
-        <span class="secondary--text">{{ $t('app.tltg_addons.label.account') }}</span>
+      <div class="vo-octoeverywhere__row">
+        <span class="secondary--text">{{ $t('app.vo_addons.label.account') }}</span>
         <span
           v-if="linked"
           class="d-inline-flex align-center"
@@ -35,7 +35,7 @@
             outlined
             color="success"
           >
-            {{ $t('app.tltg_addons.label.linked') }}
+            {{ $t('app.vo_addons.label.linked') }}
           </v-chip>
           <a
             href="https://octoeverywhere.com/dashboard"
@@ -43,7 +43,7 @@
             rel="noopener noreferrer"
             class="ml-2"
           >
-            {{ $t('app.tltg_addons.btn.dashboard') }}
+            {{ $t('app.vo_addons.btn.dashboard') }}
             <v-icon
               small
               color="primary"
@@ -56,7 +56,7 @@
           v-else
           class="warning--text"
         >
-          {{ $t('app.tltg_addons.label.not_linked') }}
+          {{ $t('app.vo_addons.label.not_linked') }}
         </span>
       </div>
 
@@ -71,7 +71,7 @@
             target="_blank"
             rel="noopener noreferrer"
           >
-            {{ $t('app.tltg_addons.btn.link_account') }}
+            {{ $t('app.vo_addons.btn.link_account') }}
             <v-icon
               small
               right
@@ -87,7 +87,7 @@
             :loading="loadingCode"
             @click="showLinkCode"
           >
-            {{ $t('app.tltg_addons.btn.show_link_code') }}
+            {{ $t('app.vo_addons.btn.show_link_code') }}
           </app-btn>
         </div>
 
@@ -105,14 +105,14 @@
           v-if="linkCode"
           class="text-center mt-2"
         >
-          <div class="text-h4 font-weight-medium tltg-octoeverywhere__code">
+          <div class="text-h4 font-weight-medium vo-octoeverywhere__code">
             {{ linkCode.code }}
           </div>
           <div
             v-if="linkCode.url"
             class="text-body-2"
           >
-            {{ $t('app.tltg_addons.msg.enter_code_at') }}
+            {{ $t('app.vo_addons.msg.enter_code_at') }}
             <a
               :href="linkCode.url"
               target="_blank"
@@ -123,7 +123,7 @@
             v-if="linkCodeExpiresAt"
             class="text-caption secondary--text"
           >
-            {{ $t('app.tltg_addons.msg.code_expires', { time: $filters.formatTime(linkCodeExpiresAt) }) }}
+            {{ $t('app.vo_addons.msg.code_expires', { time: $filters.formatTime(linkCodeExpiresAt) }) }}
           </div>
         </div>
       </template>
@@ -133,17 +133,17 @@
 
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
-import { parseTltgAddonLinkCode, type TltgAddon, type TltgAddonLinkCode } from '@/util/tltg-addons'
+import { parseVoAddonLinkCode, type VoAddon, type VoAddonLinkCode } from '@/util/vo-addons'
 
 @Component({})
-export default class TltgOctoEverywhereStatus extends Vue {
+export default class VoOctoEverywhereStatus extends Vue {
   @Prop({ type: Object, required: true })
-  readonly addon!: TltgAddon
+  readonly addon!: VoAddon
 
   @Prop({ type: Function, required: true })
   readonly request!: (path: string, method?: 'GET' | 'POST') => Promise<unknown>
 
-  linkCode: TltgAddonLinkCode | null = null
+  linkCode: VoAddonLinkCode | null = null
   linkCodeExpiresAt = 0
   loadingCode = false
   codeError = ''
@@ -178,7 +178,7 @@ export default class TltgOctoEverywhereStatus extends Vue {
   }
 
   get serviceText (): string {
-    const key = `app.tltg_addons.service.${this.serviceState}`
+    const key = `app.vo_addons.service.${this.serviceState}`
 
     return this.$te(key)
       ? this.$t(key).toString()
@@ -220,12 +220,12 @@ export default class TltgOctoEverywhereStatus extends Vue {
     this.codeError = ''
 
     try {
-      const linkCode = parseTltgAddonLinkCode(await this.request(`/addons/${encodeURIComponent(this.addon.id)}/link-code`, 'POST'))
+      const linkCode = parseVoAddonLinkCode(await this.request(`/addons/${encodeURIComponent(this.addon.id)}/link-code`, 'POST'))
 
       this.clearLinkCode()
 
       if (!linkCode) {
-        this.codeError = this.$t('app.tltg_addons.msg.code_unavailable').toString()
+        this.codeError = this.$t('app.vo_addons.msg.code_unavailable').toString()
         return
       }
 
@@ -246,7 +246,7 @@ export default class TltgOctoEverywhereStatus extends Vue {
 </script>
 
 <style lang="scss" scoped>
-  .tltg-octoeverywhere__row {
+  .vo-octoeverywhere__row {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -254,7 +254,7 @@ export default class TltgOctoEverywhereStatus extends Vue {
     column-gap: 16px;
   }
 
-  .tltg-octoeverywhere__code {
+  .vo-octoeverywhere__code {
     font-family: 'Roboto Mono', monospace !important;
     letter-spacing: 0.2em !important;
   }

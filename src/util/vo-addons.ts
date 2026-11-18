@@ -2,63 +2,63 @@
 // exposes at /tltg-addons/api. nginx authorizes each request through Moonraker, so requests carry
 // Fluidd's Moonraker access token when there is one.
 
-export type TltgAddonState = 'not_installed' | 'installed' | 'update_available' | 'foreign'
+export type VoAddonState = 'not_installed' | 'installed' | 'update_available' | 'foreign'
 
-export type TltgAddonAction = 'install' | 'update' | 'remove' | 'relink'
+export type VoAddonAction = 'install' | 'update' | 'remove' | 'relink'
 
-export type TltgAddonJobState = 'running' | 'succeeded' | 'failed'
+export type VoAddonJobState = 'running' | 'succeeded' | 'failed'
 
-export interface TltgAddonService {
+export interface VoAddonService {
   name: string;
   active: string;
 }
 
-export interface TltgAddon {
+export interface VoAddon {
   id: string;
   name: string;
   description: string;
   homepage: string;
   available_version: string | null;
   installed_version: string | null;
-  state: TltgAddonState;
-  service: TltgAddonService | null;
+  state: VoAddonState;
+  service: VoAddonService | null;
   status: Record<string, unknown> | null;
   /** Installed add-ons that must be removed before this one can be installed. */
   blocked_by: string[];
 }
 
-export interface TltgAddonJob {
+export interface VoAddonJob {
   id: string;
   addon: string;
-  action: TltgAddonAction;
-  state: TltgAddonJobState;
+  action: VoAddonAction;
+  state: VoAddonJobState;
   message: string;
   log: string[];
 }
 
-export interface TltgAddonsList {
+export interface VoAddonsList {
   busy: boolean;
   printer_busy: boolean;
-  addons: TltgAddon[];
-  job: TltgAddonJob | null;
+  addons: VoAddon[];
+  job: VoAddonJob | null;
 }
 
 /** An add-on change an add-on's panel asks for, such as a relink with a new server. */
-export interface TltgAddonPanelAction {
-  action: TltgAddonAction;
+export interface VoAddonPanelAction {
+  action: VoAddonAction;
   body?: Record<string, unknown>;
 }
 
-export interface TltgAddonLinkCode {
+export interface VoAddonLinkCode {
   code: string;
   url: string;
   expires_in: number;
 }
 
-export type TltgTailscaleState = 'needs_login' | 'needs_approval' | 'stopped' | 'starting' | 'running'
+export type VoTailscaleState = 'needs_login' | 'needs_approval' | 'stopped' | 'starting' | 'running'
 
-export interface TltgTailscaleStatus {
-  state: TltgTailscaleState;
+export interface VoTailscaleStatus {
+  state: VoTailscaleState;
   /** Where to sign in to add the printer to a tailnet, once a login has asked Tailscale for it. */
   loginUrl: string;
   /** The printer's name on the tailnet, such as qidi-plus5.example.ts.net. */
@@ -70,7 +70,7 @@ export interface TltgTailscaleStatus {
   problems: string[];
 }
 
-export type TltgZerotierNetworkState =
+export type VoZerotierNetworkState =
   | 'ok'
   | 'requesting_configuration'
   | 'access_denied'
@@ -79,27 +79,27 @@ export type TltgZerotierNetworkState =
   | 'client_too_old'
   | 'authentication_required'
 
-export interface TltgZerotierNetwork {
+export interface VoZerotierNetwork {
   /** The 16-character network ID. */
   id: string;
   name: string;
-  state: TltgZerotierNetworkState;
+  state: VoZerotierNetworkState;
   /** The printer's addresses on the network, without their prefix length. */
   addresses: string[];
 }
 
-export interface TltgZerotierStatus {
+export interface VoZerotierStatus {
   /** The printer's 10-character ZeroTier address, which the network's member list shows. */
   nodeId: string;
   /** Whether ZeroTier reaches its root servers. */
   online: boolean;
-  networks: TltgZerotierNetwork[];
+  networks: VoZerotierNetwork[];
 }
 
-export const TLTG_OBICO_CLOUD = 'https://app.obico.io'
+export const VO_OBICO_CLOUD = 'https://app.obico.io'
 
-export const TLTG_ADDONS_POLL_BUSY_MS = 2000
-export const TLTG_ADDONS_POLL_IDLE_MS = 10000
+export const VO_ADDONS_POLL_BUSY_MS = 2000
+export const VO_ADDONS_POLL_IDLE_MS = 10000
 
 const ADDON_STATES: readonly string[] = ['not_installed', 'installed', 'update_available', 'foreign']
 const ADDON_ACTIONS: readonly string[] = ['install', 'update', 'remove', 'relink']
@@ -119,7 +119,7 @@ const optionalText = (value: unknown): string | null => typeof value === 'string
  * The add-ons API base, on the nginx that served this Fluidd. Only used while Fluidd talks to that same
  * printer's Moonraker, so the access token and the add-ons shown both belong to the printer in use.
  */
-export const tltgAddonsApiBase = (apiUrl: string, location: Pick<Location, 'origin' | 'hostname'>): string | null => {
+export const voAddonsApiBase = (apiUrl: string, location: Pick<Location, 'origin' | 'hostname'>): string | null => {
   if (!apiUrl) {
     return null
   }
@@ -135,7 +135,7 @@ export const tltgAddonsApiBase = (apiUrl: string, location: Pick<Location, 'orig
   return `${location.origin}/tltg-addons/api`
 }
 
-const parseService = (value: unknown): TltgAddonService | null => {
+const parseService = (value: unknown): VoAddonService | null => {
   if (!isRecord(value)) {
     return null
   }
@@ -146,7 +146,7 @@ const parseService = (value: unknown): TltgAddonService | null => {
   }
 }
 
-const parseAddon = (value: unknown): TltgAddon | null => {
+const parseAddon = (value: unknown): VoAddon | null => {
   if (
     !isRecord(value) ||
     typeof value.id !== 'string' ||
@@ -164,7 +164,7 @@ const parseAddon = (value: unknown): TltgAddon | null => {
     homepage: /^https?:\/\//.test(text(value.homepage)) ? text(value.homepage) : '',
     available_version: optionalText(value.available_version),
     installed_version: optionalText(value.installed_version),
-    state: value.state as TltgAddonState,
+    state: value.state as VoAddonState,
     service: parseService(value.service),
     status: isRecord(value.status) ? value.status : null,
     blocked_by: Array.isArray(value.blocked_by)
@@ -173,7 +173,7 @@ const parseAddon = (value: unknown): TltgAddon | null => {
   }
 }
 
-const parseJob = (value: unknown): TltgAddonJob | null => {
+const parseJob = (value: unknown): VoAddonJob | null => {
   if (
     !isRecord(value) ||
     typeof value.id !== 'string' ||
@@ -189,8 +189,8 @@ const parseJob = (value: unknown): TltgAddonJob | null => {
   return {
     id: value.id,
     addon: value.addon,
-    action: value.action as TltgAddonAction,
-    state: value.state as TltgAddonJobState,
+    action: value.action as VoAddonAction,
+    state: value.state as VoAddonJobState,
     message: text(value.message),
     log: Array.isArray(value.log)
       ? value.log.filter((line): line is string => typeof line === 'string')
@@ -202,7 +202,7 @@ const parseJob = (value: unknown): TltgAddonJob | null => {
  * Reads the add-ons list, or null when the response isn't one, as from a printer without the service.
  * Malformed add-ons are skipped and the rest kept.
  */
-export const parseTltgAddonsList = (value: unknown): TltgAddonsList | null => {
+export const parseVoAddonsList = (value: unknown): VoAddonsList | null => {
   if (!isRecord(value) || !Array.isArray(value.addons)) {
     return null
   }
@@ -210,7 +210,7 @@ export const parseTltgAddonsList = (value: unknown): TltgAddonsList | null => {
   const seen = new Set<string>()
   const addons = value.addons
     .map(parseAddon)
-    .filter((addon): addon is TltgAddon => {
+    .filter((addon): addon is VoAddon => {
       if (addon == null || seen.has(addon.id)) {
         return false
       }
@@ -230,13 +230,13 @@ export const parseTltgAddonsList = (value: unknown): TltgAddonsList | null => {
 }
 
 /** Reads the job an install, update, or remove request started. */
-export const parseTltgAddonsJob = (value: unknown): TltgAddonJob | null => (
+export const parseVoAddonsJob = (value: unknown): VoAddonJob | null => (
   isRecord(value)
     ? parseJob(value.job)
     : null
 )
 
-export const parseTltgAddonLinkCode = (value: unknown): TltgAddonLinkCode | null => {
+export const parseVoAddonLinkCode = (value: unknown): VoAddonLinkCode | null => {
   if (
     !isRecord(value) ||
     typeof value.code !== 'string' ||
@@ -252,7 +252,7 @@ export const parseTltgAddonLinkCode = (value: unknown): TltgAddonLinkCode | null
   }
 }
 
-const TAILSCALE_STATES: Record<string, TltgTailscaleState> = {
+const TAILSCALE_STATES: Record<string, VoTailscaleState> = {
   NeedsLogin: 'needs_login',
   NeedsMachineAuth: 'needs_approval',
   Stopped: 'stopped',
@@ -263,7 +263,7 @@ const TAILSCALE_STATES: Record<string, TltgTailscaleState> = {
  * Reads the Tailscale add-on's status, or null when tailscaled didn't answer. States this doesn't know, as while
  * tailscaled starts, read as starting.
  */
-export const parseTltgTailscaleStatus = (value: unknown): TltgTailscaleStatus | null => {
+export const parseVoTailscaleStatus = (value: unknown): VoTailscaleStatus | null => {
   if (!isRecord(value) || typeof value.state !== 'string') {
     return null
   }
@@ -298,7 +298,7 @@ const ZEROTIER_NETWORK_STATES: readonly string[] = [
 const ZEROTIER_NETWORK_ID = /^[0-9a-f]{16}$/
 
 /** Whether a value is a ZeroTier network ID: 16 characters, 0-9 and a-f, in either case. */
-export const tltgZerotierNetworkIdValid = (value: unknown): boolean => (
+export const voZerotierNetworkIdValid = (value: unknown): boolean => (
   typeof value === 'string' &&
   ZEROTIER_NETWORK_ID.test(value.trim().toLowerCase())
 )
@@ -307,7 +307,7 @@ export const tltgZerotierNetworkIdValid = (value: unknown): boolean => (
  * Reads the ZeroTier add-on's status, or null when zerotier-one didn't answer. Networks without a valid ID are
  * skipped, and states this doesn't know read as still joining.
  */
-export const parseTltgZerotierStatus = (value: unknown): TltgZerotierStatus | null => {
+export const parseVoZerotierStatus = (value: unknown): VoZerotierStatus | null => {
   if (!isRecord(value) || typeof value.node_id !== 'string' || !Array.isArray(value.networks)) {
     return null
   }
@@ -315,11 +315,11 @@ export const parseTltgZerotierStatus = (value: unknown): TltgZerotierStatus | nu
   const networks = value.networks
     .filter(isRecord)
     .filter(network => typeof network.id === 'string' && ZEROTIER_NETWORK_ID.test(network.id))
-    .map((network): TltgZerotierNetwork => ({
+    .map((network): VoZerotierNetwork => ({
       id: network.id as string,
       name: text(network.name),
       state: ZEROTIER_NETWORK_STATES.includes(text(network.status))
-        ? network.status as TltgZerotierNetworkState
+        ? network.status as VoZerotierNetworkState
         : 'requesting_configuration',
       addresses: Array.isArray(network.addresses)
         ? network.addresses
@@ -340,7 +340,7 @@ export const parseTltgZerotierStatus = (value: unknown): TltgZerotierStatus | nu
  * What an add-on offers in its state: the main action, and whether it can be removed alongside it.
  * Add-ons installed outside Valve Oil offer nothing.
  */
-export const tltgAddonActions = (addon: Pick<TltgAddon, 'state'>): { primary: TltgAddonAction | null, remove: boolean } => {
+export const voAddonActions = (addon: Pick<VoAddon, 'state'>): { primary: VoAddonAction | null, remove: boolean } => {
   switch (addon.state) {
     case 'not_installed':
       return { primary: 'install', remove: false }
@@ -357,29 +357,29 @@ export const tltgAddonActions = (addon: Pick<TltgAddon, 'state'>): { primary: Tl
  * Whether a server address looks like one Valve Oil accepts for an add-on such as Obico: http or https, a host,
  * an optional port and path, and no query. The printer checks it again.
  */
-export const tltgServerUrlValid = (value: unknown): boolean => (
+export const voServerUrlValid = (value: unknown): boolean => (
   typeof value === 'string' &&
   value.trim().length <= 200 &&
   /^https?:\/\/(?:[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*|\[[0-9A-Fa-f:.]+\])(?::\d{1,5})?(?:\/[\w.~%/-]*)?$/.test(value.trim())
 )
 
-export const tltgAddonsPollInterval = (list: TltgAddonsList | null): number => (
+export const voAddonsPollInterval = (list: VoAddonsList | null): number => (
   list?.busy
-    ? TLTG_ADDONS_POLL_BUSY_MS
-    : TLTG_ADDONS_POLL_IDLE_MS
+    ? VO_ADDONS_POLL_BUSY_MS
+    : VO_ADDONS_POLL_IDLE_MS
 )
 
-export class TltgAddonsRequestError extends Error {
+export class VoAddonsRequestError extends Error {
   readonly status: number
 
   constructor (status: number, message: string) {
     super(message)
-    this.name = 'TltgAddonsRequestError'
+    this.name = 'VoAddonsRequestError'
     this.status = status
   }
 }
 
-export interface TltgAddonsRequestOptions {
+export interface VoAddonsRequestOptions {
   method?: 'GET' | 'POST';
   token?: string | null;
   signal?: AbortSignal;
@@ -388,11 +388,11 @@ export interface TltgAddonsRequestOptions {
 }
 
 /**
- * Calls the add-ons API and returns its JSON body. Throws TltgAddonsRequestError with the server's
+ * Calls the add-ons API and returns its JSON body. Throws VoAddonsRequestError with the server's
  * error text on an error status, and with status 0 when the printer can't be reached or doesn't answer
  * with JSON. POSTs carry the header and body the service requires of them.
  */
-export const tltgAddonsRequest = async (base: string, path: string, options: TltgAddonsRequestOptions = {}): Promise<unknown> => {
+export const voAddonsRequest = async (base: string, path: string, options: VoAddonsRequestOptions = {}): Promise<unknown> => {
   const method = options.method ?? 'GET'
   const headers: Record<string, string> = {
     Accept: 'application/json'
@@ -423,7 +423,7 @@ export const tltgAddonsRequest = async (base: string, path: string, options: Tlt
       throw e
     }
 
-    throw new TltgAddonsRequestError(0, e instanceof Error ? e.message : String(e))
+    throw new VoAddonsRequestError(0, e instanceof Error ? e.message : String(e))
   }
 
   let body: unknown = null
@@ -437,11 +437,11 @@ export const tltgAddonsRequest = async (base: string, path: string, options: Tlt
   if (!response.ok) {
     const error = isRecord(body) ? text(body.error) : ''
 
-    throw new TltgAddonsRequestError(response.status, error || `${response.status} ${response.statusText}`.trim())
+    throw new VoAddonsRequestError(response.status, error || `${response.status} ${response.statusText}`.trim())
   }
 
   if (body === null) {
-    throw new TltgAddonsRequestError(0, 'Invalid response')
+    throw new VoAddonsRequestError(0, 'Invalid response')
   }
 
   return body

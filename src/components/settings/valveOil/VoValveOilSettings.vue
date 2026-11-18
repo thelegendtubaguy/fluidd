@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-subheader id="valveOil">
-      {{ $t('app.tltg_valve_oil.title.valve_oil') }}
+      {{ $t('app.vo_valve_oil.title.valve_oil') }}
     </v-subheader>
     <v-card
       :elevation="5"
@@ -17,16 +17,16 @@
 
       <template v-else>
         <app-setting
-          :title="$t('app.tltg_valve_oil.label.valve_oil')"
+          :title="$t('app.vo_valve_oil.label.valve_oil')"
           :r-cols="5"
         >
           <div class="d-flex flex-column align-end text-right">
-            <div>{{ view.release || $t('app.tltg_valve_oil.label.unknown') }}</div>
+            <div>{{ view.release || $t('app.vo_valve_oil.label.unknown') }}</div>
             <div
               v-if="view.devBuild != null"
               class="text-caption secondary--text"
             >
-              {{ view.devBuild ? $t('app.tltg_valve_oil.label.dev_build_commit', { commit: view.devBuild }) : $t('app.tltg_valve_oil.label.dev_build') }}
+              {{ view.devBuild ? $t('app.vo_valve_oil.label.dev_build_commit', { commit: view.devBuild }) : $t('app.vo_valve_oil.label.dev_build') }}
             </div>
           </div>
         </app-setting>
@@ -34,16 +34,16 @@
         <v-divider />
 
         <app-setting
-          :title="$t('app.tltg_valve_oil.label.qidi_firmware')"
+          :title="$t('app.vo_valve_oil.label.qidi_firmware')"
           :r-cols="5"
         >
           <div class="d-flex flex-column align-end text-right">
-            <div>{{ view.firmware || $t('app.tltg_valve_oil.label.unknown') }}</div>
+            <div>{{ view.firmware || $t('app.vo_valve_oil.label.unknown') }}</div>
             <div
               v-if="view.targetFirmware"
               class="text-caption secondary--text"
             >
-              {{ $t('app.tltg_valve_oil.msg.target_firmware', { version: view.targetFirmware }) }}
+              {{ $t('app.vo_valve_oil.msg.target_firmware', { version: view.targetFirmware }) }}
             </div>
           </div>
         </app-setting>
@@ -51,8 +51,8 @@
         <v-divider />
 
         <app-setting
-          :title="$t('app.tltg_valve_oil.label.auto_update')"
-          :sub-title="$t('app.tltg_valve_oil.msg.auto_update')"
+          :title="$t('app.vo_valve_oil.label.auto_update')"
+          :sub-title="$t('app.vo_valve_oil.msg.auto_update')"
           :r-cols="5"
         >
           <v-switch
@@ -65,7 +65,7 @@
           />
         </app-setting>
 
-        <tltg-valve-oil-update-window
+        <vo-valve-oil-update-window
           v-if="view.updateWindow"
           :update-window="view.updateWindow"
           :disabled="autoUpdateDisabled"
@@ -75,17 +75,17 @@
           @dismiss-error="windowError = ''"
         />
 
-        <tltg-qidi-lan-only />
+        <vo-qidi-lan-only />
 
         <v-divider />
 
         <app-setting
-          :title="$t('app.tltg_valve_oil.label.waiting')"
+          :title="$t('app.vo_valve_oil.label.waiting')"
           :r-cols="5"
         >
           <template #sub-title>
             <div v-if="view.waiting.length === 0">
-              {{ $t('app.tltg_valve_oil.msg.nothing_waiting') }}
+              {{ $t('app.vo_valve_oil.msg.nothing_waiting') }}
             </div>
             <div
               v-for="item in view.waiting"
@@ -151,7 +151,7 @@
             class="mb-2"
             @input="autoUpdateError = ''"
           >
-            {{ $t('app.tltg_valve_oil.msg.auto_update_failed', { error: autoUpdateError }) }}
+            {{ $t('app.vo_valve_oil.msg.auto_update_failed', { error: autoUpdateError }) }}
           </v-alert>
 
           <v-alert
@@ -164,8 +164,8 @@
             @input="updateNowError = ''; updateNowBlockedBy = []"
           >
             {{ updateNowBlockedBy.length > 0
-              ? $t('app.tltg_valve_oil.msg.update_now_refused', { reasons: blockedText(updateNowBlockedBy) })
-              : $t('app.tltg_valve_oil.msg.update_now_failed', { error: updateNowError }) }}
+              ? $t('app.vo_valve_oil.msg.update_now_refused', { reasons: blockedText(updateNowBlockedBy) })
+              : $t('app.vo_valve_oil.msg.update_now_failed', { error: updateNowError }) }}
           </v-alert>
 
           <v-alert
@@ -175,10 +175,10 @@
             type="warning"
             class="mb-2"
           >
-            {{ view.checkFailed ? $t('app.tltg_valve_oil.msg.check_failed', { message: view.checkFailed }) : $t('app.tltg_valve_oil.msg.check_failed_plain') }}
+            {{ view.checkFailed ? $t('app.vo_valve_oil.msg.check_failed', { message: view.checkFailed }) : $t('app.vo_valve_oil.msg.check_failed_plain') }}
           </v-alert>
 
-          <tltg-valve-oil-update
+          <vo-valve-oil-update
             v-if="shownUpdate"
             :update="shownUpdate"
             :recovery-required="recoveryRequired"
@@ -206,7 +206,7 @@
                   outlined
                   :color="boardColor(board)"
                 >
-                  {{ $t(`app.tltg_valve_oil.board_state.${board.badge}`) }}
+                  {{ $t(`app.vo_valve_oil.board_state.${board.badge}`) }}
                 </v-chip>
               </div>
             </app-setting>
@@ -221,7 +221,7 @@
               <div
                 v-if="board.shownDetail"
                 :class="{ 'text-caption secondary--text': board.note }"
-                class="tltg-valve-oil__detail"
+                class="vo-valve-oil__detail"
               >
                 {{ board.shownDetail }}
               </div>
@@ -235,7 +235,7 @@
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                {{ $t('app.tltg_valve_oil.btn.report_board') }}
+                {{ $t('app.vo_valve_oil.btn.report_board') }}
                 <v-icon
                   small
                   right
@@ -251,8 +251,8 @@
           <v-divider />
 
           <app-setting
-            :title="$t('app.tltg_valve_oil.label.report_problem')"
-            :sub-title="$t('app.tltg_valve_oil.msg.report_problem')"
+            :title="$t('app.vo_valve_oil.label.report_problem')"
+            :sub-title="$t('app.vo_valve_oil.msg.report_problem')"
             :r-cols="5"
           >
             <app-btn
@@ -263,7 +263,7 @@
               :loading="supportPending"
               @click="handleReportProblem"
             >
-              {{ $t('app.tltg_valve_oil.btn.report_problem') }}
+              {{ $t('app.vo_valve_oil.btn.report_problem') }}
               <v-icon
                 small
                 right
@@ -285,7 +285,7 @@
               class="mb-0"
               @input="supportError = ''"
             >
-              {{ $t('app.tltg_valve_oil.msg.support_bundle_failed', { error: supportError }) }}
+              {{ $t('app.vo_valve_oil.msg.support_bundle_failed', { error: supportError }) }}
             </v-alert>
           </div>
         </template>
@@ -293,7 +293,7 @@
         <template v-if="view.checkedAt">
           <v-divider />
           <div class="text-caption secondary--text px-4 py-2">
-            {{ $t('app.tltg_valve_oil.msg.checked_at', { time: $filters.formatDateTime(view.checkedAt) }) }}
+            {{ $t('app.vo_valve_oil.msg.checked_at', { time: $filters.formatDateTime(view.checkedAt) }) }}
           </div>
         </template>
       </template>
@@ -305,34 +305,34 @@
 import { Component, Vue, Watch } from 'vue-property-decorator'
 import { getAccessToken } from '@/store/socket/actions'
 import downloadUrl from '@/util/download-url'
-import TltgValveOilUpdate from './TltgValveOilUpdate.vue'
-import TltgValveOilUpdateWindow from './TltgValveOilUpdateWindow.vue'
-import TltgQidiLanOnly from './TltgQidiLanOnly.vue'
+import VoValveOilUpdate from './VoValveOilUpdate.vue'
+import VoValveOilUpdateWindow from './VoValveOilUpdateWindow.vue'
+import VoQidiLanOnly from './VoQidiLanOnly.vue'
 import {
-  parseTltgStatus,
-  parseTltgStatusJob,
-  tltgStatusApiBase,
-  tltgStatusPollFailure,
-  tltgStatusPollInterval,
-  tltgStatusRequest,
-  TltgStatusRequestError,
-  tltgStatusView,
-  tltgShownUpdate,
-  tltgSupportBundle,
-  TLTG_STATUS_RECONNECT_PATIENCE_MS,
-  TLTG_UPDATE_NOW_BLOCKERS,
-  tltgSentence,
-  tltgUpdateWindowLabel,
-  type TltgBoardView,
-  type TltgStatus,
-  type TltgStatusBlocker,
-  type TltgStatusPending,
-  type TltgStatusView,
-  type TltgUpdateView
-} from '@/util/tltg-status'
+  parseVoStatus,
+  parseVoStatusJob,
+  voStatusApiBase,
+  voStatusPollFailure,
+  voStatusPollInterval,
+  voStatusRequest,
+  VoStatusRequestError,
+  voStatusView,
+  voShownUpdate,
+  voSupportBundle,
+  VO_STATUS_RECONNECT_PATIENCE_MS,
+  VO_UPDATE_NOW_BLOCKERS,
+  voSentence,
+  voUpdateWindowLabel,
+  type VoBoardView,
+  type VoStatus,
+  type VoStatusBlocker,
+  type VoStatusPending,
+  type VoStatusView,
+  type VoUpdateView
+} from '@/util/vo-status'
 
 // A finished update's result stays on the printer until the next one; here it clears when dismissed, and stays
-// cleared across reloads. A success also clears by itself a day after it finished (tltgShownUpdate).
+// cleared across reloads. A success also clears by itself a day after it finished (voShownUpdate).
 const DISMISSED_UPDATES_KEY = 'tltg-status.dismissed-updates'
 const DISMISSED_UPDATES_KEPT = 20
 // Set while an update runs, so a page reloaded or re-shown while the printer restarts its services reads failed
@@ -374,13 +374,13 @@ const saveUpdating = (updating: boolean) => {
 
 @Component({
   components: {
-    TltgValveOilUpdate,
-    TltgValveOilUpdateWindow,
-    TltgQidiLanOnly
+    VoValveOilUpdate,
+    VoValveOilUpdateWindow,
+    VoQidiLanOnly
   }
 })
-export default class TltgValveOilSettings extends Vue {
-  status: TltgStatus | null = null
+export default class VoValveOilSettings extends Vue {
+  status: VoStatus | null = null
   unavailable = false
   failures = 0
   // An update is running or was just started, so failed requests mean the printer is restarting its services.
@@ -393,7 +393,7 @@ export default class TltgValveOilSettings extends Vue {
   windowError = ''
   updateNowPending = false
   updateNowError = ''
-  updateNowBlockedBy: TltgStatusBlocker[] = []
+  updateNowBlockedBy: VoStatusBlocker[] = []
   dismissedUpdates: string[] = loadDismissedUpdates()
   supportPending = false
   supportError = ''
@@ -403,11 +403,11 @@ export default class TltgValveOilSettings extends Vue {
   destroyed = false
 
   get apiBase (): string | null {
-    return tltgStatusApiBase(this.$typedState.config.apiUrl, window.location)
+    return voStatusApiBase(this.$typedState.config.apiUrl, window.location)
   }
 
-  get view (): TltgStatusView | null {
-    return this.status ? tltgStatusView(this.status) : null
+  get view (): VoStatusView | null {
+    return this.status ? voStatusView(this.status) : null
   }
 
   get reconnecting (): boolean {
@@ -420,16 +420,16 @@ export default class TltgValveOilSettings extends Vue {
     }
 
     return this.unavailable
-      ? this.$t('app.tltg_valve_oil.msg.unavailable').toString()
-      : this.$t('app.tltg_valve_oil.msg.loading').toString()
+      ? this.$t('app.vo_valve_oil.msg.unavailable').toString()
+      : this.$t('app.vo_valve_oil.msg.loading').toString()
   }
 
   get reconnectText (): string {
     const waited = this.reconnectingSince != null ? this.now - this.reconnectingSince : 0
 
-    return waited >= TLTG_STATUS_RECONNECT_PATIENCE_MS
-      ? this.$t('app.tltg_valve_oil.msg.reconnecting_long', { minutes: Math.floor(waited / 60000) }).toString()
-      : this.$t('app.tltg_valve_oil.msg.reconnecting').toString()
+    return waited >= VO_STATUS_RECONNECT_PATIENCE_MS
+      ? this.$t('app.vo_valve_oil.msg.reconnecting_long', { minutes: Math.floor(waited / 60000) }).toString()
+      : this.$t('app.vo_valve_oil.msg.reconnecting').toString()
   }
 
   get autoUpdateValue (): boolean {
@@ -457,16 +457,16 @@ export default class TltgValveOilSettings extends Vue {
 
   get updateNowLabel (): string {
     return this.view?.updateNow.action === 'continue'
-      ? this.$t('app.tltg_valve_oil.btn.continue_update').toString()
-      : this.$t('app.tltg_valve_oil.btn.update_now').toString()
+      ? this.$t('app.vo_valve_oil.btn.continue_update').toString()
+      : this.$t('app.vo_valve_oil.btn.update_now').toString()
   }
 
   get recoveryRequired (): boolean {
     return this.view?.updateNow.blockedBy.some(blocker => blocker.code === 'recovery_required') === true
   }
 
-  get shownUpdate (): TltgUpdateView | null {
-    return tltgShownUpdate(this.view?.update ?? null, this.dismissedUpdates)
+  get shownUpdate (): VoUpdateView | null {
+    return voShownUpdate(this.view?.update ?? null, this.dismissedUpdates)
   }
 
   get hasNotices (): boolean {
@@ -490,24 +490,24 @@ export default class TltgValveOilSettings extends Vue {
 
     switch (view?.notice) {
       case 'auto_off':
-        return this.$t(`app.tltg_valve_oil.msg.waiting_auto_off${reinstall}`).toString()
+        return this.$t(`app.vo_valve_oil.msg.waiting_auto_off${reinstall}`).toString()
       case 'blocked':
-        return this.$t(`app.tltg_valve_oil.msg.waiting_blocked${reinstall}`, { reasons: view.reasons.join('; ') }).toString()
+        return this.$t(`app.vo_valve_oil.msg.waiting_blocked${reinstall}`, { reasons: view.reasons.join('; ') }).toString()
       case 'window': {
         const window = view.updateWindow?.hours
         const params = {
-          window: window ? tltgUpdateWindowLabel(window) : '',
+          window: window ? voUpdateWindowLabel(window) : '',
           timezone: view.updateWindow?.timezone ?? 'UTC'
         }
 
         return view.firmwareWaiting
-          ? this.$t('app.tltg_valve_oil.msg.waiting_window_firmware', params).toString()
-          : this.$t(`app.tltg_valve_oil.msg.waiting_window${reinstall}`, params).toString()
+          ? this.$t('app.vo_valve_oil.msg.waiting_window_firmware', params).toString()
+          : this.$t(`app.vo_valve_oil.msg.waiting_window${reinstall}`, params).toString()
       }
       case 'next_check': {
         const key = view.firmwareWaiting
-          ? 'app.tltg_valve_oil.msg.waiting_next_check_firmware'
-          : `app.tltg_valve_oil.msg.waiting_next_check${reinstall}`
+          ? 'app.vo_valve_oil.msg.waiting_next_check_firmware'
+          : `app.vo_valve_oil.msg.waiting_next_check${reinstall}`
 
         return view.nextCheckAt != null
           ? this.$t(`${key}_at`, { time: this.formatSoon(view.nextCheckAt) }).toString()
@@ -529,20 +529,20 @@ export default class TltgValveOilSettings extends Vue {
    * Why Update now can't start, each reason in plain words. A recovery is shown as the printer says it, as its message
    * names what to run first, and a reason the page doesn't know is shown as the printer says it.
    */
-  blockedText (blockedBy: TltgStatusBlocker[]): string {
+  blockedText (blockedBy: VoStatusBlocker[]): string {
     if (blockedBy.length === 0) {
-      return this.$t('app.tltg_valve_oil.msg.update_now_blocked_unknown').toString()
+      return this.$t('app.vo_valve_oil.msg.update_now_blocked_unknown').toString()
     }
 
     return blockedBy
       .map(blocker => {
-        if (TLTG_UPDATE_NOW_BLOCKERS.includes(blocker.code)) {
-          return this.$t(`app.tltg_valve_oil.msg.update_now_blocked.${blocker.code}`).toString()
+        if (VO_UPDATE_NOW_BLOCKERS.includes(blocker.code)) {
+          return this.$t(`app.vo_valve_oil.msg.update_now_blocked.${blocker.code}`).toString()
         }
 
         return blocker.code === 'recovery_required'
-          ? tltgSentence(blocker.message)
-          : this.$t('app.tltg_valve_oil.msg.update_now_blocked_other', { message: blocker.message }).toString()
+          ? voSentence(blocker.message)
+          : this.$t('app.vo_valve_oil.msg.update_now_blocked_other', { message: blocker.message }).toString()
       })
       .join(' ')
   }
@@ -586,7 +586,7 @@ export default class TltgValveOilSettings extends Vue {
     clearTimeout(this.timer)
 
     if (!this.destroyed && !document.hidden) {
-      this.timer = setTimeout(() => this.poll(), tltgStatusPollInterval(this.status, this.reconnecting))
+      this.timer = setTimeout(() => this.poll(), voStatusPollInterval(this.status, this.reconnecting))
     }
   }
 
@@ -594,10 +594,10 @@ export default class TltgValveOilSettings extends Vue {
     const base = this.apiBase
 
     if (!base) {
-      throw new TltgStatusRequestError(0, 'Not connected to this printer')
+      throw new VoStatusRequestError(0, 'Not connected to this printer')
     }
 
-    return tltgStatusRequest(base, path, { method, token: await this.token(), signal, body })
+    return voStatusRequest(base, path, { method, token: await this.token(), signal, body })
   }
 
   async token (): Promise<string | null> {
@@ -625,7 +625,7 @@ export default class TltgValveOilSettings extends Vue {
     this.supportError = ''
 
     try {
-      const { blob, name } = await tltgSupportBundle(base, { token: await this.token() })
+      const { blob, name } = await voSupportBundle(base, { token: await this.token() })
       const objectUrl = URL.createObjectURL(blob)
 
       downloadUrl(name, objectUrl)
@@ -639,7 +639,7 @@ export default class TltgValveOilSettings extends Vue {
     }
   }
 
-  applyStatus (status: TltgStatus) {
+  applyStatus (status: VoStatus) {
     this.status = status
     this.unavailable = false
     this.failures = 0
@@ -672,7 +672,7 @@ export default class TltgValveOilSettings extends Vue {
         return
       }
 
-      const status = parseTltgStatus(body)
+      const status = parseVoStatus(body)
 
       if (status) {
         this.applyStatus(status)
@@ -701,7 +701,7 @@ export default class TltgValveOilSettings extends Vue {
     this.failures++
     this.now = Date.now()
 
-    const outcome = tltgStatusPollFailure({
+    const outcome = voStatusPollFailure({
       hasStatus: this.status != null,
       failures: this.failures,
       updating: this.expectUpdate || this.status?.busy === true
@@ -718,56 +718,56 @@ export default class TltgValveOilSettings extends Vue {
     }
   }
 
-  waitingText (item: TltgStatusPending): string {
+  waitingText (item: VoStatusPending): string {
     const current = item.current
-      ? this.$t('app.tltg_valve_oil.label.waiting_current', { version: item.current }).toString()
+      ? this.$t('app.vo_valve_oil.label.waiting_current', { version: item.current }).toString()
       : ''
 
     switch (item.kind) {
       case 'release':
         if (item.reinstall) {
-          return this.$t('app.tltg_valve_oil.label.waiting_reinstall').toString()
+          return this.$t('app.vo_valve_oil.label.waiting_reinstall').toString()
         }
 
         return item.version
-          ? `${this.$t('app.tltg_valve_oil.label.waiting_release', { version: item.version })}${current}`
-          : this.$t('app.tltg_valve_oil.label.waiting_release_unknown').toString()
+          ? `${this.$t('app.vo_valve_oil.label.waiting_release', { version: item.version })}${current}`
+          : this.$t('app.vo_valve_oil.label.waiting_release_unknown').toString()
       case 'firmware':
         return item.version
-          ? `${this.$t('app.tltg_valve_oil.label.waiting_firmware', { version: item.version })}${current}`
-          : this.$t('app.tltg_valve_oil.label.waiting_firmware_unknown').toString()
+          ? `${this.$t('app.vo_valve_oil.label.waiting_firmware', { version: item.version })}${current}`
+          : this.$t('app.vo_valve_oil.label.waiting_firmware_unknown').toString()
       default: {
         const board = this.status?.boards.find(board => board.id === item.board)
 
         return board || item.board
-          ? this.$t('app.tltg_valve_oil.label.waiting_board', { name: board?.name ?? item.board }).toString()
-          : this.$t('app.tltg_valve_oil.label.waiting_board_unknown').toString()
+          ? this.$t('app.vo_valve_oil.label.waiting_board', { name: board?.name ?? item.board }).toString()
+          : this.$t('app.vo_valve_oil.label.waiting_board_unknown').toString()
       }
     }
   }
 
-  boardFirmwareText (board: TltgBoardView): string {
+  boardFirmwareText (board: VoBoardView): string {
     const version = board.firmware
-      ? this.$t('app.tltg_valve_oil.label.board_firmware', { version: board.firmware }).toString()
-      : this.$t('app.tltg_valve_oil.label.board_firmware_unknown').toString()
-    const build = board.build && this.$te(`app.tltg_valve_oil.board_build.${board.build}`)
-      ? this.$t(`app.tltg_valve_oil.board_build.${board.build}`).toString()
+      ? this.$t('app.vo_valve_oil.label.board_firmware', { version: board.firmware }).toString()
+      : this.$t('app.vo_valve_oil.label.board_firmware_unknown').toString()
+    const build = board.build && this.$te(`app.vo_valve_oil.board_build.${board.build}`)
+      ? this.$t(`app.vo_valve_oil.board_build.${board.build}`).toString()
       : ''
 
     return build ? `${version} · ${build}` : version
   }
 
-  boardExplanation (board: TltgBoardView): string {
+  boardExplanation (board: VoBoardView): string {
     if (board.note === 'after_firmware') {
       return board.noteVersion
-        ? this.$t('app.tltg_valve_oil.board_msg.after_firmware', { version: board.noteVersion }).toString()
-        : this.$t('app.tltg_valve_oil.board_msg.after_firmware_unknown').toString()
+        ? this.$t('app.vo_valve_oil.board_msg.after_firmware', { version: board.noteVersion }).toString()
+        : this.$t('app.vo_valve_oil.board_msg.after_firmware_unknown').toString()
     }
 
-    return board.note ? this.$t(`app.tltg_valve_oil.board_msg.${board.note}`).toString() : ''
+    return board.note ? this.$t(`app.vo_valve_oil.board_msg.${board.note}`).toString() : ''
   }
 
-  boardColor (board: TltgBoardView): string {
+  boardColor (board: VoBoardView): string {
     switch (board.badge) {
       case 'current':
         return 'success'
@@ -807,7 +807,7 @@ export default class TltgValveOilSettings extends Vue {
     this.autoUpdateError = ''
 
     try {
-      const status = parseTltgStatus(await this.request('/auto-update', 'POST', undefined, { enabled }))
+      const status = parseVoStatus(await this.request('/auto-update', 'POST', undefined, { enabled }))
 
       if (status) {
         this.applyStatus(status)
@@ -831,7 +831,7 @@ export default class TltgValveOilSettings extends Vue {
     this.windowError = ''
 
     try {
-      const status = parseTltgStatus(await this.request('/auto-update', 'POST', undefined, body))
+      const status = parseVoStatus(await this.request('/auto-update', 'POST', undefined, body))
 
       if (status) {
         this.applyStatus(status)
@@ -854,24 +854,24 @@ export default class TltgValveOilSettings extends Vue {
 
     const release = view.waiting.find(item => item.kind === 'release')
     const action = view.updateNow.action
-    let message = this.$t('app.tltg_valve_oil.msg.confirm_update_release_unknown')
+    let message = this.$t('app.vo_valve_oil.msg.confirm_update_release_unknown')
 
     if (action === 'continue') {
-      message = this.$t('app.tltg_valve_oil.msg.confirm_update_continue')
+      message = this.$t('app.vo_valve_oil.msg.confirm_update_continue')
     } else if (action === 'finish') {
-      message = this.$t('app.tltg_valve_oil.msg.confirm_update_resume')
+      message = this.$t('app.vo_valve_oil.msg.confirm_update_resume')
     } else if (view.firmwareWaiting) {
-      message = this.$t('app.tltg_valve_oil.msg.confirm_update_firmware')
+      message = this.$t('app.vo_valve_oil.msg.confirm_update_firmware')
     } else if (release?.reinstall && release.version) {
-      message = this.$t('app.tltg_valve_oil.msg.confirm_update_reinstall', { version: release.version })
+      message = this.$t('app.vo_valve_oil.msg.confirm_update_reinstall', { version: release.version })
     } else if (release?.version && !release.reinstall) {
-      message = this.$t('app.tltg_valve_oil.msg.confirm_update_release', { version: release.version })
+      message = this.$t('app.vo_valve_oil.msg.confirm_update_release', { version: release.version })
     }
 
     const confirmed = await this.$confirm(
       message.toString(),
       {
-        title: this.$t(action === 'continue' ? 'app.tltg_valve_oil.title.continue_update' : 'app.tltg_valve_oil.title.update_now').toString(),
+        title: this.$t(action === 'continue' ? 'app.vo_valve_oil.title.continue_update' : 'app.vo_valve_oil.title.update_now').toString(),
         color: 'card-heading',
         icon: '$warning'
       }
@@ -886,7 +886,7 @@ export default class TltgValveOilSettings extends Vue {
     this.updateNowBlockedBy = []
 
     try {
-      const job = parseTltgStatusJob(await this.request('/update-now', 'POST'))
+      const job = parseVoStatusJob(await this.request('/update-now', 'POST'))
 
       this.expectUpdate = true
       saveUpdating(true)
@@ -896,7 +896,7 @@ export default class TltgValveOilSettings extends Vue {
       }
     } catch (e) {
       this.updateNowError = e instanceof Error ? e.message : String(e)
-      this.updateNowBlockedBy = e instanceof TltgStatusRequestError && e.status === 409 ? e.blockedBy : []
+      this.updateNowBlockedBy = e instanceof VoStatusRequestError && e.status === 409 ? e.blockedBy : []
     } finally {
       this.updateNowPending = false
     }
@@ -907,7 +907,7 @@ export default class TltgValveOilSettings extends Vue {
 </script>
 
 <style lang="scss" scoped>
-  .tltg-valve-oil__detail {
+  .vo-valve-oil__detail {
     overflow-wrap: anywhere;
   }
 </style>

@@ -378,10 +378,10 @@ const [EJECT, LOAD, UNLOAD] = [0, 1, 2]
 const COMMANDS = ['EJECT_FILAMENT_CONTROL', 'LOAD_FILAMENT_CONTROL', 'UNLOAD_FILAMENT_CONTROL']
 const LEGACY_COMMANDS = ['E_BOX', 'E_LOAD', 'E_UNLOAD']
 // Qidi-Max-4-Optimized's slot jog moves a slot's motor whatever its sensors read.
-const JOG_COMMAND = 'TLTG_BOX_SLOT_JOG'
+const JOG_COMMAND = 'VO_BOX_SLOT_JOG'
 // Qidi-Max-4-Optimized's cut homes X and Y first if needed, and cuts with the nozzle cold. The same release unloads
 // and ejects with COLD=1 without heating the nozzle.
-const CUT_COMMAND = 'TLTG_CUT_FILAMENT'
+const CUT_COMMAND = 'VO_CUT_FILAMENT'
 // Valve Oil writes a filament to a Box spool's RFID tag on a USB Box running its Box firmware.
 const WRITE_TAG_COMMAND = 'VO_BOX_RFID_WRITE'
 const JOG_DISTANCE = 10

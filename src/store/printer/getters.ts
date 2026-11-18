@@ -9,8 +9,8 @@ import { Globals } from '@/globals'
 import isKeyOf from '@/util/is-key-of'
 import getFilePaths from '@/util/get-file-paths'
 import type { AppFileWithMeta } from '../files/types'
-import tltgPrinterWarnings from '@/util/tltg-printer-warnings'
-import tltgProbeReportPoints from '@/util/tltg-probe-report'
+import voPrinterWarnings from '@/util/vo-printer-warnings'
+import voProbeReportPoints from '@/util/vo-probe-report'
 
 const configHasDisconnectedMcu = (config: Record<string, any> | undefined, disconnectedMcuNames: Set<string>): boolean => (
   (
@@ -1095,16 +1095,16 @@ export const getters = {
    * Warnings QIDI Max 4 Optimized reports through tltg_printer_warnings;
    * empty when the object is absent or reports none.
    */
-  getTltgPrinterWarnings: (state): Klipper.TltgPrinterWarning[] => {
-    return tltgPrinterWarnings(state.printer.tltg_printer_warnings)
+  getVoPrinterWarnings: (state): Klipper.VoPrinterWarning[] => {
+    return voPrinterWarnings(state.printer.tltg_printer_warnings)
   },
 
   /**
    * Retried probe points of the loaded bed mesh, from QIDI Max 4 Optimized's
    * tltg_probe_report; empty when the loaded mesh isn't the one it describes.
    */
-  getTltgProbeReportPoints: (state): Klipper.TltgProbeReportPoint[] => {
-    return tltgProbeReportPoints(state.printer.tltg_probe_report)
+  getVoProbeReportPoints: (state): Klipper.VoProbeReportPoint[] => {
+    return voProbeReportPoints(state.printer.tltg_probe_report)
   },
 
   getKlipperWarnings: (state) => {

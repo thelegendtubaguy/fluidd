@@ -4,16 +4,16 @@
     rounded
     class="px-3 py-2"
   >
-    <div class="tltg-obico__row">
-      <span class="secondary--text">{{ $t('app.tltg_addons.label.service') }}</span>
+    <div class="vo-obico__row">
+      <span class="secondary--text">{{ $t('app.vo_addons.label.service') }}</span>
       <span :class="`${serviceColor}--text`">{{ serviceText }}</span>
     </div>
 
     <template v-if="status">
-      <div class="tltg-obico__row">
-        <span class="secondary--text">{{ $t('app.tltg_addons.label.server') }}</span>
+      <div class="vo-obico__row">
+        <span class="secondary--text">{{ $t('app.vo_addons.label.server') }}</span>
         <span class="d-inline-flex align-center text-right">
-          <span class="text-break">{{ cloud ? $t('app.tltg_addons.label.obico_cloud') : server }}</span>
+          <span class="text-break">{{ cloud ? $t('app.vo_addons.label.obico_cloud') : server }}</span>
           <app-btn
             small
             text
@@ -22,13 +22,13 @@
             :disabled="disabled"
             @click="openServerDialog"
           >
-            {{ $t('app.tltg_addons.btn.change') }}
+            {{ $t('app.vo_addons.btn.change') }}
           </app-btn>
         </span>
       </div>
 
-      <div class="tltg-obico__row">
-        <span class="secondary--text">{{ $t('app.tltg_addons.label.account') }}</span>
+      <div class="vo-obico__row">
+        <span class="secondary--text">{{ $t('app.vo_addons.label.account') }}</span>
         <span
           v-if="linked"
           class="d-inline-flex align-center"
@@ -38,7 +38,7 @@
             outlined
             color="success"
           >
-            {{ $t('app.tltg_addons.label.linked') }}
+            {{ $t('app.vo_addons.label.linked') }}
           </v-chip>
           <a
             v-if="serverUrl"
@@ -47,7 +47,7 @@
             rel="noopener noreferrer"
             class="ml-2"
           >
-            {{ $t('app.tltg_addons.btn.open_obico') }}
+            {{ $t('app.vo_addons.btn.open_obico') }}
             <v-icon
               small
               color="primary"
@@ -60,7 +60,7 @@
           v-else
           class="warning--text"
         >
-          {{ $t('app.tltg_addons.label.not_linked') }}
+          {{ $t('app.vo_addons.label.not_linked') }}
         </span>
       </div>
 
@@ -76,7 +76,7 @@
           :disabled="disabled"
           @click="unlink"
         >
-          {{ $t('app.tltg_addons.btn.unlink') }}
+          {{ $t('app.vo_addons.btn.unlink') }}
         </app-btn>
       </div>
 
@@ -85,29 +85,29 @@
           v-if="linkCode"
           class="mt-2"
         >
-          <div class="text-center text-h4 font-weight-medium tltg-obico__code">
+          <div class="text-center text-h4 font-weight-medium vo-obico__code">
             {{ linkCode }}
           </div>
           <div class="text-body-2 mt-2">
-            {{ $t(cloud ? 'app.tltg_addons.msg.obico_link_intro_cloud' : 'app.tltg_addons.msg.obico_link_intro_server') }}
+            {{ $t(cloud ? 'app.vo_addons.msg.obico_link_intro_cloud' : 'app.vo_addons.msg.obico_link_intro_server') }}
           </div>
           <ol class="text-body-2">
-            <li>{{ $t('app.tltg_addons.msg.obico_link_step_device') }}</li>
-            <li>{{ $t('app.tltg_addons.msg.obico_link_step_manual') }}</li>
-            <li>{{ $t('app.tltg_addons.msg.obico_link_step_code') }}</li>
+            <li>{{ $t('app.vo_addons.msg.obico_link_step_device') }}</li>
+            <li>{{ $t('app.vo_addons.msg.obico_link_step_manual') }}</li>
+            <li>{{ $t('app.vo_addons.msg.obico_link_step_code') }}</li>
           </ol>
         </div>
         <div
           v-else
           class="text-body-2 secondary--text mt-1"
         >
-          {{ $t('app.tltg_addons.msg.obico_code_waiting') }}
+          {{ $t('app.vo_addons.msg.obico_code_waiting') }}
         </div>
       </template>
 
       <template v-else>
         <div class="text-body-2 secondary--text mt-1">
-          {{ $t('app.tltg_addons.msg.obico_not_waiting') }}
+          {{ $t('app.vo_addons.msg.obico_not_waiting') }}
         </div>
 
         <div class="d-flex flex-wrap justify-end mt-1">
@@ -118,7 +118,7 @@
             :disabled="disabled"
             @click="emitAction({ action: 'relink' })"
           >
-            {{ $t('app.tltg_addons.btn.restart_linking') }}
+            {{ $t('app.vo_addons.btn.restart_linking') }}
           </app-btn>
         </div>
       </template>
@@ -126,14 +126,14 @@
 
     <app-dialog
       v-model="serverDialog"
-      :title="$t('app.tltg_addons.title.obico_server')"
-      :save-button-text="$t('app.tltg_addons.btn.use_server')"
+      :title="$t('app.vo_addons.title.obico_server')"
+      :save-button-text="$t('app.vo_addons.btn.use_server')"
       max-width="500"
       @save="saveServer"
     >
       <v-card-text>
         <p class="text-body-2">
-          {{ $t('app.tltg_addons.msg.obico_server_relinks') }}
+          {{ $t('app.vo_addons.msg.obico_server_relinks') }}
         </p>
 
         <v-radio-group
@@ -143,11 +143,11 @@
         >
           <v-radio
             value="cloud"
-            :label="$t('app.tltg_addons.label.obico_cloud')"
+            :label="$t('app.vo_addons.label.obico_cloud')"
           />
           <v-radio
             value="self_hosted"
-            :label="$t('app.tltg_addons.label.obico_self_hosted')"
+            :label="$t('app.vo_addons.label.obico_self_hosted')"
           />
         </v-radio-group>
 
@@ -172,12 +172,12 @@
 
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator'
-import { tltgServerUrlValid, TLTG_OBICO_CLOUD, type TltgAddon, type TltgAddonPanelAction } from '@/util/tltg-addons'
+import { voServerUrlValid, VO_OBICO_CLOUD, type VoAddon, type VoAddonPanelAction } from '@/util/vo-addons'
 
 @Component({})
-export default class TltgObicoStatus extends Vue {
+export default class VoObicoStatus extends Vue {
   @Prop({ type: Object, required: true })
-  readonly addon!: TltgAddon
+  readonly addon!: VoAddon
 
   @Prop({ type: Function, required: true })
   readonly request!: (path: string, method?: 'GET' | 'POST') => Promise<unknown>
@@ -200,7 +200,7 @@ export default class TltgObicoStatus extends Vue {
   }
 
   get serverUrl (): string {
-    return tltgServerUrlValid(this.server) ? this.server : ''
+    return voServerUrlValid(this.server) ? this.server : ''
   }
 
   get cloud (): boolean {
@@ -226,7 +226,7 @@ export default class TltgObicoStatus extends Vue {
   }
 
   get serviceText (): string {
-    const key = `app.tltg_addons.service.${this.serviceState}`
+    const key = `app.vo_addons.service.${this.serviceState}`
 
     return this.$te(key)
       ? this.$t(key).toString()
@@ -247,10 +247,10 @@ export default class TltgObicoStatus extends Vue {
   }
 
   serverRule (value: string): boolean | string {
-    return tltgServerUrlValid(value) || this.$t('app.tltg_addons.msg.obico_server_invalid').toString()
+    return voServerUrlValid(value) || this.$t('app.vo_addons.msg.obico_server_invalid').toString()
   }
 
-  emitAction (request: TltgAddonPanelAction) {
+  emitAction (request: VoAddonPanelAction) {
     this.$emit('action', request)
   }
 
@@ -261,7 +261,7 @@ export default class TltgObicoStatus extends Vue {
   }
 
   saveServer () {
-    const server = this.serverChoice === 'cloud' ? TLTG_OBICO_CLOUD : this.serverInput.trim()
+    const server = this.serverChoice === 'cloud' ? VO_OBICO_CLOUD : this.serverInput.trim()
 
     this.serverDialog = false
     this.emitAction({ action: 'relink', body: { server } })
@@ -269,8 +269,8 @@ export default class TltgObicoStatus extends Vue {
 
   async unlink () {
     const confirmed = await this.$confirm(
-      this.$t('app.tltg_addons.msg.obico_confirm_unlink').toString(),
-      { title: this.$t('app.tltg_addons.title.obico_unlink').toString(), color: 'card-heading', icon: '$error' }
+      this.$t('app.vo_addons.msg.obico_confirm_unlink').toString(),
+      { title: this.$t('app.vo_addons.title.obico_unlink').toString(), color: 'card-heading', icon: '$error' }
     )
 
     if (confirmed) {
@@ -281,7 +281,7 @@ export default class TltgObicoStatus extends Vue {
 </script>
 
 <style lang="scss" scoped>
-  .tltg-obico__row {
+  .vo-obico__row {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -289,7 +289,7 @@ export default class TltgObicoStatus extends Vue {
     column-gap: 16px;
   }
 
-  .tltg-obico__code {
+  .vo-obico__code {
     font-family: 'Roboto Mono', monospace !important;
     letter-spacing: 0.2em !important;
   }

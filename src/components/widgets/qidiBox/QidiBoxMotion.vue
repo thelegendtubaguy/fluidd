@@ -1,6 +1,6 @@
 <template>
   <!-- Qidi-Max-4-Optimized's Box load/unload motion: reads printer.tltg_box_feed_motion and edits only through
-       TLTG_BOX_MOTION. -->
+       VO_BOX_MOTION. -->
   <div>
     <div class="text-subtitle-1">
       {{ $t('app.qidi_box.motion.title') }}
@@ -461,17 +461,17 @@ export default class QidiBoxMotion extends Mixins(StateMixin) {
 
     const target = scope === 'global' ? '' : ` SLOT=${qidiBoxSlotNumber(scope)}`
 
-    this.run(scope, `TLTG_BOX_MOTION${target} ${params.join(' ')}`)
+    this.run(scope, `VO_BOX_MOTION${target} ${params.join(' ')}`)
   }
 
   resetAll () {
-    this.run('global', 'TLTG_BOX_MOTION RESET=1', this.$t('app.qidi_box.motion.reset_confirm').toString())
+    this.run('global', 'VO_BOX_MOTION RESET=1', this.$t('app.qidi_box.motion.reset_confirm').toString())
   }
 
   resetSlot (key: string) {
     this.run(
       key,
-      `TLTG_BOX_MOTION SLOT=${qidiBoxSlotNumber(key)} RESET=1`,
+      `VO_BOX_MOTION SLOT=${qidiBoxSlotNumber(key)} RESET=1`,
       this.$t('app.qidi_box.motion.reset_slot_confirm', { slot: this.slotLabel(key) }).toString()
     )
   }

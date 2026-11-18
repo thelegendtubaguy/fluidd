@@ -185,7 +185,7 @@ import {
   bedSoakMilestones,
   bedSoakStartCommand,
   type BedSoakRun
-} from '@/util/tltg-bed-soak'
+} from '@/util/vo-bed-soak'
 import { bedSoakDuration } from './bed-soak-format'
 
 const CHAMBER_HEATER = 'heater_generic chamber'
@@ -203,7 +203,7 @@ interface Preset {
 @Component({})
 export default class BedSoakSetup extends Mixins(StateMixin) {
   @Prop({ type: Object, required: true })
-  readonly status!: Klipper.TltgBedSoakState
+  readonly status!: Klipper.VoBedSoakState
 
   /** Saved runs, newest first */
   @Prop({ type: Array, default: () => [] })

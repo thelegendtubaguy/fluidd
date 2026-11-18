@@ -44,7 +44,7 @@
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator'
 import BedSoakChart, { type BedSoakChartEvent, type BedSoakChartReference, type BedSoakChartSeries } from './BedSoakChart.vue'
-import { BedSoakColors, type BedSoakRun, type BedSoakTemp } from '@/util/tltg-bed-soak'
+import { BedSoakColors, type BedSoakRun, type BedSoakTemp } from '@/util/vo-bed-soak'
 import { bedSoakClock, bedSoakMeshName } from './bed-soak-format'
 
 @Component({
@@ -60,7 +60,7 @@ export default class BedSoakRunCharts extends Vue {
   readonly temps!: BedSoakTemp[]
 
   @Prop({ type: Object, required: true })
-  readonly milestones!: Klipper.TltgBedSoakMilestones
+  readonly milestones!: Klipper.VoBedSoakMilestones
 
   /** Seconds since the heaters turned on, while the test runs */
   @Prop({ type: Number })

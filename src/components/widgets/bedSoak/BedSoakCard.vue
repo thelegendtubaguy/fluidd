@@ -125,7 +125,7 @@ import {
   parseBedSoakRun,
   type BedSoakRun as BedSoakRunData,
   type BedSoakTemp
-} from '@/util/tltg-bed-soak'
+} from '@/util/vo-bed-soak'
 
 interface CachedRun {
   modified: number;
@@ -158,8 +158,8 @@ export default class BedSoakCard extends Mixins(StateMixin, FilesMixin, BrowserM
   liveRetries = 0
   liveTimer: ReturnType<typeof setTimeout> | null = null
 
-  get status (): Klipper.TltgBedSoakState {
-    return this.$typedState.printer.printer.tltg_bed_soak as Klipper.TltgBedSoakState
+  get status (): Klipper.VoBedSoakState {
+    return this.$typedState.printer.printer.tltg_bed_soak as Klipper.VoBedSoakState
   }
 
   get running (): boolean {
@@ -363,7 +363,7 @@ export default class BedSoakCard extends Mixins(StateMixin, FilesMixin, BrowserM
     )
 
     if (result) {
-      SocketActions.printerTltgBedSoakStop()
+      SocketActions.printerVoBedSoakStop()
     }
   }
 }

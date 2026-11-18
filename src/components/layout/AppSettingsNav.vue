@@ -50,8 +50,8 @@ export default class AppSettingsNav extends Vue {
       { name: this.$t('app.mmu.title.headline'), hash: '#mmu', visible: this.supportsMmu },
       { name: this.$t('app.spoolman.title.spoolman'), hash: '#spoolman', visible: this.supportsSpoolman },
       { name: this.$t('app.version.title'), hash: '#versions', visible: this.supportsVersions },
-      { name: this.$t('app.tltg_valve_oil.title.valve_oil'), hash: '#valveOil', visible: true },
-      { name: this.$t('app.tltg_addons.title.addons'), hash: '#addons', visible: true }
+      { name: this.$t('app.vo_valve_oil.title.valve_oil'), hash: '#valveOil', visible: true },
+      { name: this.$t('app.vo_addons.title.addons'), hash: '#addons', visible: true }
     ]
   }
 

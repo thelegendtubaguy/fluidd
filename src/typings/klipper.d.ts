@@ -173,13 +173,13 @@ declare namespace Klipper {
 
       // QIDI Max 4 Optimized
 
-      tltg_klipper_health: TltgKlipperHealthState;
+      tltg_klipper_health: VoKlipperHealthState;
 
-      tltg_printer_warnings: TltgPrinterWarningsState;
+      tltg_printer_warnings: VoPrinterWarningsState;
 
-      tltg_bed_soak: TltgBedSoakState;
+      tltg_bed_soak: VoBedSoakState;
 
-      tltg_probe_report: TltgProbeReportState;
+      tltg_probe_report: VoProbeReportState;
     }>
 
   export interface PrinterState extends PrinterStateBaseType {
@@ -606,18 +606,18 @@ declare namespace Klipper {
     last_z_offset: number;
   }
 
-  export interface TltgKlipperHealthState {
+  export interface VoKlipperHealthState {
     timers: number;
     removed_timers: number;
     main_thread_load: number | null;
     timer_delay: number | null;
   }
 
-  export interface TltgPrinterWarningsState {
-    warnings: TltgPrinterWarning[];
+  export interface VoPrinterWarningsState {
+    warnings: VoPrinterWarning[];
   }
 
-  export interface TltgPrinterWarning {
+  export interface VoPrinterWarning {
     id: string;
     level: 'warning' | 'error';
     title: string;
@@ -626,11 +626,11 @@ declare namespace Klipper {
     url?: string;
   }
 
-  export type TltgBedSoakRunState = 'idle' | 'running' | 'finished' | 'stopped' | 'failed'
+  export type VoBedSoakRunState = 'idle' | 'running' | 'finished' | 'stopped' | 'failed'
 
-  export type TltgBedSoakStep = '' | 'nozzle' | 'home' | 'wipe' | 'z_tilt' | 'home_z' | 'cold_mesh' | 'mesh' | 'finishing'
+  export type VoBedSoakStep = '' | 'nozzle' | 'home' | 'wipe' | 'z_tilt' | 'home_z' | 'cold_mesh' | 'mesh' | 'finishing'
 
-  export interface TltgBedSoakSettings {
+  export interface VoBedSoakSettings {
     bed: number;
     chamber: number | null;
     nozzle: number;
@@ -641,7 +641,7 @@ declare namespace Klipper {
   }
 
   // Lengths in mm, speed in mm/min
-  export interface TltgBedSoakLimits {
+  export interface VoBedSoakLimits {
     speed: number;
     out_of_line: number;
     jump: number;
@@ -650,7 +650,7 @@ declare namespace Klipper {
   }
 
   // Seconds after the heaters turned on, and °C for chamber_max
-  export interface TltgBedSoakMilestones {
+  export interface VoBedSoakMilestones {
     bed: number | null;
     chamber: number | null;
     chamber_max: number | null;
@@ -658,7 +658,7 @@ declare namespace Klipper {
     ready: number | null;
   }
 
-  export interface TltgBedSoakLatest {
+  export interface VoBedSoakLatest {
     index: number;
     time: number;
     height: number;
@@ -668,19 +668,19 @@ declare namespace Klipper {
   }
 
   // QIDI Max 4 Optimized's bed soak test. Grids are in the run file, not here.
-  export interface TltgBedSoakState {
-    state: TltgBedSoakRunState;
-    step: TltgBedSoakStep;
+  export interface VoBedSoakState {
+    state: VoBedSoakRunState;
+    step: VoBedSoakStep;
     stop_requested: boolean;
     chamber_available: boolean;
-    settings: TltgBedSoakSettings | null;
-    limits: TltgBedSoakLimits;
+    settings: VoBedSoakSettings | null;
+    limits: VoBedSoakLimits;
     started: number | null;
     heaters_on: number | null;
     elapsed: number | null;
-    milestones: TltgBedSoakMilestones;
+    milestones: VoBedSoakMilestones;
     meshes: number;
-    latest: TltgBedSoakLatest | null;
+    latest: VoBedSoakLatest | null;
     mesh_progress: number | null;
     problems: {
       points: number;
@@ -690,7 +690,7 @@ declare namespace Klipper {
     reason: string;
   }
 
-  export interface TltgProbeReportPoint {
+  export interface VoProbeReportPoint {
     x: number;
     y: number;
     tries: number;
@@ -698,14 +698,14 @@ declare namespace Klipper {
   }
 
   // Retried probe points of the most recent bed mesh, from QIDI Max 4 Optimized's tltg_probe_report
-  export interface TltgProbeReportState {
+  export interface VoProbeReportState {
     measured: number | null;
     loaded: boolean;
     profile: string | null;
     mesh_min: [number, number] | null;
     mesh_max: [number, number] | null;
     probe_count: [number, number] | null;
-    points: TltgProbeReportPoint[];
+    points: VoProbeReportPoint[];
   }
 
   export interface BeaconState {

@@ -183,7 +183,7 @@ import {
   type BedSoakMesh,
   type BedSoakProblemPoint,
   type BedSoakRun
-} from '@/util/tltg-bed-soak'
+} from '@/util/vo-bed-soak'
 import type { MeshMarker } from '@/store/mesh/types'
 import { bedSoakClock, bedSoakMeshList, bedSoakMeshName, bedSoakPointName } from './bed-soak-format'
 

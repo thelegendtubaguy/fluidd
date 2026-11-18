@@ -1894,7 +1894,7 @@ app:
       stop_when_settled: >-
         Ends the test once the bed moves less than {limit} µm per minute for
         {count} meshes in a row. Otherwise it runs to the time limit.
-  tltg_addons:
+  vo_addons:
     btn:
       change: Change
       dashboard: Dashboard
@@ -2052,7 +2052,7 @@ app:
       ok: Connected
       port_error: Couldn't create its network interface
       requesting_configuration: Joining
-  tltg_valve_oil:
+  vo_valve_oil:
     board_build:
       patched: Valve Oil's build
       qidi: QIDI's build
