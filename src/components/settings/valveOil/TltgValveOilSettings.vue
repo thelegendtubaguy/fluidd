@@ -65,6 +65,16 @@
           />
         </app-setting>
 
+        <tltg-valve-oil-update-window
+          v-if="view.updateWindow"
+          :update-window="view.updateWindow"
+          :disabled="autoUpdateDisabled"
+          :pending="windowPending"
+          :error="windowError"
+          @save="setUpdateWindow"
+          @dismiss-error="windowError = ''"
+        />
+
         <tltg-qidi-lan-only />
 
         <v-divider />
@@ -296,6 +306,7 @@ import { Component, Vue, Watch } from 'vue-property-decorator'
 import { getAccessToken } from '@/store/socket/actions'
 import downloadUrl from '@/util/download-url'
 import TltgValveOilUpdate from './TltgValveOilUpdate.vue'
+import TltgValveOilUpdateWindow from './TltgValveOilUpdateWindow.vue'
 import TltgQidiLanOnly from './TltgQidiLanOnly.vue'
 import {
   parseTltgStatus,
@@ -311,6 +322,7 @@ import {
   TLTG_STATUS_RECONNECT_PATIENCE_MS,
   TLTG_UPDATE_NOW_BLOCKERS,
   tltgSentence,
+  tltgUpdateWindowLabel,
   type TltgBoardView,
   type TltgStatus,
   type TltgStatusBlocker,
@@ -363,6 +375,7 @@ const saveUpdating = (updating: boolean) => {
 @Component({
   components: {
     TltgValveOilUpdate,
+    TltgValveOilUpdateWindow,
     TltgQidiLanOnly
   }
 })
@@ -376,6 +389,8 @@ export default class TltgValveOilSettings extends Vue {
   now = Date.now()
   autoUpdateRequest: boolean | null = null
   autoUpdateError = ''
+  windowPending = false
+  windowError = ''
   updateNowPending = false
   updateNowError = ''
   updateNowBlockedBy: TltgStatusBlocker[] = []
@@ -425,6 +440,7 @@ export default class TltgValveOilSettings extends Vue {
     return (
       this.status?.auto_update.enabled == null ||
       this.autoUpdateRequest != null ||
+      this.windowPending ||
       this.reconnecting
     )
   }
@@ -477,6 +493,17 @@ export default class TltgValveOilSettings extends Vue {
         return this.$t(`app.tltg_valve_oil.msg.waiting_auto_off${reinstall}`).toString()
       case 'blocked':
         return this.$t(`app.tltg_valve_oil.msg.waiting_blocked${reinstall}`, { reasons: view.reasons.join('; ') }).toString()
+      case 'window': {
+        const window = view.updateWindow?.hours
+        const params = {
+          window: window ? tltgUpdateWindowLabel(window) : '',
+          timezone: view.updateWindow?.timezone ?? 'UTC'
+        }
+
+        return view.firmwareWaiting
+          ? this.$t('app.tltg_valve_oil.msg.waiting_window_firmware', params).toString()
+          : this.$t(`app.tltg_valve_oil.msg.waiting_window${reinstall}`, params).toString()
+      }
       case 'next_check': {
         const key = view.firmwareWaiting
           ? 'app.tltg_valve_oil.msg.waiting_next_check_firmware'
@@ -789,6 +816,30 @@ export default class TltgValveOilSettings extends Vue {
       this.autoUpdateError = e instanceof Error ? e.message : String(e)
     } finally {
       this.autoUpdateRequest = null
+    }
+
+    this.poll()
+  }
+
+  /** Saves the update window or its timezone: any of {"window": {...} | null, "timezone": "<IANA name>"}. */
+  async setUpdateWindow (body: Record<string, unknown>) {
+    if (this.autoUpdateDisabled) {
+      return
+    }
+
+    this.windowPending = true
+    this.windowError = ''
+
+    try {
+      const status = parseTltgStatus(await this.request('/auto-update', 'POST', undefined, body))
+
+      if (status) {
+        this.applyStatus(status)
+      }
+    } catch (e) {
+      this.windowError = e instanceof Error ? e.message : String(e)
+    } finally {
+      this.windowPending = false
     }
 
     this.poll()
