@@ -146,7 +146,7 @@
                 v-if="tool.name !== '-'"
                 :key="tool.name"
                 :disabled="tool.disabled || (tool.wait && hasWait(tool.wait))"
-                @click="sendGcode(tool.name, tool.wait)"
+                @click="runTool(tool)"
               >
                 <v-list-item-icon>
                   <v-icon>
@@ -187,6 +187,7 @@ type Tool = {
   disabled?: boolean,
   wait?: string,
   icon?: string,
+  homeFirst?: boolean,
 }
 
 @Component({
@@ -360,7 +361,7 @@ export default class ToolheadCard extends Mixins(StateMixin, ToolheadMixin) {
         name: parkToolheadMacro.name.toUpperCase(),
         label: parkToolheadMacro.name.toLowerCase() === 'g27' ? `G27 (${parkToolheadMacro.description || this.$t('app.general.label.park_toolhead')})` : undefined,
         icon: '$parkToolhead',
-        disabled: !this.allHomed
+        homeFirst: true
       })
     }
 
@@ -373,7 +374,8 @@ export default class ToolheadCard extends Mixins(StateMixin, ToolheadMixin) {
     if (this.printerSupportsAxisTwistCompensationCalibrate) {
       tools.push({
         name: 'AXIS_TWIST_COMPENSATION_CALIBRATE',
-        disabled: !this.allHomed || this.isManualProbeActive,
+        homeFirst: true,
+        disabled: this.isManualProbeActive,
         wait: this.$waits.onAxisTwistCompensationCalibrate
       })
     }
@@ -381,7 +383,8 @@ export default class ToolheadCard extends Mixins(StateMixin, ToolheadMixin) {
     if (this.printerSupportsBeaconCalibrate) {
       tools.push({
         name: 'BEACON_AUTO_CALIBRATE',
-        disabled: !this.allHomed || this.isManualProbeActive,
+        homeFirst: true,
+        disabled: this.isManualProbeActive,
         wait: this.$waits.onBeaconCalibrate
       })
     }
@@ -389,7 +392,8 @@ export default class ToolheadCard extends Mixins(StateMixin, ToolheadMixin) {
     if (this.printerSupportsBedScrewsAdjust) {
       tools.push({
         name: 'BED_SCREWS_ADJUST',
-        disabled: !this.allHomed || this.isBedScrewsAdjustActive,
+        homeFirst: true,
+        disabled: this.isBedScrewsAdjustActive,
         wait: this.$waits.onBedScrewsAdjust
       })
     }
@@ -397,7 +401,8 @@ export default class ToolheadCard extends Mixins(StateMixin, ToolheadMixin) {
     if (this.printerSupportsBedTiltCalibrate) {
       tools.push({
         name: 'BED_TILT_CALIBRATE',
-        disabled: !this.allHomed || this.isManualProbeActive,
+        homeFirst: true,
+        disabled: this.isManualProbeActive,
         wait: this.$waits.onBedTiltCalibrate
       })
     }
@@ -405,13 +410,15 @@ export default class ToolheadCard extends Mixins(StateMixin, ToolheadMixin) {
     if (this.printerSupportsCartographerCalibrate) {
       tools.push({
         name: 'CARTOGRAPHER_SCAN_CALIBRATE',
-        disabled: !this.allHomed || this.isManualProbeActive,
+        homeFirst: true,
+        disabled: this.isManualProbeActive,
         wait: this.$waits.onCartographerScanCalibrate
       })
 
       tools.push({
         name: 'CARTOGRAPHER_TOUCH_CALIBRATE',
-        disabled: !this.allHomed || this.isManualProbeActive,
+        homeFirst: true,
+        disabled: this.isManualProbeActive,
         wait: this.$waits.onCartographerTouchCalibrate
       })
     }
@@ -419,7 +426,8 @@ export default class ToolheadCard extends Mixins(StateMixin, ToolheadMixin) {
     if (this.printerSupportsCartographerAxisTwistCompensation) {
       tools.push({
         name: 'CARTOGRAPHER_AXIS_TWIST_COMPENSATION',
-        disabled: !this.allHomed || this.isManualProbeActive,
+        homeFirst: true,
+        disabled: this.isManualProbeActive,
         wait: this.$waits.onCartographerAxisTwistCompensation
       })
     }
@@ -427,26 +435,28 @@ export default class ToolheadCard extends Mixins(StateMixin, ToolheadMixin) {
     if (this.printerSupportsDeltaCalibrate) {
       tools.push({
         name: 'DELTA_CALIBRATE',
-        disabled: !this.allHomed || this.isManualProbeActive,
+        homeFirst: true,
+        disabled: this.isManualProbeActive,
         wait: this.$waits.onDeltaCalibrate
       })
     }
 
     tools.push({
       name: 'MANUAL_PROBE',
-      disabled: !this.allHomed || this.isManualProbeActive,
+      homeFirst: true,
+      disabled: this.isManualProbeActive,
       wait: this.$waits.onManualProbe
     })
 
     if (this.printerSupportsProbeCalibrate) {
       tools.push({
         name: 'PROBE_ACCURACY',
-        disabled: !this.allHomed,
+        homeFirst: true,
         wait: this.$waits.onProbeAccuracy
       })
       tools.push({
         name: 'PROBE_CALIBRATE',
-        disabled: !this.allHomed,
+        homeFirst: true,
         wait: this.$waits.onProbeCalibrate
       })
     }
@@ -454,7 +464,8 @@ export default class ToolheadCard extends Mixins(StateMixin, ToolheadMixin) {
     if (this.printerSupportsQuadGantryLevel) {
       tools.push({
         name: 'QUAD_GANTRY_LEVEL',
-        disabled: !this.allHomed || this.isManualProbeActive,
+        homeFirst: true,
+        disabled: this.isManualProbeActive,
         wait: this.$waits.onQGL
       })
     }
@@ -462,7 +473,8 @@ export default class ToolheadCard extends Mixins(StateMixin, ToolheadMixin) {
     if (this.printerSupportsBedScrewsCalculate) {
       tools.push({
         name: 'SCREWS_TILT_CALCULATE',
-        disabled: !this.allHomed || this.isManualProbeActive,
+        homeFirst: true,
+        disabled: this.isManualProbeActive,
         wait: this.$waits.onBedScrewsCalculate
       })
     }
@@ -470,7 +482,8 @@ export default class ToolheadCard extends Mixins(StateMixin, ToolheadMixin) {
     if (this.printerSupportsZEndstopCalibrate) {
       tools.push({
         name: 'Z_ENDSTOP_CALIBRATE',
-        disabled: !this.allHomed || this.isManualProbeActive,
+        homeFirst: true,
+        disabled: this.isManualProbeActive,
         wait: this.$waits.onZEndstopCalibrate
       })
     }
@@ -478,7 +491,8 @@ export default class ToolheadCard extends Mixins(StateMixin, ToolheadMixin) {
     if (this.printerSupportsZTiltAdjust) {
       tools.push({
         name: 'Z_TILT_ADJUST',
-        disabled: !this.allHomed || this.isManualProbeActive,
+        homeFirst: true,
+        disabled: this.isManualProbeActive,
         wait: this.$waits.onZTilt
       })
     }
@@ -499,6 +513,15 @@ export default class ToolheadCard extends Mixins(StateMixin, ToolheadMixin) {
 
   get hasRoundBed (): boolean {
     return this.$typedGetters['printer/getHasRoundBed']
+  }
+
+  runTool (tool: Tool) {
+    // Home first in the same script so Klipper runs G28 before the tool.
+    const gcode = tool.homeFirst && !this.allHomed
+      ? `G28\n${tool.name}`
+      : tool.name
+
+    this.sendGcode(gcode, tool.wait)
   }
 
   async toggleForceMove () {
