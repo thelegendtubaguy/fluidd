@@ -103,6 +103,17 @@ describe('qidiBoxTaskText', () => {
     expect(running(step, { activeSlot: 'slot1' })).toEqual({ key, params: {} })
   })
 
+  it('shows the wipe step purging until Valve Oil reports the chute wipe started', () => {
+    const wipeStep = (wiping?: boolean, paused = false) => taskText({
+      ...printer({ task: { current_queue: ['BOX_WIPE'], current_step: 'BOX_WIPE', is_paused: paused } }),
+      ...(wiping == null ? {} : { tltg_box_flow_recovery: { wiping } })
+    })
+    expect(wipeStep(false)).toEqual({ key: 'purge', params: {} })
+    expect(wipeStep(true)).toEqual({ key: 'wipe', params: {} })
+    expect(wipeStep()).toEqual({ key: 'wipe', params: {} })
+    expect(wipeStep(false, true)).toEqual({ key: 'wipe', params: {} })
+  })
+
   it('falls back to generic text without a target slot', () => {
     expect(running('BOX_LOAD')).toEqual({ key: 'load', params: {} })
     expect(running('BOX_EJECT')).toEqual({ key: 'eject', params: {} })
