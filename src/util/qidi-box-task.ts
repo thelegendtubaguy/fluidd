@@ -114,8 +114,13 @@ export const qidiBoxTaskText = (printer: Record<string, any>): QidiBoxStepText |
   const slot = qidiBoxStepSlot(printer, task.step)
   const label = slot != null ? qidiBoxSlotLabel(slot) : null
   const target = Number(printer.extruder?.target)
+  const text = qidiBoxStepText(task.step, label, Number.isFinite(target) && target > 0 ? Math.round(target) : null)
 
-  return qidiBoxStepText(task.step, label, Number.isFinite(target) && target > 0 ? Math.round(target) : null)
+  // QIDI's wipe step purges at the chute before it wipes. Valve Oil reports when the first chute wipe starts;
+  // without that report the step stays "wipe".
+  if (text.key === 'wipe' && !task.paused && printer.tltg_box_flow_recovery?.wiping === false) return { key: 'purge', params: {} }
+
+  return text
 }
 
 const ERROR = /Code:\s*(QDE_\d+_\d+)\s*;\s*Message:(.*)$/

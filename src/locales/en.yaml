@@ -1658,6 +1658,7 @@ app:
       load: Loading filament
       load_external: Loading the external spool
       load_slot: Loading %{slot}
+      purge: Purging
       unload: Unloading filament
       unload_external: Unloading the external spool
       unload_slot: Unloading %{slot}
