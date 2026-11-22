@@ -75,8 +75,6 @@
           @dismiss-error="windowError = ''"
         />
 
-        <vo-qidi-lan-only />
-
         <v-divider />
 
         <app-setting
@@ -308,7 +306,6 @@ import downloadUrl from '@/util/download-url'
 import getRenamedStorageItem from '@/util/renamed-storage-item'
 import VoValveOilUpdate from './VoValveOilUpdate.vue'
 import VoValveOilUpdateWindow from './VoValveOilUpdateWindow.vue'
-import VoQidiLanOnly from './VoQidiLanOnly.vue'
 import {
   parseVoStatus,
   parseVoStatusJob,
@@ -379,8 +376,7 @@ const saveUpdating = (updating: boolean) => {
 @Component({
   components: {
     VoValveOilUpdate,
-    VoValveOilUpdateWindow,
-    VoQidiLanOnly
+    VoValveOilUpdateWindow
   }
 })
 export default class VoValveOilSettings extends Vue {
