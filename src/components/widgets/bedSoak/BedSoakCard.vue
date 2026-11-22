@@ -159,7 +159,7 @@ export default class BedSoakCard extends Mixins(StateMixin, FilesMixin, BrowserM
   liveTimer: ReturnType<typeof setTimeout> | null = null
 
   get status (): Klipper.VoBedSoakState {
-    return this.$typedState.printer.printer.tltg_bed_soak as Klipper.VoBedSoakState
+    return this.$typedState.printer.printer.vo_bed_soak as Klipper.VoBedSoakState
   }
 
   get running (): boolean {

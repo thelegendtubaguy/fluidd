@@ -81,9 +81,9 @@ export default class Tune extends Mixins(StateMixin) {
     return this.$typedGetters['printer/getRunoutSensors'].length > 0
   }
 
-  // QIDI Max 4 Optimized's bed soak test
+  // Valve Oil's bed soak test
   get supportsBedSoak (): boolean {
-    return this.$typedState.printer.printer.tltg_bed_soak != null
+    return this.$typedState.printer.printer.vo_bed_soak != null
   }
 
   get supportsBeacon (): boolean {

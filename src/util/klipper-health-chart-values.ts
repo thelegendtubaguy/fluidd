@@ -1,7 +1,7 @@
 import decimalRound from '@/util/decimal-round'
 
 /**
- * Chart values from QIDI Max 4 Optimized's tltg_klipper_health: Klipper's
+ * Chart values from Valve Oil's vo_klipper_health: Klipper's
  * timer count and its main thread's share of a core, in percent. Status
  * updates carry only changed fields, so the update is laid over the stored
  * state.

@@ -59,7 +59,7 @@ export default class QidiBoxSettingsDialog extends Mixins(StateMixin) {
 
     const settings = VARIABLES.map(variable => ({ variable, value: Number(variables[variable] ?? 0) === 1 }))
 
-    const spoolRoll = this.$typedState.printer.printer.tltg_box_spool_roll
+    const spoolRoll = this.$typedState.printer.printer.vo_box_spool_roll
     if (spoolRoll != null) {
       settings.push({ variable: SPOOL_ROLL, value: spoolRoll.enabled === true })
     }
@@ -68,7 +68,7 @@ export default class QidiBoxSettingsDialog extends Mixins(StateMixin) {
   }
 
   get hasMotion (): boolean {
-    return this.$typedState.printer.printer.tltg_box_feed_motion != null
+    return this.$typedState.printer.printer.vo_box_feed_motion != null
   }
 
   save (variable: string, value: boolean) {

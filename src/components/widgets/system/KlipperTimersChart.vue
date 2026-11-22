@@ -13,7 +13,7 @@ import type { AppInlineChartLabel } from '@/components/ui/AppInlineChart.vue'
 import type { ChartDataSource } from '@/store/charts/types'
 import { chartBufferSource } from '@/util/chart-buffer'
 
-// QIDI Max 4 Optimized's tltg_klipper_health: Klipper walks every timer on
+// Valve Oil's vo_klipper_health: Klipper walks every timer on
 // each pass of its main loop, so a count that keeps climbing slows it down.
 @Component({})
 export default class KlipperTimersChart extends Vue {

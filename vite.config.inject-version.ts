@@ -5,7 +5,7 @@ import packageJson from './package.json' with { type: 'json' }
 
 import type { Plugin } from 'vite'
 
-// Fork builds are identified by the commit they were built from, matching the footer and release tag: v1.37.7-tltg-<hash>.
+// Fork builds are identified by the commit they were built from, matching the footer and release tag: v1.37.7-vo-<hash>.
 // The hash length is fixed so shallow CI checkouts and full clones agree.
 const gitHash = () => child_process
   .execSync('git rev-parse --short=7 HEAD')

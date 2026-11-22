@@ -1,7 +1,7 @@
 /**
- * Run files of QIDI Max 4 Optimized's bed soak test (tltg_bed_soak).
+ * Run files of Valve Oil's bed soak test (vo_bed_soak).
  *
- * Each run is a JSON Lines file in the config root's tltg_bed_soak folder: a
+ * Each run is a JSON Lines file in the config root's vo_bed_soak folder: a
  * settings line, one line per mesh, jump lines when a probe jump is confirmed,
  * and a result line once the test ends. Lengths are in mm, speeds in mm/min,
  * and times in seconds after the heaters turned on, so the cold mesh's are
@@ -9,7 +9,7 @@
  */
 
 export const BED_SOAK_ROOT = 'config'
-export const BED_SOAK_FOLDER = 'tltg_bed_soak'
+export const BED_SOAK_FOLDER = 'vo_bed_soak'
 export const BED_SOAK_PATH = `${BED_SOAK_ROOT}/${BED_SOAK_FOLDER}`
 
 /** Chart and status colours, checked against the dark card surface #28282B */

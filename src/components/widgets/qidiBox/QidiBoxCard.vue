@@ -377,9 +377,9 @@ const [EJECT, LOAD, UNLOAD] = [0, 1, 2]
 // Firmware 01.01.07.01 replaced E_BOX, E_LOAD, E_UNLOAD, and RFID_READ with multi_color_controller commands.
 const COMMANDS = ['EJECT_FILAMENT_CONTROL', 'LOAD_FILAMENT_CONTROL', 'UNLOAD_FILAMENT_CONTROL']
 const LEGACY_COMMANDS = ['E_BOX', 'E_LOAD', 'E_UNLOAD']
-// Qidi-Max-4-Optimized's slot jog moves a slot's motor whatever its sensors read.
+// Valve Oil's slot jog moves a slot's motor whatever its sensors read.
 const JOG_COMMAND = 'VO_BOX_SLOT_JOG'
-// Qidi-Max-4-Optimized's cut homes X and Y first if needed, and cuts with the nozzle cold. The same release unloads
+// Valve Oil's cut homes X and Y first if needed, and cuts with the nozzle cold. The same release unloads
 // and ejects with COLD=1 without heating the nozzle.
 const CUT_COMMAND = 'VO_CUT_FILAMENT'
 // Valve Oil writes a filament to a Box spool's RFID tag on a USB Box running its Box firmware.
@@ -544,7 +544,7 @@ export default class QidiBoxCard extends Mixins(StateMixin, QidiBoxMixin) {
     return this.$typedGetters['qidiBox/getStrandedRecovery'] && !this.hasWait(Waits.onQidiBoxFlow)
   }
 
-  // The slot whose filament is stranded, when the card can tell; Qidi-Max-4-Optimized unloads or ejects only it.
+  // The slot whose filament is stranded, when the card can tell; Valve Oil unloads or ejects only it.
   get strandedSlot (): number | null {
     return this.strandedRecovery ? this.$typedGetters['qidiBox/getHubSlot'] : null
   }
@@ -663,7 +663,7 @@ export default class QidiBoxCard extends Mixins(StateMixin, QidiBoxMixin) {
 
   // Filament at the inlet allows Eject and Load; the slot that last loaded, with filament at the hub, allows
   // Unload instead of Load. Filament stranded between the hub and the toolhead allows Unload and Eject even while a
-  // failed flow is paused, for the slot at the hub when the card can tell, as Qidi-Max-4-Optimized refuses any other.
+  // failed flow is paused, for the slot at the hub when the card can tell, as Valve Oil refuses any other.
   // The external spool has no Box controls.
   actionDisabled (action: number): boolean {
     if (this.strandedRecovery && action !== LOAD && !this.currentExternal && this.current.present) {

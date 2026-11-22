@@ -46,8 +46,8 @@ interface Point {
   y: number;
 }
 
-// Live view of the printer's touchscreen from Qidi-Max-4-Optimized's tltg-remote-screen service, reached through
-// the nginx serving Fluidd at /tltg-screen/ws. It connects only while shown in a visible tab.
+// Live view of the printer's touchscreen from Valve Oil's vo-remote-screen service, reached through
+// the nginx serving Fluidd at /vo-screen/ws. It connects only while shown in a visible tab.
 @Component({})
 export default class QidiScreenView extends Vue {
   @Prop({ type: Boolean })
@@ -110,7 +110,7 @@ export default class QidiScreenView extends Vue {
 
   // The service accepts only same-origin connections, so connect through the nginx serving this page.
   socketUrl (token: string): string {
-    const url = new URL('/tltg-screen/ws', window.location.origin)
+    const url = new URL('/vo-screen/ws', window.location.origin)
 
     url.protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
     if (token) url.search = `?token=${encodeURIComponent(token)}`

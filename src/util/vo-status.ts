@@ -1,5 +1,5 @@
-// Client for Valve Oil's status service (tltg-status), which the nginx serving Fluidd on the printer exposes at
-// /tltg-status/api. It reports the installed Valve Oil release, the printer's QIDI firmware, each board's firmware,
+// Client for Valve Oil's status service (vo-status), which the nginx serving Fluidd on the printer exposes at
+// /vo-status/api. It reports the installed Valve Oil release, the printer's QIDI firmware, each board's firmware,
 // and the work waiting for the printer, switches automatic updates on or off, sets the hours they run in, and starts
 // "update now". nginx authorizes each request through Moonraker, so requests carry Fluidd's Moonraker access token when
 // there is one.
@@ -407,7 +407,7 @@ export const voStatusApiBase = (apiUrl: string, location: Pick<Location, 'origin
     return null
   }
 
-  return `${location.origin}/tltg-status/api`
+  return `${location.origin}/vo-status/api`
 }
 
 /** Whether a link is a prefilled Valve Oil issue form, the only kind a board's issue link may open. */

@@ -3,6 +3,7 @@ import type { MutationTree } from 'vuex'
 import { createState } from './state'
 import type { LayoutConfig, LayoutState, LayoutContainer } from './types'
 import type { DiagnosticsCardContainer } from '../diagnostics/types'
+import { renameLayoutCards } from './renamed-cards'
 
 export const mutations = {
   /**
@@ -43,6 +44,8 @@ export const mutations = {
         const migratableLayoutKey = migratableLayoutKeys.find(key => layoutKey.startsWith(key))
 
         if (migratableLayoutKey) {
+          renameLayoutCards(currentLayout)
+
           const defaultLayout = defaultLayouts[migratableLayoutKey]
           const defaultComponentIds = Object.values(defaultLayout).flat().map(card => card.id)
           const currentComponentIds = Object.values(currentLayout).flat().map(card => card.id)

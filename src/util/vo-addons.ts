@@ -1,5 +1,5 @@
-// Client for Valve Oil's add-ons service (tltg-addons), which the nginx serving Fluidd on the printer
-// exposes at /tltg-addons/api. nginx authorizes each request through Moonraker, so requests carry
+// Client for Valve Oil's add-ons service (vo-addons), which the nginx serving Fluidd on the printer
+// exposes at /vo-addons/api. nginx authorizes each request through Moonraker, so requests carry
 // Fluidd's Moonraker access token when there is one.
 
 export type VoAddonState = 'not_installed' | 'installed' | 'update_available' | 'foreign'
@@ -132,7 +132,7 @@ export const voAddonsApiBase = (apiUrl: string, location: Pick<Location, 'origin
     return null
   }
 
-  return `${location.origin}/tltg-addons/api`
+  return `${location.origin}/vo-addons/api`
 }
 
 const parseService = (value: unknown): VoAddonService | null => {

@@ -168,6 +168,7 @@
 <script lang="ts">
 import { Component, Vue, Watch } from 'vue-property-decorator'
 import { getAccessToken } from '@/store/socket/actions'
+import getRenamedStorageItem from '@/util/renamed-storage-item'
 import VoAddonJob from './VoAddonJob.vue'
 import VoOctoEverywhereStatus from './VoOctoEverywhereStatus.vue'
 import VoObicoStatus from './VoObicoStatus.vue'
@@ -193,12 +194,14 @@ const FAILURES_BEFORE_UNAVAILABLE = 3
 // A finished job stays on the printer until the next one starts. Its result here clears when dismissed, a success
 // also by itself after a few seconds, and stays cleared across reloads.
 const SUCCESS_VISIBLE_MS = 8000
-const DISMISSED_JOBS_KEY = 'tltg-addons.dismissed-jobs'
+const DISMISSED_JOBS_KEY = 'vo-addons.dismissed-jobs'
+// Read once and moved to the key above, from before Valve Oil's tltg names became vo.
+const OLD_DISMISSED_JOBS_KEY = 'tltg-addons.dismissed-jobs'
 const DISMISSED_JOBS_KEPT = 20
 
 const loadDismissedJobs = (): string[] => {
   try {
-    const value: unknown = JSON.parse(localStorage.getItem(DISMISSED_JOBS_KEY) ?? '[]')
+    const value: unknown = JSON.parse(getRenamedStorageItem(localStorage, DISMISSED_JOBS_KEY, OLD_DISMISSED_JOBS_KEY) ?? '[]')
 
     return Array.isArray(value) ? value.filter((id): id is string => typeof id === 'string') : []
   } catch {
