@@ -1,6 +1,6 @@
 {
   "name": "fluidd",
-  "version": "1.37.7-tltg",
+  "version": "1.37.7-vo",
   "private": true,
   "type": "module",
   "description": "fluidd, a klipper web client.",

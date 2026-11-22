@@ -106,7 +106,7 @@ describe('qidiBoxTaskText', () => {
   it('shows the wipe step purging until Valve Oil reports the chute wipe started', () => {
     const wipeStep = (wiping?: boolean, paused = false) => taskText({
       ...printer({ task: { current_queue: ['BOX_WIPE'], current_step: 'BOX_WIPE', is_paused: paused } }),
-      ...(wiping == null ? {} : { tltg_box_flow_recovery: { wiping } })
+      ...(wiping == null ? {} : { vo_box_flow_recovery: { wiping } })
     })
     expect(wipeStep(false)).toEqual({ key: 'purge', params: {} })
     expect(wipeStep(true)).toEqual({ key: 'wipe', params: {} })

@@ -171,15 +171,15 @@ declare namespace Klipper {
 
       [key: AfcUnitKey]: AfcUnitState;
 
-      // QIDI Max 4 Optimized
+      // Valve Oil
 
-      tltg_klipper_health: VoKlipperHealthState;
+      vo_klipper_health: VoKlipperHealthState;
 
-      tltg_printer_warnings: VoPrinterWarningsState;
+      vo_printer_warnings: VoPrinterWarningsState;
 
-      tltg_bed_soak: VoBedSoakState;
+      vo_bed_soak: VoBedSoakState;
 
-      tltg_probe_report: VoProbeReportState;
+      vo_probe_report: VoProbeReportState;
     }>
 
   export interface PrinterState extends PrinterStateBaseType {
@@ -667,7 +667,7 @@ declare namespace Klipper {
     used: boolean;
   }
 
-  // QIDI Max 4 Optimized's bed soak test. Grids are in the run file, not here.
+  // Valve Oil's bed soak test. Grids are in the run file, not here.
   export interface VoBedSoakState {
     state: VoBedSoakRunState;
     step: VoBedSoakStep;
@@ -697,7 +697,7 @@ declare namespace Klipper {
     spread: number;
   }
 
-  // Retried probe points of the most recent bed mesh, from QIDI Max 4 Optimized's tltg_probe_report
+  // Retried probe points of the most recent bed mesh, from Valve Oil's vo_probe_report
   export interface VoProbeReportState {
     measured: number | null;
     loaded: boolean;

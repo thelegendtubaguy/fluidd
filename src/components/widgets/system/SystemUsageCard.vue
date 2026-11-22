@@ -50,7 +50,7 @@ export default class PrinterStatsCard extends Vue {
   }
 
   get hasKlipperHealth (): boolean {
-    return this.$typedState.printer.printer.tltg_klipper_health != null
+    return this.$typedState.printer.printer.vo_klipper_health != null
   }
 
   get mcus (): MCU[] {

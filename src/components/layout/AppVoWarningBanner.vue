@@ -48,7 +48,7 @@ import { Component, Mixins } from 'vue-property-decorator'
 import type { Location } from 'vue-router'
 import StateMixin from '@/mixins/state'
 
-// Warnings QIDI Max 4 Optimized reports through tltg_printer_warnings, shown under the app bar on
+// Warnings Valve Oil reports through vo_printer_warnings, shown under the app bar on
 // every page for as long as the printer reports them, and kept under the bar while the page scrolls. Title and message are plain text from
 // Klipper, so they are not rendered as HTML, and any warning id shows without changes here. A Valve Oil update warning
 // links to the Valve Oil settings section, and a board warning's issue link (checked by voPrinterWarnings) opens it.

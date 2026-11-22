@@ -1092,19 +1092,19 @@ export const getters = {
   },
 
   /**
-   * Warnings QIDI Max 4 Optimized reports through tltg_printer_warnings;
+   * Warnings Valve Oil reports through vo_printer_warnings;
    * empty when the object is absent or reports none.
    */
   getVoPrinterWarnings: (state): Klipper.VoPrinterWarning[] => {
-    return voPrinterWarnings(state.printer.tltg_printer_warnings)
+    return voPrinterWarnings(state.printer.vo_printer_warnings)
   },
 
   /**
-   * Retried probe points of the loaded bed mesh, from QIDI Max 4 Optimized's
-   * tltg_probe_report; empty when the loaded mesh isn't the one it describes.
+   * Retried probe points of the loaded bed mesh, from Valve Oil's
+   * vo_probe_report; empty when the loaded mesh isn't the one it describes.
    */
   getVoProbeReportPoints: (state): Klipper.VoProbeReportPoint[] => {
-    return voProbeReportPoints(state.printer.tltg_probe_report)
+    return voProbeReportPoints(state.printer.vo_probe_report)
   },
 
   getKlipperWarnings: (state) => {

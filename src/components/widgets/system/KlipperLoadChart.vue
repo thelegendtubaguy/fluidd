@@ -19,10 +19,10 @@ export default class KlipperLoadChart extends Vue {
     return chartBufferSource(this.$typedState.charts.klipper)
   }
 
-  // QIDI Max 4 Optimized reports Klipper's main thread on its own, which is
+  // Valve Oil reports Klipper's main thread on its own, which is
   // the thread that has to keep up with endstops and heaters.
   get hasMainThread (): boolean {
-    return this.$typedState.printer.printer.tltg_klipper_health != null
+    return this.$typedState.printer.printer.vo_klipper_health != null
   }
 
   get labels (): AppInlineChartLabel[] {

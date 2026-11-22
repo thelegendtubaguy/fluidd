@@ -82,8 +82,8 @@ import type Sortable from 'sortablejs'
     AfcCard,
     // Registered as box-card, the ID QIDI's Fluidd gave its Box card, so saved dashboards keep its place.
     BoxCard: QidiBoxCard,
-    // Keeps the layout ID of the card the Qidi-Max-4-Optimized installer added to QIDI's Fluidd.
-    TltgScreenCard: QidiScreenCard
+    // Keeps the layout ID of the card the Valve Oil installer added to QIDI's Fluidd.
+    VoScreenCard: QidiScreenCard
   }
 })
 export default class Dashboard extends Mixins(StateMixin) {

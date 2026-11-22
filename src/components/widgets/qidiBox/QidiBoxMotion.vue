@@ -1,5 +1,5 @@
 <template>
-  <!-- Qidi-Max-4-Optimized's Box load/unload motion: reads printer.tltg_box_feed_motion and edits only through
+  <!-- Valve Oil's Box load/unload motion: reads printer.vo_box_feed_motion and edits only through
        VO_BOX_MOTION. -->
   <div>
     <div class="text-subtitle-1">
@@ -224,7 +224,7 @@ export default class QidiBoxMotion extends Mixins(StateMixin) {
   pending = false
 
   get motion (): MotionStatus | null {
-    const value = this.$typedState.printer.printer.tltg_box_feed_motion
+    const value = this.$typedState.printer.printer.vo_box_feed_motion
 
     return value != null && typeof value === 'object' ? value as MotionStatus : null
   }

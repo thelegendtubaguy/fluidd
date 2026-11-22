@@ -221,7 +221,7 @@ import { isSocketError } from '@/util/is-socket-error'
 import { normalizeQidiColor, type QidiBoxSlot, type QidiFilament } from '@/util/qidi-box'
 import QidiBoxSpool from './QidiBoxSpool.vue'
 
-// Valve Oil's tltg_box_rfid publishes each VO_BOX_RFID_WRITE and VO_BOX_RFID_TEST run here.
+// Valve Oil's vo_box_rfid publishes each VO_BOX_RFID_WRITE and VO_BOX_RFID_TEST run here.
 interface TagJob {
   run: number;
   running: boolean;
@@ -306,7 +306,7 @@ export default class QidiBoxTagWriteDialog extends Mixins(StateMixin) {
   }
 
   get job (): TagJob | null {
-    const job: TagJob | undefined = this.$typedState.printer.printer.tltg_box_rfid?.job
+    const job: TagJob | undefined = this.$typedState.printer.printer.vo_box_rfid?.job
 
     return job && job.run > this.startRun && job.action === 'write' && !job.test ? job : null
   }
@@ -394,7 +394,7 @@ export default class QidiBoxTagWriteDialog extends Mixins(StateMixin) {
 
     const script = `VO_BOX_RFID_WRITE SLOT=${this.boxSlot.index} FILAMENT=${this.filament} COLORS=${this.colors.map(color => color.slice(1)).join(',')}`
 
-    this.startRun = this.$typedState.printer.printer.tltg_box_rfid?.job?.run ?? 0
+    this.startRun = this.$typedState.printer.printer.vo_box_rfid?.job?.run ?? 0
     this.message = ''
     this.phase = 'running'
     this.addConsoleEntry(script)

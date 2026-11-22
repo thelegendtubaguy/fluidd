@@ -107,7 +107,7 @@ export const handleSystemStatsChange = (payload: Partial<Klipper.PrinterState>, 
         values: {
           load: decimalRound(stats.sysload, 2),
           cputime_change: decimalRound((cputime - last_cputime) * 100, 2),
-          ...klipperHealthChartValues(state.printer.printer.tltg_klipper_health, payload.tltg_klipper_health)
+          ...klipperHealthChartValues(state.printer.printer.vo_klipper_health, payload.vo_klipper_health)
         }
       }, { root: true })
     }

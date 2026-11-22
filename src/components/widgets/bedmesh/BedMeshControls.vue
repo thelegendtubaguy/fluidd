@@ -376,7 +376,7 @@ export default class BedMesh extends Mixins(StateMixin, ToolheadMixin) {
     return !!this.currentMesh?.profile_name
   }
 
-  // Retried probe points of the loaded mesh, from QIDI Max 4 Optimized's tltg_probe_report
+  // Retried probe points of the loaded mesh, from Valve Oil's vo_probe_report
   get problemPoints (): Klipper.VoProbeReportPoint[] {
     return this.$typedGetters['printer/getVoProbeReportPoints']
   }
@@ -384,7 +384,7 @@ export default class BedMesh extends Mixins(StateMixin, ToolheadMixin) {
   readonly warningColor = BedSoakColors.warning
 
   get problemTooltip (): string {
-    const measured = this.$typedState.printer.printer.tltg_probe_report?.measured
+    const measured = this.$typedState.printer.printer.vo_probe_report?.measured
     const count = this.$tc('app.bed_soak.label.problem_points_count', this.problemPoints.length, { count: this.problemPoints.length }).toString()
 
     return measured

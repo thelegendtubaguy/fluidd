@@ -4,7 +4,7 @@
     icon="$screenshot"
     :lazy="false"
     draggable
-    layout-path="dashboard.tltg-screen-card"
+    layout-path="dashboard.vo-screen-card"
     @collapsed="onCollapsed"
   >
     <template

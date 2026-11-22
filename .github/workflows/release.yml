@@ -63,7 +63,7 @@ jobs:
         run: |
           test "$(jq -r .version ./dist/release_info.json)" = "${GITHUB_REF_NAME}"
 
-      # The QIDI Max 4 installer's nginx serves these with gzip_static instead of compressing each request on the
+      # Valve Oil's nginx serves these with gzip_static instead of compressing each request on the
       # printer. -n leaves out the name and timestamp, so the copies depend only on the build.
       - name: Precompress assets
         if: ${{ github.repository != 'fluidd-core/fluidd' }}
@@ -100,7 +100,7 @@ jobs:
         with:
           name: ${{ steps.tag_name.outputs.current_version }}
           body: ${{ steps.changelog.outputs.changes }}
-          # Fork releases (vX.Y.Z-tltg-<hash>) list their merged pull requests instead of the upstream changelog.
+          # Fork releases (vX.Y.Z-vo-<hash>) list their merged pull requests instead of the upstream changelog.
           generate_release_notes: ${{ github.repository != 'fluidd-core/fluidd' }}
           files: ./fluidd.zip
           draft: false

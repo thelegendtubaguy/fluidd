@@ -305,6 +305,7 @@
 import { Component, Vue, Watch } from 'vue-property-decorator'
 import { getAccessToken } from '@/store/socket/actions'
 import downloadUrl from '@/util/download-url'
+import getRenamedStorageItem from '@/util/renamed-storage-item'
 import VoValveOilUpdate from './VoValveOilUpdate.vue'
 import VoValveOilUpdateWindow from './VoValveOilUpdateWindow.vue'
 import VoQidiLanOnly from './VoQidiLanOnly.vue'
@@ -333,16 +334,19 @@ import {
 
 // A finished update's result stays on the printer until the next one; here it clears when dismissed, and stays
 // cleared across reloads. A success also clears by itself a day after it finished (voShownUpdate).
-const DISMISSED_UPDATES_KEY = 'tltg-status.dismissed-updates'
+const DISMISSED_UPDATES_KEY = 'vo-status.dismissed-updates'
+// Read once and moved to the key above, from before Valve Oil's tltg names became vo.
+const OLD_DISMISSED_UPDATES_KEY = 'tltg-status.dismissed-updates'
 const DISMISSED_UPDATES_KEPT = 20
 // Set while an update runs, so a page reloaded or re-shown while the printer restarts its services reads failed
 // requests as reconnecting rather than as a printer without the service.
-const UPDATING_KEY = 'tltg-status.updating-since'
+const UPDATING_KEY = 'vo-status.updating-since'
+const OLD_UPDATING_KEY = 'tltg-status.updating-since'
 const UPDATING_KEPT_MS = 6 * 60 * 60 * 1000
 
 const loadDismissedUpdates = (): string[] => {
   try {
-    const value: unknown = JSON.parse(localStorage.getItem(DISMISSED_UPDATES_KEY) ?? '[]')
+    const value: unknown = JSON.parse(getRenamedStorageItem(localStorage, DISMISSED_UPDATES_KEY, OLD_DISMISSED_UPDATES_KEY) ?? '[]')
 
     return Array.isArray(value) ? value.filter((id): id is string => typeof id === 'string') : []
   } catch {
@@ -352,7 +356,7 @@ const loadDismissedUpdates = (): string[] => {
 
 const loadUpdating = (): boolean => {
   try {
-    const since = Number(sessionStorage.getItem(UPDATING_KEY))
+    const since = Number(getRenamedStorageItem(sessionStorage, UPDATING_KEY, OLD_UPDATING_KEY))
 
     return Number.isFinite(since) && since > 0 && Date.now() - since < UPDATING_KEPT_MS
   } catch {
