@@ -4,6 +4,8 @@ import {
   parseQidiFilamentList,
   qidiBoxFileTools,
   qidiBoxReloadGroups,
+  qidiBoxRfidViaController,
+  qidiBoxSettingGcode,
   qidiBoxSlots,
   qidiBoxToolButtons
 } from '../qidi-box'
@@ -208,5 +210,29 @@ describe('qidiBoxToolButtons', () => {
     // A selected tool mapped elsewhere leaves every tool on the loaded slot active.
     expect(active(0)).toStrictEqual([1, 6])
     expect(qidiBoxToolButtons({ 0: 0, 1: 1 }, slots, null, 1).some(button => button.active)).toBe(false)
+  })
+})
+
+describe('qidiBoxSettingGcode', () => {
+  const setting = (variable: string, value: boolean, printer: Record<string, any>, commands: string[]) =>
+    qidiBoxSettingGcode(variable, value, qidiBoxRfidViaController(printer, Object.fromEntries(commands.map(command => [command, { help: '' }]))))
+
+  it("sends detection on insertion through QIDI's command, which also reaches RS-485 Boxes, only where box485 is configured", () => {
+    const rs485 = { multi_color_controller: {}, box485: { box_count: 0, boxes: [] } }
+    const commands = ['SET_ENABLE_RFID_READ']
+
+    expect(setting('auto_read_rfid', true, rs485, commands)).toBe('SET_ENABLE_RFID_READ ENABLE=1')
+    expect(setting('auto_read_rfid', false, rs485, commands)).toBe('SET_ENABLE_RFID_READ ENABLE=0')
+    // QIDI's commands for the other toggles only save the variable.
+    expect(setting('auto_init_detect', true, rs485, commands)).toBe('SAVE_VARIABLE VARIABLE=auto_init_detect VALUE=1')
+    expect(setting('auto_reload_detect', false, rs485, commands)).toBe('SAVE_VARIABLE VARIABLE=auto_reload_detect VALUE=0')
+    // Without box485, QIDI's command would stop Klipper looking it up; before 01.01.07.01 there is no such command.
+    for (const [printer, available] of [
+      [{ multi_color_controller: {} }, commands],
+      [{ box485: {} }, commands],
+      [rs485, []]
+    ] as const) {
+      expect(setting('auto_read_rfid', true, printer, [...available])).toBe('SAVE_VARIABLE VARIABLE=auto_read_rfid VALUE=1')
+    }
   })
 })

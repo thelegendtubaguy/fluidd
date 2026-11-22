@@ -3,6 +3,7 @@ import type { QidiBoxState } from './types'
 import type { RootState } from '../types'
 import {
   QIDI_BOX_EXTERNAL_SLOT,
+  qidiBoxRfidViaController,
   qidiBoxSlotNumber,
   qidiBoxSlots,
   qidiBoxToolButtons,
@@ -114,6 +115,11 @@ export const getters = {
   // The Box slot whose filament is at the hub when no Box slot is loaded; only meaningful while the hub sees one.
   getHubSlot: (state, getters, rootState): number | null => {
     return qidiBoxHubSlot(rootState.printer.printer, getters.getSlots)
+  },
+
+  // Detection on insertion goes through QIDI's SET_ENABLE_RFID_READ, which also sends it to online RS-485 Boxes.
+  getRfidViaController: (state, getters, rootState, rootGetters): boolean => {
+    return qidiBoxRfidViaController(rootState.printer.printer, rootGetters['printer/getAvailableCommands'])
   },
 
   getAutoReload: (state, getters, rootState): boolean => {
