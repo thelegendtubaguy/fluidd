@@ -329,3 +329,16 @@ export const qidiBoxToolButtons = (
 
   return buttons.map(button => ({ ...button, active: active.includes(button.tool) }))
 }
+
+// QIDI's SET_ENABLE_RFID_READ (multi_color_controller) saves auto_read_rfid and, without a USB Box, also sends it to
+// the RS-485 Boxes online through box485, as the touchscreen does. It looks box485 up without a default, so without a
+// [box485] section it stops Klipper with an internal error; it needs the controller, the command, and box485.
+export const qidiBoxRfidViaController = (printer: Record<string, any>, commands: Record<string, unknown>): boolean =>
+  printer.multi_color_controller != null && 'SET_ENABLE_RFID_READ' in commands && printer.box485 != null
+
+// A Box setting toggle's G-code. QIDI's SET_ENABLE_AUTO_RELOAD and SET_ENABLE_INIT_READ_RFID only save their
+// variable, so every setting but detection on insertion stays a direct save, set to 1 or 0 as QIDI's Fluidd did.
+export const qidiBoxSettingGcode = (variable: string, value: boolean, rfidViaController: boolean): string =>
+  variable === 'auto_read_rfid' && rfidViaController
+    ? `SET_ENABLE_RFID_READ ENABLE=${value ? 1 : 0}`
+    : `SAVE_VARIABLE VARIABLE=${variable} VALUE=${value ? 1 : 0}`

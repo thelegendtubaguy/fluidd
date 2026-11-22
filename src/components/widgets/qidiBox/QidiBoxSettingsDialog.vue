@@ -40,8 +40,10 @@
 import { Component, Mixins, VModel } from 'vue-property-decorator'
 import StateMixin from '@/mixins/state'
 import QidiBoxMotion from './QidiBoxMotion.vue'
+import { qidiBoxSettingGcode } from '@/util/qidi-box'
 
-// QIDI's Box settings, saved variables read by its Box modules; set to 1 or 0 as QIDI's Fluidd did.
+// QIDI's Box settings, saved variables read by its Box modules; set to 1 or 0 as QIDI's Fluidd did. Detection on
+// insertion goes through QIDI's own command where the printer has it, so RS-485 Boxes get it too.
 const VARIABLES = ['auto_read_rfid', 'auto_init_detect', 'auto_reload_detect']
 
 // Valve Oil's spool turning while the Box heats. On unless saved as 0; its module reports whether it's on.
@@ -72,7 +74,7 @@ export default class QidiBoxSettingsDialog extends Mixins(StateMixin) {
   }
 
   save (variable: string, value: boolean) {
-    this.sendGcode(`SAVE_VARIABLE VARIABLE=${variable} VALUE=${value ? 1 : 0}`)
+    this.sendGcode(qidiBoxSettingGcode(variable, value, this.$typedGetters['qidiBox/getRfidViaController']))
   }
 }
 </script>
