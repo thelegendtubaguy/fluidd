@@ -220,6 +220,7 @@
       :initial-draft="editor.draft"
       :previous-key="editor.previousKey"
       :source-key="editor.sourceKey"
+      :max-temp="maxTemp"
       :busy="busy"
       @save="handleSave"
     />
@@ -228,6 +229,7 @@
       v-if="imported != null"
       v-model="imported.open"
       :items="imported.items"
+      :max-temp="maxTemp"
       :busy="busy"
       @save="handleImport"
     />
@@ -345,6 +347,13 @@ export default class QidiFilamentsCard extends Mixins(StateMixin, FilesMixin, Se
       .sort((a, b) => a.localeCompare(b))
   }
 
+  // The printer's nozzle limit, which QIDI's flushes and Box flows heat up to; null while Klipper isn't ready.
+  get maxTemp (): number | null {
+    const maxTemp = this.$typedGetters['printer/getPrinterSettings']?.extruder?.max_temp
+
+    return maxTemp != null && Number.isFinite(+maxTemp) ? +maxTemp : null
+  }
+
   get canRestartTouchscreen (): boolean {
     return this.$typedState.server.system_info?.available_services?.includes(QIDI_CLIENT_SERVICE) ?? false
   }
@@ -447,7 +456,7 @@ export default class QidiFilamentsCard extends Mixins(StateMixin, FilesMixin, Se
   }
 
   async handleSave ({ draft, previousKey, baseKey }: QidiFilamentDialogSave) {
-    if (await this.update(config => setQidiFilament(config, draft, { previousKey, baseKey })) && this.editor) {
+    if (await this.update(config => setQidiFilament(config, draft, { previousKey, baseKey, maxTemp: this.maxTemp })) && this.editor) {
       this.editor.open = false
     }
   }
@@ -508,7 +517,7 @@ export default class QidiFilamentsCard extends Mixins(StateMixin, FilesMixin, Se
       this.imported = {
         open: true,
         config,
-        items: diffQidiFilamentImport(await this.readConfig(), config)
+        items: diffQidiFilamentImport(await this.readConfig(), config, this.maxTemp)
       }
     } catch (error) {
       consola.error('[QidiFilaments] import failed', error)
@@ -522,7 +531,7 @@ export default class QidiFilamentsCard extends Mixins(StateMixin, FilesMixin, Se
 
     if (imported == null) return
 
-    if (await this.update(config => applyQidiFilamentImport(config, imported.config, keys))) {
+    if (await this.update(config => applyQidiFilamentImport(config, imported.config, keys, this.maxTemp))) {
       imported.open = false
     }
   }

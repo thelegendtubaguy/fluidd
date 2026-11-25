@@ -1680,6 +1680,7 @@ app:
     hint:
       box_max: The Box won't heat above this with the filament loaded; 0 means no heating
       filament_id_fixed: Slots refer to the filament by its ID
+      nozzle_max: This printer's limit is %{max} °C
     label:
       box_max: Box max
       chamber: Chamber
@@ -1709,10 +1710,14 @@ app:
       import_invalid: That file isn't a QIDI filament list.
       import_new: Not in the current list
       import_nothing: Every filament in this file is already in the list.
+      import_nozzle_invalid: Its nozzle temperatures aren't two whole numbers, the minimum then the maximum
+      import_nozzle_limit: Its nozzle maximum is above this printer's limit of %{max} °C
       invalid: >-
         The filament list qidi_filament_config/filament-0.4.json has a JSON error. Fix it
         in the configuration editor.
       name_taken: '%{name} is already in the list'
+      nozzle_limit: At most %{max}, this printer's nozzle limit
+      nozzle_whole: Whole degrees only
       remove_in_use: 'Slots set to it: %{slots}.'
       restart_needed: Klipper and the touchscreen use the changes once they restart.
       save_failed: "Couldn't save the filament list: %{error}"
