@@ -76,7 +76,10 @@
             v-model.number="draft.nozzleMin"
             type="number"
             :label="$t('app.qidi_filaments.label.nozzle_min')"
-            :rules="[$rules.required, $rules.numberValid, $rules.numberGreaterThan(0)]"
+            :rules="[$rules.required, $rules.numberValid, nozzleMinValid]"
+            :max="maxTemp ?? undefined"
+            min="0"
+            step="1"
             suffix="°C"
             hide-details="auto"
             outlined
@@ -88,7 +91,12 @@
             v-model.number="draft.nozzleMax"
             type="number"
             :label="$t('app.qidi_filaments.label.nozzle_max')"
-            :rules="[$rules.required, $rules.numberValid, $rules.numberGreaterThanOrEqual(draft.nozzleMin ?? 0)]"
+            :rules="[$rules.required, $rules.numberValid, nozzleMaxValid]"
+            :max="maxTemp ?? undefined"
+            min="0"
+            step="1"
+            :hint="maxTemp != null ? $t('app.qidi_filaments.hint.nozzle_max', { max: maxTemp }) : undefined"
+            persistent-hint
             suffix="°C"
             hide-details="auto"
             outlined
@@ -147,8 +155,10 @@ import {
   qidiFilamentBaseKey,
   qidiFilamentIdOwner,
   qidiFilamentKey,
+  qidiNozzleProblems,
   type QidiFilamentConfig,
-  type QidiFilamentDraft
+  type QidiFilamentDraft,
+  type QidiNozzleProblem
 } from '@/util/qidi-filament-config'
 
 export interface QidiFilamentDialogSave {
@@ -158,7 +168,8 @@ export interface QidiFilamentDialogSave {
 }
 
 // Adds, duplicates, or edits a filament. A new filament copies the settings the dialog does not show, such as
-// QIDI's drying presets, from the filament it duplicates, or else from a filament of the same type.
+// QIDI's drying presets, from the filament it duplicates, or else from a filament of the same type. The nozzle
+// maximum can't be above the printer's extruder max_temp, as QIDI heats to it with no limit of its own.
 @Component({})
 export default class QidiFilamentDialog extends Vue {
   @VModel({ type: Boolean })
@@ -180,6 +191,10 @@ export default class QidiFilamentDialog extends Vue {
 
   @Prop({ type: Boolean })
   readonly busy!: boolean
+
+  // The printer's [extruder] max_temp; null while Klipper isn't ready, when the maximum isn't limited.
+  @Prop({ type: Number, default: null })
+  readonly maxTemp!: number | null
 
   draft: QidiFilamentDraft = {
     vendor: '',
@@ -231,6 +246,37 @@ export default class QidiFilamentDialog extends Vue {
 
   idValid (value: string): boolean | string {
     return QIDI_FILAMENT_ID_PATTERN.test(value) || this.$t('app.qidi_filaments.msg.id_invalid').toString()
+  }
+
+  get nozzleProblems () {
+    const value = (v: unknown) => v == null || v === '' ? null : Number(v)
+
+    return qidiNozzleProblems({ nozzleMin: value(this.draft.nozzleMin), nozzleMax: value(this.draft.nozzleMax) }, this.maxTemp)
+  }
+
+  nozzleMessage (problem: QidiNozzleProblem | null): boolean | string {
+    switch (problem) {
+      case null:
+        return true
+      case 'required':
+        return this.$t('app.general.simple_form.error.required').toString()
+      case 'whole':
+        return this.$t('app.qidi_filaments.msg.nozzle_whole').toString()
+      case 'negative':
+        return this.$t('app.general.simple_form.error.min', { min: 0 }).toString()
+      case 'below_min':
+        return this.$t('app.general.simple_form.error.min', { min: this.draft.nozzleMin }).toString()
+      case 'above_limit':
+        return this.$t('app.qidi_filaments.msg.nozzle_limit', { max: this.maxTemp }).toString()
+    }
+  }
+
+  nozzleMinValid (): boolean | string {
+    return this.nozzleMessage(this.nozzleProblems.nozzleMin)
+  }
+
+  nozzleMaxValid (): boolean | string {
+    return this.nozzleMessage(this.nozzleProblems.nozzleMax)
   }
 
   idAvailable (value: string): boolean | string {

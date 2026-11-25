@@ -6,6 +6,7 @@ import {
   qidiFilamentBaseKey,
   qidiFilamentDraft,
   qidiFilamentRows,
+  qidiNozzleProblems,
   removeQidiFilament,
   serializeQidiFilamentConfig,
   setQidiFilament,
@@ -119,12 +120,76 @@ describe('setQidiFilament', () => {
     expect(() => setQidiFilament(config(), draft, { previousKey: 'Generic ABS' })).toThrow()
   })
 
+  it('writes nozzle_temperature as two whole numbers, whatever shape it had', () => {
+    const current = { ...config(), 'Generic ABS': { ...config()['Generic ABS'], nozzle_temperature: ['190', '240', '250'] } }
+    const draft = { ...qidiFilamentDraft('Generic ABS', current['Generic ABS']), nozzleMax: 260 }
+
+    expect(setQidiFilament(current, draft, { previousKey: 'Generic ABS', maxTemp: 375 })['Generic ABS'].nozzle_temperature).toEqual([190, 260])
+  })
+
+  it.each([
+    ['a nozzle maximum above the printer limit', { nozzleMax: 376 }, /limit of 375/],
+    ['a typo in the nozzle maximum', { nozzleMax: 3000 }, /limit of 375/],
+    ['a nozzle maximum below the minimum', { nozzleMin: 250, nozzleMax: 240 }, /whole numbers/],
+    ['a fractional nozzle temperature', { nozzleMax: 240.5 }, /whole numbers/],
+    ['a negative nozzle minimum', { nozzleMin: -10 }, /whole numbers/],
+    ['a missing nozzle maximum', { nozzleMax: null }, /whole numbers/]
+  ])('refuses %s', (_, change, message) => {
+    const draft = { ...qidiFilamentDraft('Generic ABS', config()['Generic ABS']), ...change }
+
+    expect(() => setQidiFilament(config(), draft, { previousKey: 'Generic ABS', maxTemp: 375 })).toThrow(message)
+  })
+
+  it('takes a nozzle maximum at the printer limit, and any maximum when the limit is unknown', () => {
+    const draft = { ...qidiFilamentDraft('Generic ABS', config()['Generic ABS']), nozzleMax: 375 }
+
+    expect(setQidiFilament(config(), draft, { previousKey: 'Generic ABS', maxTemp: 375 })['Generic ABS'].nozzle_temperature).toEqual([190, 375])
+    expect(setQidiFilament(config(), { ...draft, nozzleMax: 400 }, { previousKey: 'Generic ABS' })['Generic ABS'].nozzle_temperature).toEqual([190, 400])
+  })
+
   it('removes a filament', () => {
     expect(Object.keys(removeQidiFilament(config(), 'Generic PLA'))).toEqual(['QIDI PLA Basic', 'Generic PLA Silk', 'Generic ABS'])
   })
 })
 
+describe('qidiNozzleProblems', () => {
+  it.each([
+    [{ nozzleMin: 190, nozzleMax: 240 }, 375, { nozzleMin: null, nozzleMax: null }],
+    [{ nozzleMin: 0, nozzleMax: 0 }, 375, { nozzleMin: null, nozzleMax: null }],
+    [{ nozzleMin: 190, nozzleMax: 375 }, 375, { nozzleMin: null, nozzleMax: null }],
+    [{ nozzleMin: 190, nozzleMax: 376 }, 375, { nozzleMin: null, nozzleMax: 'above_limit' }],
+    [{ nozzleMin: 190, nozzleMax: 316 }, 315, { nozzleMin: null, nozzleMax: 'above_limit' }],
+    [{ nozzleMin: 190, nozzleMax: 3000 }, null, { nozzleMin: null, nozzleMax: null }],
+    [{ nozzleMin: 250, nozzleMax: 240 }, 375, { nozzleMin: null, nozzleMax: 'below_min' }],
+    [{ nozzleMin: 400, nozzleMax: 400 }, 375, { nozzleMin: null, nozzleMax: 'above_limit' }],
+    [{ nozzleMin: 190.5, nozzleMax: 240 }, 375, { nozzleMin: 'whole', nozzleMax: null }],
+    [{ nozzleMin: -1, nozzleMax: 240 }, 375, { nozzleMin: 'negative', nozzleMax: null }],
+    [{ nozzleMin: null, nozzleMax: null }, 375, { nozzleMin: 'required', nozzleMax: 'required' }]
+  ])('checks %o against a limit of %s', (draft, maxTemp, problems) => {
+    expect(qidiNozzleProblems(draft, maxTemp)).toEqual(problems)
+  })
+})
+
 describe('filament import', () => {
+  it('refuses filaments whose nozzle temperatures the printer cannot use', () => {
+    const current = config()
+    const imported = {
+      ...config(),
+      'Hot PEEK': { ...qidiEntry('QFA92', 'PEEK', 'Hot', '0'), nozzle_temperature: [380, 420] },
+      'Typo PLA': { ...qidiEntry('QFA93', 'PLA', 'Typo', '0'), nozzle_temperature: [190, '23O'] },
+      'Short PLA': { ...qidiEntry('QFA94', 'PLA', 'Short', '0'), nozzle_temperature: [190] },
+      'Text PLA': { ...qidiEntry('QFA95', 'PLA', 'Text', '0'), nozzle_temperature: ['190', '230'] }
+    }
+
+    expect(diffQidiFilamentImport(current, imported, 375)).toEqual([
+      { key: 'Hot PEEK', id: 'QFA92', status: 'temperature', problem: 'above_limit' },
+      { key: 'Typo PLA', id: 'QFA93', status: 'temperature', problem: 'required' },
+      { key: 'Short PLA', id: 'QFA94', status: 'temperature', problem: 'required' },
+      { key: 'Text PLA', id: 'QFA95', status: 'new' }
+    ])
+    expect(Object.keys(applyQidiFilamentImport(current, imported, Object.keys(imported), 375))).toEqual([...Object.keys(current), 'Text PLA'])
+  })
+
   it('offers new and changed filaments, and refuses one whose ID is taken', () => {
     const current = config()
     const imported = {

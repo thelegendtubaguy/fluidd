@@ -27,7 +27,7 @@ export interface QidiFilamentRow extends QidiFilamentDraft {
   key: string;
 }
 
-export type QidiFilamentImportStatus = 'new' | 'changed' | 'conflict'
+export type QidiFilamentImportStatus = 'new' | 'changed' | 'conflict' | 'temperature'
 
 export interface QidiFilamentImportItem {
   key: string;
@@ -35,10 +35,61 @@ export interface QidiFilamentImportItem {
   status: QidiFilamentImportStatus;
   // For a conflict, the current filament that already uses the ID.
   conflictKey?: string;
+  // For temperature, what is wrong with the filament's nozzle temperatures.
+  problem?: QidiNozzleProblem;
+}
+
+// What is wrong with a nozzle temperature: missing, not a whole number, below 0, a maximum below the minimum, or a
+// maximum above the printer's extruder max_temp.
+export type QidiNozzleProblem = 'required' | 'whole' | 'negative' | 'below_min' | 'above_limit'
+
+export interface QidiNozzleProblems {
+  nozzleMin: QidiNozzleProblem | null;
+  nozzleMax: QidiNozzleProblem | null;
 }
 
 // QIDI's IDs are QF, a family letter, and two digits; box2base rejects any other shape.
 export const QIDI_FILAMENT_ID_PATTERN = /^QF[A-Z]\d{2}$/
+
+// QIDI's Box flows, and from Max 4 01.01.07.02 and Plus 5 01.01.02.02 its compiled flush at print start, heat the
+// nozzle to int(nozzle_temperature[1]) of the filament with no upper limit. A maximum above the extruder's max_temp
+// fails those heats at M109, and one int() can't read stops Klipper. maxTemp is the printer's [extruder] max_temp;
+// without it, as while Klipper is down, the maximum isn't limited.
+const nozzleProblem = (value: number | null): QidiNozzleProblem | null => {
+  if (value == null) return 'required'
+  if (!Number.isInteger(value)) return 'whole'
+
+  return value < 0 ? 'negative' : null
+}
+
+export const qidiNozzleProblems = (
+  draft: Pick<QidiFilamentDraft, 'nozzleMin' | 'nozzleMax'>,
+  maxTemp?: number | null
+): QidiNozzleProblems => {
+  const nozzleMin = nozzleProblem(draft.nozzleMin)
+  let nozzleMax = nozzleProblem(draft.nozzleMax)
+  const max = draft.nozzleMax ?? 0
+
+  if (nozzleMax == null && nozzleMin == null && max < (draft.nozzleMin ?? 0)) nozzleMax = 'below_min'
+  if (nozzleMax == null && maxTemp != null && max > maxTemp) nozzleMax = 'above_limit'
+
+  return { nozzleMin, nozzleMax }
+}
+
+// The whole number Python's int() reads from a value in the file, or null.
+const wholeNumber = (value: unknown): number | null => {
+  if (typeof value === 'number') return Number.isInteger(value) ? value : null
+
+  return typeof value === 'string' && /^\s*[+-]?\d+\s*$/.test(value) ? Number(value) : null
+}
+
+// The first problem with a saved entry's nozzle_temperature, or null.
+const entryNozzleProblem = (entry: QidiFilamentConfigEntry, maxTemp?: number | null): QidiNozzleProblem | null => {
+  const nozzle = Array.isArray(entry.nozzle_temperature) ? entry.nozzle_temperature : []
+  const problems = qidiNozzleProblems({ nozzleMin: wholeNumber(nozzle[0]), nozzleMax: wholeNumber(nozzle[1]) }, maxTemp)
+
+  return problems.nozzleMin ?? problems.nozzleMax
+}
 
 const isEntry = (value: unknown): value is QidiFilamentConfigEntry => (
   value != null && typeof value === 'object' && !Array.isArray(value)
@@ -108,17 +159,13 @@ export const qidiFilamentDraft = (key: string, entry: QidiFilamentConfigEntry): 
 export const qidiFilamentRows = (config: QidiFilamentConfig): QidiFilamentRow[] => Object.entries(config)
   .map(([key, entry]) => ({ key, ...qidiFilamentDraft(key, entry) }))
 
+// nozzle_temperature is always written as QIDI ships it: [min, max], two whole numbers.
 const applyDraft = (entry: QidiFilamentConfigEntry, draft: QidiFilamentDraft): QidiFilamentConfigEntry => {
-  const nozzle = Array.isArray(entry.nozzle_temperature) ? entry.nozzle_temperature : [0, 0]
   const result: QidiFilamentConfigEntry = {
     ...entry,
     type: draft.type.trim(),
     filament_id: draft.id,
-    nozzle_temperature: [
-      writeNumber(nozzle[0], draft.nozzleMin ?? 0),
-      writeNumber(nozzle[1], draft.nozzleMax ?? 0),
-      ...nozzle.slice(2)
-    ],
+    nozzle_temperature: [draft.nozzleMin ?? 0, draft.nozzleMax ?? 0],
     box_temperature_range_high: writeNumber(entry.box_temperature_range_high ?? ['0'], draft.boxMax ?? 0),
     filament_vendor: draft.vendor.trim(),
     filament_is_support: writeNumber(entry.filament_is_support ?? '0', draft.support ? 1 : 0),
@@ -143,14 +190,19 @@ export const qidiFilamentBaseKey = (config: QidiFilamentConfig, type: string): s
   )?.[0]
 }
 
-// Saves a filament, replacing previousKey in place or, for a new filament, adding one based on baseKey.
+// Saves a filament, replacing previousKey in place or, for a new filament, adding one based on baseKey. Refuses
+// nozzle temperatures qidiNozzleProblems finds a problem with, given the printer's maxTemp.
 export const setQidiFilament = (
   config: QidiFilamentConfig,
   draft: QidiFilamentDraft,
-  options: { previousKey?: string, baseKey?: string }
+  options: { previousKey?: string, baseKey?: string, maxTemp?: number | null }
 ): QidiFilamentConfig => {
   const key = qidiFilamentKey(draft)
-  const { previousKey, baseKey } = options
+  const { previousKey, baseKey, maxTemp } = options
+  const nozzle = qidiNozzleProblems(draft, maxTemp)
+
+  if (nozzle.nozzleMax === 'above_limit') throw new Error(`Nozzle maximum of ${key} is above the printer's limit of ${maxTemp} °C`)
+  if (nozzle.nozzleMin != null || nozzle.nozzleMax != null) throw new Error(`Nozzle temperatures of ${key} must be whole numbers from 0, the minimum no higher than the maximum`)
 
   if (key !== previousKey && key in config) throw new Error(`Filament already listed: ${key}`)
 
@@ -209,24 +261,32 @@ export const nextQidiFilamentId = (config: QidiFilamentConfig, fromId: string): 
 const sameEntry = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b)
 
 // The imported filaments that differ from the current list. A new filament whose ID another current filament
-// uses is a conflict, as is a changed one whose ID moved onto another filament.
-export const diffQidiFilamentImport = (current: QidiFilamentConfig, imported: QidiFilamentConfig): QidiFilamentImportItem[] => (
+// uses is a conflict, as is a changed one whose ID moved onto another filament. One whose nozzle temperatures
+// qidiNozzleProblems finds a problem with, given the printer's maxTemp, is refused too.
+export const diffQidiFilamentImport = (current: QidiFilamentConfig, imported: QidiFilamentConfig, maxTemp?: number | null): QidiFilamentImportItem[] => (
   Object.entries(imported)
     .filter(([key, entry]) => !sameEntry(current[key], entry))
     .map(([key, entry]): QidiFilamentImportItem => {
       const id = String(entry.filament_id)
       const conflictKey = qidiFilamentIdOwner(current, id, key)
+      const problem = entryNozzleProblem(entry, maxTemp)
 
-      return conflictKey != null
-        ? { key, id, status: 'conflict', conflictKey }
-        : { key, id, status: key in current ? 'changed' : 'new' }
+      if (conflictKey != null) return { key, id, status: 'conflict', conflictKey }
+      if (problem != null) return { key, id, status: 'temperature', problem }
+
+      return { key, id, status: key in current ? 'changed' : 'new' }
     })
 )
 
 // Adds or replaces the chosen imported filaments; replaced ones keep their place in the list.
-export const applyQidiFilamentImport = (current: QidiFilamentConfig, imported: QidiFilamentConfig, keys: string[]): QidiFilamentConfig => {
-  const applied = diffQidiFilamentImport(current, imported)
-    .filter(item => item.status !== 'conflict' && keys.includes(item.key))
+export const applyQidiFilamentImport = (
+  current: QidiFilamentConfig,
+  imported: QidiFilamentConfig,
+  keys: string[],
+  maxTemp?: number | null
+): QidiFilamentConfig => {
+  const applied = diffQidiFilamentImport(current, imported, maxTemp)
+    .filter(item => (item.status === 'new' || item.status === 'changed') && keys.includes(item.key))
   const result = { ...current }
 
   for (const { key } of applied) {

@@ -17,7 +17,7 @@
           :key="item.key"
           :input-value="selected"
           :value="item.key"
-          :disabled="item.status === 'conflict'"
+          :disabled="item.status === 'conflict' || item.status === 'temperature'"
           class="mt-0"
           hide-details="auto"
           :hint="statusText(item)"
@@ -41,7 +41,8 @@
 import { Component, Prop, VModel, Vue, Watch } from 'vue-property-decorator'
 import type { QidiFilamentImportItem } from '@/util/qidi-filament-config'
 
-// New filaments start selected. Changed ones do not, as after a firmware update the change may be QIDI's.
+// New filaments start selected. Changed ones do not, as after a firmware update the change may be QIDI's. Ones whose
+// ID is taken or whose nozzle temperatures the printer can't use can't be chosen.
 @Component({})
 export default class QidiFilamentImportDialog extends Vue {
   @VModel({ type: Boolean })
@@ -52,6 +53,10 @@ export default class QidiFilamentImportDialog extends Vue {
 
   @Prop({ type: Boolean })
   readonly busy!: boolean
+
+  // The printer's [extruder] max_temp, named when a filament's nozzle maximum is above it.
+  @Prop({ type: Number, default: null })
+  readonly maxTemp!: number | null
 
   selected: string[] = []
 
@@ -70,6 +75,10 @@ export default class QidiFilamentImportDialog extends Vue {
         return this.$t('app.qidi_filaments.msg.import_changed').toString()
       case 'conflict':
         return this.$t('app.qidi_filaments.msg.import_conflict', { id: item.id, name: item.conflictKey }).toString()
+      case 'temperature':
+        return item.problem === 'above_limit'
+          ? this.$t('app.qidi_filaments.msg.import_nozzle_limit', { max: this.maxTemp }).toString()
+          : this.$t('app.qidi_filaments.msg.import_nozzle_invalid').toString()
     }
   }
 }
