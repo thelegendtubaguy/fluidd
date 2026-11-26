@@ -258,7 +258,6 @@
               outlined
               color="primary"
               class="float-right"
-              :loading="supportPending"
               @click="handleReportProblem"
             >
               {{ $t('app.vo_valve_oil.btn.report_problem') }}
@@ -271,21 +270,95 @@
             </app-btn>
           </app-setting>
 
-          <div
-            v-if="supportError"
-            class="px-4 pb-3"
+          <app-dialog
+            v-model="supportDialog"
+            :title="$t('app.vo_valve_oil.label.report_problem')"
+            max-width="560"
           >
-            <v-alert
-              dense
-              text
-              type="error"
-              dismissible
-              class="mb-0"
-              @input="supportError = ''"
-            >
-              {{ $t('app.vo_valve_oil.msg.support_bundle_failed', { error: supportError }) }}
-            </v-alert>
-          </div>
+            <v-card-text class="pt-4">
+              <v-alert
+                dense
+                text
+                type="warning"
+                class="mb-4"
+              >
+                {{ $t('app.vo_valve_oil.msg.report_bundle_needed') }}
+              </v-alert>
+
+              <div class="d-flex align-start mb-3">
+                <v-progress-circular
+                  v-if="supportPending"
+                  indeterminate
+                  size="18"
+                  width="2"
+                  class="mr-3 mt-1 flex-shrink-0"
+                />
+                <v-icon
+                  v-else
+                  small
+                  :color="supportError ? 'error' : 'success'"
+                  class="mr-3 mt-1"
+                >
+                  {{ supportError ? '$alertCircle' : '$checkedCircle' }}
+                </v-icon>
+                <div>
+                  <template v-if="supportPending">
+                    {{ $t('app.vo_valve_oil.msg.report_downloading') }}
+                  </template>
+                  <template v-else-if="supportError">
+                    {{ $t('app.vo_valve_oil.msg.support_bundle_failed', { error: supportError }) }}
+                  </template>
+                  <template v-else>
+                    {{ $t('app.vo_valve_oil.msg.report_saved', { name: supportBundleName }) }}
+                  </template>
+                </div>
+              </div>
+
+              <div class="d-flex align-start mb-3">
+                <span class="mr-3 font-weight-bold">2</span>
+                <div>{{ $t('app.vo_valve_oil.msg.report_open_step') }}</div>
+              </div>
+
+              <div class="d-flex align-start">
+                <span class="mr-3 font-weight-bold">3</span>
+                <div>
+                  <div class="font-weight-bold">
+                    {{ $t('app.vo_valve_oil.msg.report_attach') }}
+                  </div>
+                  <div class="text-caption secondary--text">
+                    {{ $t('app.vo_valve_oil.msg.report_reminder') }}
+                  </div>
+                </div>
+              </div>
+            </v-card-text>
+
+            <template #actions>
+              <v-spacer />
+              <app-btn
+                color="primary"
+                text
+                type="button"
+                :disabled="supportPending"
+                @click="downloadSupportBundle"
+              >
+                {{ supportError ? $t('app.vo_valve_oil.btn.report_retry') : $t('app.vo_valve_oil.btn.report_download_again') }}
+              </app-btn>
+              <app-btn
+                color="primary"
+                type="button"
+                :disabled="supportPending"
+                @click="handleOpenSupportIssue"
+              >
+                {{ $t('app.vo_valve_oil.btn.report_open') }}
+                <v-icon
+                  small
+                  right
+                >
+                  $openInNew
+                </v-icon>
+              </app-btn>
+            </template>
+          </app-dialog>
         </template>
 
         <template v-if="view.checkedAt">
@@ -397,6 +470,9 @@ export default class VoValveOilSettings extends Vue {
   dismissedUpdates: string[] = loadDismissedUpdates()
   supportPending = false
   supportError = ''
+  // The file name the last support bundle was saved under; empty until one is
+  supportBundleName = ''
+  supportDialog = false
 
   timer: ReturnType<typeof setTimeout> | undefined = undefined
   abortController: AbortController | null = null
@@ -609,26 +685,44 @@ export default class VoValveOilSettings extends Vue {
   }
 
   /**
-   * Opens the prefilled issue, then downloads the support bundle to attach to it. The issue opens first, while the
-   * click still lets this page open a tab.
+   * Report a problem: downloads the support bundle and says to attach it before the issue opens. Reports kept coming
+   * in without it when the issue opened first and the download landed behind it.
    */
-  async handleReportProblem () {
+  handleReportProblem () {
+    this.supportDialog = true
+    this.downloadSupportBundle()
+  }
+
+  /**
+   * Opens the prefilled issue in a new tab, from the dialog's button: a click is what lets this page open one.
+   */
+  handleOpenSupportIssue () {
     const url = this.view?.supportIssueUrl
+
+    if (url) {
+      window.open(url, '_blank', 'noopener,noreferrer')
+    }
+
+    this.supportDialog = false
+  }
+
+  async downloadSupportBundle () {
     const base = this.apiBase
 
-    if (!url || !base || this.supportPending) {
+    if (!base || this.supportPending) {
       return
     }
 
-    window.open(url, '_blank', 'noopener,noreferrer')
     this.supportPending = true
     this.supportError = ''
+    this.supportBundleName = ''
 
     try {
       const { blob, name } = await voSupportBundle(base, { token: await this.token() })
       const objectUrl = URL.createObjectURL(blob)
 
       downloadUrl(name, objectUrl)
+      this.supportBundleName = name
 
       // Deferred, as revoking right after the click can cancel the download
       setTimeout(() => URL.revokeObjectURL(objectUrl), 1000)
