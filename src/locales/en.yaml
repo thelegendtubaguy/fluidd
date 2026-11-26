@@ -2104,7 +2104,10 @@ app:
       details: Details
       hide_log: Hide log
       report_board: Report this board
+      report_download_again: Download again
+      report_open: Open the issue on GitHub
       report_problem: Open an issue
+      report_retry: Try again
       show_log: Show log
       update_now: Update now
       use_timezone: Use {timezone}
@@ -2176,10 +2179,20 @@ app:
       reconnecting_long: >-
         The printer hasn't answered for {minutes} minutes. Don't turn it off.
         Check its screen to see what it's doing.
+      report_attach: Drag the zip into Logs and files before you submit the issue.
+      report_bundle_needed: >-
+        Bug reports need the support bundle. Without it, most problems can't be
+        tracked down.
+      report_downloading: Downloading the support bundle…
+      report_open_step: >-
+        Open the issue on GitHub. The printer and its details are already
+        filled in.
       report_problem: >-
-        Opens a bug report on GitHub and downloads a support bundle with
-        Klipper's, Moonraker's, and Valve Oil's logs. Attach the bundle to the
-        issue.
+        Downloads a support bundle with Klipper's, Moonraker's, and Valve Oil's
+        logs, then opens a bug report on GitHub to attach it to.
+      report_reminder: >-
+        Reports without it get an automatic reminder until it's attached.
+      report_saved: Saved {name} to this browser's downloads folder.
       support_bundle_failed: "The support bundle couldn't be downloaded: {error}"
       target_firmware: This Valve Oil release updates it to {version}
       unavailable: Valve Oil's update status isn't available on this printer.
